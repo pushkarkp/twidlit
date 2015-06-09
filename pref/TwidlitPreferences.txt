@@ -1,0 +1,13 @@
+#
+# Copyright 2015 Pushkar Piggott
+#
+# Twidlit default preferences
+#
+background.color 0xffffd9
+control.separation.size 10
+count.repeats.max 2
+ignore.keyboard.side true
+name.delimiter.start <
+name.delimiter.end >
+window.border.size 8
+write.syntax 4finger

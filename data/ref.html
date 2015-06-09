@@ -1,0 +1,57 @@
+<html>
+<!-- Copyright 2015 Pushkar Piggott -->
+<h1>Menus</h1>
+<h2>File</h2>
+<dl>
+<dt><b>Open...</b>
+<dd>Discards the current Twiddler configuration (if any) and uses the selected <a href='#cfg'><tt>cfg</tt> or <tt>cfg.txt</tt> file</a>. 
+<dt><b>View</b>
+<dd><dl>
+<dt><b>Chords</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping. 
+<dt><b>Reversed Chords</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping with reversed chords. You might want to experiment with this for chording with your other hand. 
+<dt><b>Chord List</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord mapped to its <em>4finger</em> tag as text. 
+</dl>
+<dt><b>Twiddler Settings...</b>
+<dd>Opens a dialog that allows you to modify the current configuration's Twiddler settings. These were used by Twiddler 2. I am not sure which ones affect Twiddler 3.
+<dt><b>Preferences...</b>
+<dd>Allows you to select a location for the <a href="pref.html">preference</a> text files. 
+</dl>
+
+<h2>Counts</h2>
+<dl>
+<dt><b>Count File...</b>
+<dd>Allows you to select a file and add its character counts to the stored totals. 
+<dt><b>Count Files...</b>
+<dd>Allows you to select a folder and add the character counts of all contained files to the stored counts. 
+<dt><b>Table Counts</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a table. 
+The columns are ASCII, value, count and percent. 
+<dt><b>Graph Counts</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a graph. 
+This is a simple text graph just to give a better indication of the relative magnitudes. 
+<dt><b>Clear Counts</b>
+<dd>Clears the counts to zero.
+</dl>
+
+<h1><tt>cfg</tt> and <tt>cfg.txt</tt> file selection</h1>
+<a name='cfg'>
+Configuration files come in two types, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
+The <em>Open</em> and <em>Save As...</em> dialogs allow you to choose the type you want using the files type selector (below the file name box). 
+No other extension is allowed so you do not need to type the extension on the file name, it will be added if not present. 
+
+<h1>Save Text window</h1>
+<a name='stw'>
+This is a window displaying text that can be selected and copied, or saved to a file using the <em>Save As...</em> button in the bottom right corner.
+
+<h1>4finger syntax</h1>
+Four-character tags represent chords, starting with the index finger. 
+For example <b><tt>|-,'</tt></b> 
+<p>
+<b><tt>|</tt></b> (pipe) is an inactive finger,<br>
+<b><tt>-</tt></b> (hyphen) is the middle button,<br> 
+<b><tt>,</tt></b> (comma) is the button below and<br> 
+<b><tt>'</tt></b> (apostrophe) is the button above.<br>
+</html>

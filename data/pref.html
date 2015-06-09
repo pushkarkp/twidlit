@@ -1,0 +1,35 @@
+<html>
+<!-- Copyright 2015 Pushkar Piggott -->
+<h1>Preferences</h1>
+Much of the way Twidlit looks and works can be tuned by editing the preference text files. 
+These files are stored inside the <em>Twidlit.jar</em>, but you can access them by using <em>File > Preferences...</em> to choose a location to store them. 
+Twidlit will copy any of the preference files not already there to that location and read them from there next time it starts.
+
+<h2><tt>pref.txt</tt></h2>
+<dl>
+<dt><tt>background.color 0xffffd9</tt><br>
+<dd>The color of the background of most windows.
+<dt><tt>control.separation.size 10</tt><br>
+<dd>The size of the separation between controls on the Twiddler Settings windows.
+<dt><tt>count.repeats.max 2</tt><br>
+<dd>When character frequency counting, any more are ignored after this many of the same one in a row.
+<dt><tt>ignore.keyboard.side true</tt><br>
+<dd>Whether to ignore the side of the keyboard a modifier key is on.
+<dt><tt>name.delimiter.start &lt</tt><br>
+<dd>The character used to indicate the start of a key name.
+<dt><tt>name.delimiter.end &gt</tt><br>
+<dd>The character used to indicate the end of a key name.
+<dt><tt>window.border.size 8</tt><br>
+<dd>The size of the border on some windows.
+<dt><tt>write.syntax 4finger</tt><br>
+<dd>Whether to use 4finger or 0MRL when writing <tt>cfg.txt</tt> files.
+</dl>
+
+<h2><tt>TwidlitKeyValues.txt</tt> and <tt>TwidlitKeyNames.txt</tt></h2>
+Twidlit is set up to use the US keyboard mapping. 
+If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
+
+<h2><tt>TwidlitUnprintable.txt</tt></h2>
+Some ASCII values are unprintable (<em>backspace</em>, for example). 
+When every keystroke needs to be visible the values in this file are treated specially.
+</html>
