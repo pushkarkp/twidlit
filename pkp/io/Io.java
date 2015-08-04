@@ -6,6 +6,7 @@
 package pkp.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -19,6 +20,15 @@ public class Io {
 
    public static final boolean MustExist = true;
    public static final int ParseFailed = Integer.MIN_VALUE;
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int read(String prompt) {
+      System.out.print(prompt);
+      try {
+         return System.in.read();
+      } catch (IOException e) {}
+      return 0;
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    public static URL toUrl(String fName, String fileParent) {
@@ -256,16 +266,7 @@ public class Io {
    public static String toEscaped(String str) {
       String out = "";
       for (int i = 0; i < str.length(); ++i) {
-         char c = str.charAt(i);
-         switch (c) {
-         case '\b': out += "\\b"; break;
-         case '\f': out += "\\f"; break;
-         case '\n': out += "\\n"; break;
-         case '\t': out += "\\t"; break;
-         case '\r': out += "\\r"; break;
-         case ' ': out += "\\s"; break;
-         default: out += c; break;
-         }
+         out += toEscaped(str.charAt(i));
       }
       return out;
    }

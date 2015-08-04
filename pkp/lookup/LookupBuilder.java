@@ -77,11 +77,11 @@ public class LookupBuilder {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public LookupBuilder(int lookupSize, boolean duplicateKeys) {
-      m_Lookup = new ArrayList<ArrayList<Integer>>(lookupSize);
+   public LookupBuilder(int tableSize, boolean duplicateKeys) {
+      m_Lookup = new ArrayList<ArrayList<Integer>>(tableSize);
       m_DuplicateKeys = duplicateKeys;
       m_Overflow = new ArrayList<ArrayList<Integer>>();
-      for (int i = 0; i < lookupSize; ++i) {
+      for (int i = 0; i < tableSize; ++i) {
          m_Lookup.add(new ArrayList<Integer>());
       }
       m_ScanSize = 0;
@@ -94,7 +94,7 @@ public class LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
    public void add(int key, int index) {
-      add(key, LookupImplementation.sm_NO_VALUE, index);
+      add(key, Lookup.sm_NO_VALUE, index);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ public class LookupBuilder {
 //System.out.printf("add: %d %d: %d \n", key1, key2, index);
       ArrayList<Integer> entry = null;
       if (key1 < m_Lookup.size()) {
-//System.out.printf("add: entry\n");
+//System.out.printf("add: table entry\n");
          entry = m_Lookup.get(key1);
       } else {
          for (int i = 0; ; ++i) {
@@ -136,7 +136,7 @@ public class LookupBuilder {
       entry.add(new Integer(index));
       int size = entry.size();
 //System.out.printf("add: size %d\n", size);
-      if (key2 == LookupImplementation.sm_NO_VALUE) {
+      if (key2 == Lookup.sm_NO_VALUE) {
          if (entry.size() == 3) {
          } else if (entry.size() == 5) {
             m_ScanSize += 5;
@@ -172,7 +172,9 @@ public class LookupBuilder {
       for (int i = 0; i < m_Lookup.size(); ++i) {
          ArrayList<Integer> entry = m_Lookup.get(i);
 //System.out.printf("build: i %d entry.size() %d\n", i, entry.size());
-         if (entry.size() != 0) {
+         if (entry.size() == 0) {
+            lookup.empty(i);
+         } else {
             lookup.add(i, entry);
          }
       }
@@ -183,14 +185,14 @@ public class LookupBuilder {
             lookup.add(entry.get(0), entry);
          }
       }
-      if (lookup.getLookupSize() != m_Lookup.size()) {
-         System.out.printf("lookup size: expected %d actual %d%n", m_Lookup.size(), lookup.getLookupSize());
+      if (lookup.getTableSize() != m_Lookup.size()) {
+         Log.err(String.format("table size: expected %d actual %d%n", m_Lookup.size(), lookup.getTableSize()));
       }
       if (lookup.getOverflowUsed() != m_Overflow.size()  * 2) {
-         System.out.printf("overflow size: expected %d actual %d%n", m_Overflow.size() * 2, lookup.getOverflowUsed());
+         Log.err(String.format("overflow size: expected %d actual %d%n", m_Overflow.size() * 2, lookup.getOverflowUsed()));
       }
       if (lookup.getScanUsed() > 0 && lookup.getScanUsed() != m_ScanSize + 1) {
-         System.out.printf("scan size: expected %d actual %d%n", m_ScanSize, lookup.getScanUsed());
+         Log.err(String.format("scan size: expected %d actual %d%n", m_ScanSize, lookup.getScanUsed()));
       }
 
 //System.out.printf("build: end\n");
@@ -206,28 +208,83 @@ public class LookupBuilder {
    // Main /////////////////////////////////////////////////////////////////////
    public static void main (String[] args) {
       if (args.length == 0) {
-         System.out.printf("usage: <lookup size> [<key> <scan> <target>]... - [<key> <scan>]...\n");
+         System.out.printf("usage: <table size>, [<key> [<scan>] <target>,]... - [<key> [<scan>],]...\n");
          return;
       }
-      LookupBuilder builder = new LookupBuilder(Integer.decode(args[0]), false);
-      int arg = 1;
-      for (; arg < args.length; arg += 3) {
-         if (args[arg].equals("-")) {
+      int step = 0;
+      int in[] = new int[3];
+      LookupBuilder builder = null;
+      LookupImplementation lookup = null;
+      for (int arg = 0; arg < args.length; ++arg) {
+         switch (args[arg].charAt(0)) {
+         case '0': case '1': case '2': case '3': case '4':
+         case '5': case '6': case '7': case '8': case '9':
+            String str = args[arg];
+            int end = str.indexOf(',');
+            // trailing comma on last arg
+            if (end == -1 && arg == args.length - 1) {
+               end = str.length();
+               str += ',';
+            }
+            // allow commas to bang up against values
+            if (end != -1) {
+               args[arg] = str.substring(end);
+               --arg;
+               str = str.substring(0, end);
+            }
+            in[step] = Long.decode(str).intValue();
+//System.out.printf("step %d in[step] %d%n", step, in[step]);
+            ++step;
+            break;
+         case ',':
+         case '-':
+            switch (step) {
+            case 0:
+               System.out.println("missing values 0");
+               System.exit(0);
+            case 1:
+               if (builder == null) {
+                  builder = new LookupBuilder(in[0], false);
+//System.out.println("new builder");
+                  break;
+               }
+               if (lookup != null) {
+                  System.out.printf("[%4d]: %d%n", in[0], lookup.get(in[0]));
+                  break;
+               }
+               System.out.println("missing value ,");
+               System.exit(0);
+            case 2:
+               if (builder == null) {
+                  System.out.println("missing initial size value");
+                  System.exit(0);
+               }
+               if (lookup != null) {
+                  System.out.printf("[%4d]: (%d) ", in[0], lookup.get(in[0]));
+                  System.out.printf("[%4d]: %d%n", in[1], lookup.get(in[0], in[1]));
+               }
+//System.out.printf("in[0] %d in[1] %d%n", in[0], in[1]);
+               builder.add(in[0], in[1]);
+               break;
+            case 3:
+               if (lookup != null) {
+                  System.out.println("too many values");
+                  System.exit(0);
+               }
+//System.out.printf("in[0] %d in[1] %d , in[2] %d%n", in[0], in[1], in[2]);
+               builder.add(in[0], in[1], in[2]);
+               break;
+            default:
+               System.out.println("too many values");
+               System.exit(0);
+            }
+            step = 0;
+            if (args[arg].charAt(0) == '-') {
+               lookup = builder.build();
+               System.out.println(lookup + "Lookups:");
+            }
             break;
          }
-         builder.add(Long.decode(args[arg]).intValue(),
-                     Long.decode(args[arg + 1]).intValue(),
-                     Long.decode(args[arg + 2]).intValue());
-      }
-      LookupImplementation lookup = builder.build();
-		System.out.println("toString:\n" + lookup.toString());
-      for (++arg; arg < args.length; arg += 2) {
-         int key = Long.decode(args[arg]).intValue();
-         int found = lookup.get(key);
-         System.out.printf("%4d: (%d) ", key, found);
-         int scan = Long.decode(args[arg + 1]).intValue();
-         found = lookup.get(key, scan);
-         System.out.printf("%4d: %d\n", scan, found);
       }
    }
 }

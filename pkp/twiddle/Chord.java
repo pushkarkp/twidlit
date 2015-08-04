@@ -88,6 +88,17 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public static int countFingers(int chord) {
+      int fingers = 0;
+      for (int finger = 0; finger < 4; ++finger) {
+         if (((chord >> finger * 2) & 3) != 0) {
+            ++fingers;
+         }
+      }
+      return fingers;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public Chord(String str) {
       m_Value = fromString(str);
    }

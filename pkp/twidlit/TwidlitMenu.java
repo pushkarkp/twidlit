@@ -17,7 +17,7 @@ import pkp.twiddle.Assignment;
 import pkp.twiddle.KeyMap;
 import pkp.twiddler.Cfg;
 import pkp.twiddler.SettingsWindow;
-import pkp.chars.CharCounts;
+import pkp.chars.Counts;
 import pkp.ui.HtmlWindow;
 import pkp.ui.SaveTextWindow;
 import pkp.ui.ProgressWindow;
@@ -26,7 +26,7 @@ import pkp.io.Io;
 import pkp.util.*;
 
 ////////////////////////////////////////////////////////////////////////////////
-class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
+class TwidlitMenu extends JMenuBar implements ActionListener, ItemListener, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    TwidlitMenu(Twidlit twidlit) {
@@ -55,16 +55,28 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
 
       m_CountsMenu = new JMenu(sm_COUNTS_MENU_TEXT);
       add(m_CountsMenu);
+      m_CountsBigrams = addCheckItem(m_CountsMenu, sm_COUNTS_BIGRAMS_TEXT).isSelected();
+      JCheckBoxMenuItem nGrams = addCheckItem(m_CountsMenu, sm_COUNTS_NGRAMS_TEXT);
+      m_NGramsUrl = Pref.getDirJarUrl("pref.dir", "TwidlitNGrams.txt");
+      if (m_NGramsUrl == null) {
+         nGrams.setEnabled(false); 
+         nGrams.setState(false);
+      }
+      m_CountsNGrams = nGrams.isSelected();
+      m_CountsMenu.addSeparator();
       add(m_CountsMenu, sm_COUNTS_FILE_TEXT);
       add(m_CountsMenu, sm_COUNTS_FILES_TEXT);
       m_CountsMenu.addSeparator();      
+      add(m_CountsMenu, sm_COUNTS_RANGE_TEXT);
       m_CountsTableItem = add(m_CountsMenu, sm_COUNTS_TABLE_TEXT);
       m_CountsGraphItem = add(m_CountsMenu, sm_COUNTS_GRAPH_TEXT);
       m_CountsMenu.addSeparator();
       m_ClearCountsItem = add(m_CountsMenu, sm_COUNTS_CLEAR_TEXT);
       m_CountsInDir = Persist.get(sm_COUNTS_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CountsOutDir = Persist.get(sm_COUNTS_TEXT_DIR_PERSIST, m_Twidlit.getHomeDir());
-
+      m_CountsMinimum = 1;
+      m_CountsMaximum = Integer.MAX_VALUE;
+      
       JMenu helpMenu = new JMenu(sm_HELP_MENU_TEXT);
       add(helpMenu);
       add(helpMenu, sm_HELP_INTRO_TEXT);
@@ -97,6 +109,7 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
+
       for (int i = 0; i < getMenuCount(); ++i) {
          JMenu menu = getMenu(i);
          for (int j = 0; j < menu.getItemCount(); ++j) {
@@ -154,7 +167,33 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
       boolean selected = persist != null && persist.equalsIgnoreCase("true");
       JCheckBoxMenuItem item = new JCheckBoxMenuItem(text, selected);
       menu.add(item);
+      item.addItemListener(this);
       return item;
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   @Override // ItemListener
+   public void itemStateChanged(ItemEvent e) {
+      if (!(e.getItem() instanceof JCheckBoxMenuItem)) {
+         return;
+      }
+      JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getItem();
+      switch (item.getText()) {
+      case sm_COUNTS_BIGRAMS_TEXT:
+         m_CountsBigrams = item.isSelected();
+         if (m_CharCounts != null
+          && m_CharCounts.setShowBigrams(m_CountsBigrams)) {
+             enableCountsMenuItems(false);
+          }
+         break;
+      case sm_COUNTS_NGRAMS_TEXT:
+         m_CountsNGrams = item.isSelected();
+         if (m_CharCounts != null
+          && m_CharCounts.setShowNGrams(m_CountsNGrams)) {
+             enableCountsMenuItems(false);
+          }
+         break;
+      }
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -197,6 +236,16 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
          return;
       case sm_FILE_QUIT_TEXT:
          m_Twidlit.quit();
+         return;
+      case sm_COUNTS_RANGE_TEXT:
+         CountsRangeSetter setter = new CountsRangeSetter(m_Twidlit, m_CountsMinimum, m_CountsMaximum);
+         if (setter.isOk()) {
+            m_CountsMinimum = setter.getMinimum(); 
+            m_CountsMaximum = setter.getMaximum();
+            if (m_CharCounts != null) {
+               m_CharCounts.setBounds(m_CountsMinimum, m_CountsMaximum);
+            }
+         }
          return;
       case sm_COUNTS_TABLE_TEXT:
       case sm_COUNTS_GRAPH_TEXT:
@@ -266,7 +315,7 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
          tw = new MenuSaveTextWindow(
             "Chord List", 
             Cfg.toString(m_SettingsWindow, 
-                         Assignment.listAll()),
+                         Assignment.listAllByFingerCount()),
             m_CfgDir);
          break;
        default:
@@ -304,22 +353,11 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
       if (m_CharCounts == null) {
          Log.warn("No counts to show");
       }
-      MenuSaveTextWindow tw = null;
-      if (command == sm_COUNTS_TABLE_TEXT) {
-         tw = new MenuSaveTextWindow(
-            "Table of Character Counts", 
-            m_CharCounts.table(), 
-            m_CountsOutDir);
-      } else {
-         tw = new MenuSaveTextWindow(
-            "Graph of Character Counts", 
-            m_CharCounts.graph(), 
-            m_CountsOutDir);
-      }
-      tw.setChoosenFileUser(new CountsChoosenFileUser());
-      tw.setVisible(true);
+      (new CharCountShowThread(m_CharCounts, 
+                               command == sm_COUNTS_GRAPH_TEXT, 
+                               m_CountsOutDir)).start();
    }
-   
+
    ///////////////////////////////////////////////////////////////////
    private void setCfg(Cfg cfg) {
       m_Twidlit.setKeyMap(new KeyMap(cfg.getAssignments()));
@@ -482,7 +520,11 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
                return;
             }
             if (m_CharCounts == null) {
-               m_CharCounts = new CharCounts();
+               m_CharCounts = new Counts(m_NGramsUrl,
+                                         m_CountsMinimum,
+                                         m_CountsMaximum);
+               m_CharCounts.setShowBigrams(m_CountsBigrams);               
+               m_CharCounts.setShowNGrams(m_CountsNGrams);               
             }
             if (m_Action.equals(sm_COUNTS_FILE_TEXT)) {
                if (f.isDirectory()) {
@@ -524,8 +566,8 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
    class CharCountThread extends Thread {
       
       /////////////////////////////////////////////////////////////////////////////
-      CharCountThread(CharCounts counts, File f) {
-         m_CharCounts = counts;
+      CharCountThread(Counts counts, File f) {
+         m_Counts = counts;
          m_File = f;
       }
 
@@ -533,10 +575,10 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
       public void run() {
          if (!m_File.isDirectory()) {
             enableCountsMenu(false);
-            m_CharCounts.count(m_File);
+            m_Counts.count(m_File);
          } else {
-            m_ProgressWindow = new ProgressWindow("Count Progress", "", 0, Io.countFiles(m_File));
-            m_ProgressWindow.setVisible(true);
+            ProgressWindow pw = new ProgressWindow("Count Progress", "", 0, Io.countFiles(m_File));
+            pw.setVisible(true);
             File[] files = m_File.listFiles();
             if (files == null) {
                return;
@@ -544,21 +586,59 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
             enableCountsMenu(false);
             for (File file : files) {
                if (!file.isDirectory()) {
-                  m_CharCounts.count(file);
-                  m_ProgressWindow.step();
+                  m_Counts.count(file);
+                  pw.step();
                }
             }
-            m_ProgressWindow.setVisible(false);
-            m_ProgressWindow.dispose();
+            pw.setVisible(false);
+            pw.dispose();
          }
          enableCountsMenu(true);
          enableCountsMenuItems(true);
       }
 
       // Data ////////////////////////////////////////////////////////////////////
-      private CharCounts m_CharCounts;
+      private Counts m_Counts;
       private File m_File;
-      private ProgressWindow m_ProgressWindow;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////////
+   class CharCountShowThread extends Thread {
+      
+      /////////////////////////////////////////////////////////////////////////////
+      CharCountShowThread(Counts counts, boolean graph, String outDir) {
+         m_Counts = new Counts(counts);
+         m_Graph = graph;
+         m_OutDir = outDir;
+      }
+
+      /////////////////////////////////////////////////////////////////////////////
+      public void run() {
+         ProgressWindow pw = new ProgressWindow(
+                                    "Count Progress", "", 
+                                    0, (int)(Counts.getProgressCount()));
+         pw.setVisible(true);
+         MenuSaveTextWindow tw = null;
+         if (m_Graph) {
+            tw = new MenuSaveTextWindow(
+               "Graph of Character Counts", 
+               m_Counts.graph(pw), 
+               m_OutDir);
+         } else {
+            tw = new MenuSaveTextWindow(
+               "Table of Character Counts", 
+               m_Counts.table(pw), 
+               m_OutDir);
+         }
+         tw.setChoosenFileUser(new CountsChoosenFileUser());
+         tw.setVisible(true);
+         pw.setVisible(false);
+      }
+
+      // Data ////////////////////////////////////////////////////////////////////
+      private Counts m_Counts;
+      private boolean m_Graph;
+      private String m_OutDir;
    }
 
    // Final //////////////////////////////////////////////////////////
@@ -574,6 +654,9 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
    static final String sm_COUNTS_MENU_TEXT = "Counts";
    static final String sm_COUNTS_FILE_TEXT = "Count File...";
    static final String sm_COUNTS_FILES_TEXT = "Count Files...";
+   static final String sm_COUNTS_BIGRAMS_TEXT = "Include Bigrams";
+   static final String sm_COUNTS_NGRAMS_TEXT = "Include Ngrams";
+   static final String sm_COUNTS_RANGE_TEXT = "Set Range Displayed...";
    static final String sm_COUNTS_TABLE_TEXT = "Table Counts";
    static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
    static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
@@ -590,17 +673,20 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
    static final String sm_CFG_DIR_PERSIST = "cfg.dir";
    static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
    static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
+   static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
+   static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
 
    static final String[] sm_PREF_FILES = new String[] {
       "TwidlitPreferences.txt",
       "TwidlitUnprintable.txt",
       "TwidlitKeyNames.txt",
-      "TwidlitKeyValues.txt"
+      "TwidlitKeyValues.txt",
+      "TwidlitNGrams.txt"
    };
    
    // Data ///////////////////////////////////////////////////////////
    private Twidlit m_Twidlit;
-   private CharCounts m_CharCounts;
+   private Counts m_CharCounts;
    private JMenuItem m_ViewChordsItem;
    private JMenuItem m_ViewReversedItem;
    private JMenuItem m_TwiddlerSettingsItem;
@@ -618,4 +704,9 @@ class TwidlitMenu extends JMenuBar implements ActionListener, Persistent {
    private String m_CfgDir;
    private String m_CountsInDir;
    private String m_CountsOutDir;
+   private URL m_NGramsUrl;
+   private int m_CountsMinimum; 
+   private int m_CountsMaximum; 
+   private boolean m_CountsBigrams; 
+   private boolean m_CountsNGrams; 
 }

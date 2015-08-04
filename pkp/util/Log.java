@@ -35,6 +35,11 @@ public class Log implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static void setWindow(Window w) {
+      sm_Window = w;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void init(File f, boolean exitOnError) {
       sm_Log = new Log(f);
       sm_ExitOnError = exitOnError;
@@ -52,13 +57,13 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void warn(String msg) {
-      JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.WARNING_MESSAGE);
+      JOptionPane.showMessageDialog(sm_Window, msg, "Warning", JOptionPane.WARNING_MESSAGE);
       sm_Log.log(Level.WARN, msg);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static void err(String msg) {
-      JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(sm_Window, msg, "Error", JOptionPane.ERROR_MESSAGE);
 		if (sm_Log != null) {
 			sm_Log.log(Level.ERROR, msg);
 		}
@@ -220,6 +225,7 @@ public class Log implements ActionListener {
    private static final SimpleDateFormat sm_DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
    private static final SimpleDateFormat sm_TIME_FORMAT = new SimpleDateFormat("hh:mm:ss ");
    private static Quitter sm_Quitter = null;
+   private static Window sm_Window = null;
    private static Log sm_Log = null;
    private static boolean sm_ExitOnError = true;
    private File m_File;

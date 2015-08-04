@@ -25,6 +25,7 @@ class Twidlit extends PersistentFrame implements WindowListener, Log.Quitter {
    /////////////////////////////////////////////////////////////////////////////
    Twidlit() {
       super();
+      Log.setWindow(this);
       Log.setQuitter(this);
       setIconImage(Pref.getIcon().getImage());
       setFocusable(true);

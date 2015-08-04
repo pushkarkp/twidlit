@@ -16,7 +16,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 import pkp.ui.ControlWindow;
 import pkp.ui.SliderBuilder;
-import pkp.ui.SliderBox;
+import pkp.ui.LabelComponentBox;
 import pkp.util.Pref;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,21 +35,21 @@ public class SettingsWindow extends ControlWindow implements Settings  {
       m_MinorVersion = m_IntCfg.MINOR_VERSION.getValue();
       int sp = Pref.getInt("control.separation.size");
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.MOUSE_EXIT_DELAY.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MOUSE_EXIT_DELAY.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.MOUSE_EXIT_DELAY.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MOUSE_EXIT_DELAY.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.MS_BETWEEN_TWIDDLES.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MS_BETWEEN_TWIDDLES.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.MS_BETWEEN_TWIDDLES.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MS_BETWEEN_TWIDDLES.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.START_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.START_SPEED.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.START_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.START_SPEED.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.FAST_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.FAST_SPEED.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.FAST_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.FAST_SPEED.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.MOUSE_ACCELERATION.m_Name, SliderBuilder.build(0, 255, 50, m_IntCfg.MOUSE_ACCELERATION.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.MOUSE_ACCELERATION.m_Name, SliderBuilder.build(0, 255, 50, m_IntCfg.MOUSE_ACCELERATION.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new SliderBox(m_IntCfg.MS_REPEAT_DELAY.m_Name, SliderBuilder.build(0, 2500, 500, m_IntCfg.MS_REPEAT_DELAY.getValue())));
+      cp.add(new LabelComponentBox(m_IntCfg.MS_REPEAT_DELAY.m_Name, SliderBuilder.build(0, 2500, 500, m_IntCfg.MS_REPEAT_DELAY.getValue())));
       Dimension size = new Dimension(40, 10);
       for (int i = 2; i < cp.getComponentCount(); i += 2) {
-         SliderBox vsb = (SliderBox)cp.getComponent(i);
-         vsb.getSlider().setSnapToTicks(false);
+         LabelComponentBox vsb = (LabelComponentBox)cp.getComponent(i);
+         ((JSlider)vsb.getComponent()).setSnapToTicks(false);
 //         vsb.setTextPreferredSize(size);
       }
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
@@ -83,7 +83,7 @@ public class SettingsWindow extends ControlWindow implements Settings  {
 
    ////////////////////////////////////////////////////////////////////////////
    private int getInt(int i) {
-      return ((SliderBox)getContentPane().getComponent((i + 1) * 2)).getSlider().getValue();
+      return ((JSlider)((LabelComponentBox)getContentPane().getComponent((i + 1) * 2)).getComponent()).getValue();
    }
 
    ////////////////////////////////////////////////////////////////////////////

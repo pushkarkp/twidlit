@@ -38,6 +38,20 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static ArrayList<Assignment> listAllByFingerCount() {
+      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+      for (int fingers = 1; fingers <= 4; ++fingers) {
+         for (int i = 1; i <= 255; ++i) {
+            if (Chord.countFingers(i) == fingers) {
+               Twiddle tw = new Twiddle(i, 0);
+               asgs.add(new Assignment(tw, KeyPressList.parseText(tw.getChord().toString() + " ")));
+            }
+         }
+      }
+      return asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public Assignment(Twiddle tw, KeyPressList kpl) {
       m_Twiddle = tw;
       m_KeyPressList = kpl;

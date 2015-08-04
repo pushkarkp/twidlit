@@ -2,6 +2,8 @@
  * Copyright 2015 Pushkar Piggott
  *
  * LookupImplementation.java
+ *
+ * A lookup that allows multiple values and sparseness.
  */
 package pkp.lookup;
 
@@ -12,13 +14,12 @@ import pkp.util.Log;
 class LookupImplementation implements Lookup, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
-   public static final int sm_NO_VALUE = 0x80000000;
    static final int sm_TRUE = 1;
 
    ////////////////////////////////////////////////////////////////////////////
-   public LookupImplementation(int lookupSize, int scanSize, int overflowSize) {
-//System.out.printf("create: lookupSize %d scanSize %d overflowSize %d\n", lookupSize, scanSize, overflowSize);
-	   m_Lookup = new int[lookupSize];
+   LookupImplementation(int tableSize, int scanSize, int overflowSize) {
+//System.out.printf("create: tableSize %d scanSize %d overflowSize %d\n", tableSize, scanSize, overflowSize);
+	   m_Lookup = new int[tableSize];
       m_Overflow = new int[overflowSize * 2];
       m_OverflowUsed = 0;
       if (scanSize > 0) {
@@ -29,7 +30,15 @@ class LookupImplementation implements Lookup, LookupSet {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void add(int key, ArrayList<Integer> scanValues) {
+   void empty(int key) {
+      // only when uninitialized
+      if (key < m_Lookup.length && m_Lookup[key] == 0) {
+         m_Lookup[key] = sm_NO_VALUE;
+      }
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   void add(int key, ArrayList<Integer> scanValues) {
       int size = scanValues.size();
 //System.out.printf("add1: key %d size %d\n", key, size);
       if (key < m_Lookup.length) {
@@ -63,7 +72,8 @@ class LookupImplementation implements Lookup, LookupSet {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   // return the first matching index or 0
+   // return the value stored (even if a scan index)
+   // or sm_NO_VALUE if none or out of range
    @Override // Lookup
    public int get(int key1) {
       if (key1 < 0) {
@@ -117,8 +127,9 @@ class LookupImplementation implements Lookup, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
    // return all matching indices
+   @Override // Lookup
    public int[] getAll(int key1, int key2) {
-//System.out.printf("getAll: key1 %x, key2 %x\n", key1, key2);
+//System.out.printf("getAll: key1 0x%x, key2 0x%x\n", key1, key2);
       int found = get(key1);
 //System.out.printf("getAll: found %x\n", found);
       if (found >= 0) {
@@ -162,35 +173,33 @@ class LookupImplementation implements Lookup, LookupSet {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public int getLookupSize() { return m_Lookup.length; }
-   public int getOverflowUsed() { return m_OverflowUsed; }
-   public int getScanUsed() { return m_ScanUsed; }
+   int getTableSize() { return m_Lookup.length; }
+   int getOverflowUsed() { return m_OverflowUsed; }
+   int getScanUsed() { return m_ScanUsed; }
       
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
    private String foundToString(int k, int found) {
 //System.out.printf("foundToString: k %d found %d\n", k, found);
-      String str = "";
+      String str = String.format("%4d: ", k);
       if (found >= 0) {
-         str += String.format("%4d: 0x%x\n", k, found);
+         str += String.format("%d\n", found);
       } else if (found == sm_NO_VALUE) {
-         str += String.format("%4d: no value\n", k);
+         str += "no value\n";
       } else {
-         str += scanToString(k, -found);
+         str += String.format("%d ", found) + scanToString(-found);
       }
       return str;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private String scanToString(int k, int start) {
-//System.out.printf("scanToString: k %d start %d\n", k, start);
+   private String scanToString(int start) {
       String str = "";
       int size = getSize(start);
-//System.out.printf("scanToString size: %d\n", size);
-      str += String.format("%4d: ", k);
+//System.out.printf("scanToString start: %d size: %d\n", start, size);
       for (int j = 1; j < size; j += 2) {
-         str += String.format("%4d: 0x%x", m_Scan[start + j], m_Scan[start + j + 1]);
+         str += String.format("%4d: %d", m_Scan[start + j], m_Scan[start + j + 1]);
       }
       str += '\n';
       return str;
