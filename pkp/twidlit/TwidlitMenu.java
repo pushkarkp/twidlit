@@ -476,22 +476,20 @@ class TwidlitMenu extends JMenuBar implements ActionListener, ItemListener, Pers
                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
             return;
          }
+         ArrayList<Assignment> asgs =
+            (m_Action == sm_VIEW_CHORD_LIST_TEXT)
+            ? Assignment.listAll()
+            : (m_Action == sm_VIEW_REVERSED_TEXT)
+             ? m_Twidlit.getKeyMap().getAssignmentsReversed()
+             : m_Twidlit.getKeyMap().getAssignments();
          switch (eff.getExtension()) {
          case sm_CFG:
             m_CfgDir = f.getParent();
             m_Twidlit.extendTitle(f.getAbsolutePath());
-            Cfg.write(f, m_SettingsWindow,
-               (m_Action == sm_VIEW_REVERSED_TEXT)
-                ? m_Twidlit.getKeyMap().getAssignmentsReversed()
-                : m_Twidlit.getKeyMap().getAssignments());
+            Cfg.write(f, m_SettingsWindow, asgs);
             return;
          case sm_CFG_TXT:
-            Cfg.writeText(f, m_SettingsWindow,
-               (m_Action == sm_VIEW_CHORD_LIST_TEXT)
-                ? Assignment.listAll()
-                : (m_Action == sm_VIEW_REVERSED_TEXT)
-                 ? m_Twidlit.getKeyMap().getAssignmentsReversed()
-                 : m_Twidlit.getKeyMap().getAssignments());
+            Cfg.writeText(f, m_SettingsWindow, asgs);
             return;
          default:
             Log.err("CfgSaver: unknown extension \"" + eff.getExtension() + '"');
