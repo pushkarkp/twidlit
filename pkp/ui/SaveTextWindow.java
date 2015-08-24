@@ -39,7 +39,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    ////////////////////////////////////////////////////////////////////////////
    public SaveTextWindow(String title, String str) {
       super(title, str);
-      m_FileChooser = new JFileChooser();
+      m_FileChooser = null;
       m_ButtonText = "Save As...";
       m_Extension = new ArrayList<String>();
       m_Extension.add("txt");
@@ -59,7 +59,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    public String getDirectory() { return m_Dir; }
    public void setSaver(Saver fs) { m_Saver = fs; } 
    public void setChoosenFileUser(ChoosenFileUser cfu) { m_ChoosenFileUser = cfu; } 
-   public JFileChooser getFileChooser() { return m_FileChooser; }
+//   public JFileChooser getFileChooser() { return m_FileChooser; }
 
    ///////////////////////////////////////////////////////////////////
    public void setExtension(String ext) {
@@ -87,7 +87,10 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    @Override
    public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand() == m_ButtonText) {
-         makeChooser();
+         if (m_FileChooser == null) {
+            makeChooser();
+         }
+         m_FileChooser.showSaveDialog(null);
       } else if (e.getActionCommand() == "ApproveSelection") {
          if (m_Saver != null) {
             m_Saver.fileChosen(m_FileChooser);
@@ -115,6 +118,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public void makeChooser() {
+      m_FileChooser = new JFileChooser();
       m_FileChooser.addActionListener(this);
       if (!Io.dirExists(m_Dir)) {
          m_Dir = ".";
@@ -125,7 +129,6 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
          m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter(m_Extension.get(i)));
       }
       m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
-      m_FileChooser.showSaveDialog(null);
    }
    
    ////////////////////////////////////////////////////////////////////////////
