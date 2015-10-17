@@ -6,6 +6,7 @@
 background.color 0xffffd9
 control.separation.size 10
 count.repeats.max 2
+count.clear.confirm true
 key.wait.msec 80
 name.delimiter.start <
 name.delimiter.end >

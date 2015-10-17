@@ -19,10 +19,12 @@ enum Hand {
 
    //////////////////////////////////////////////////////////////////////////
    static Hand create(String name) {
-      if (name.toLowerCase().startsWith(RIGHT.getSmallName())) {
-         return RIGHT;
-      }
-      return LEFT;
+      return createRight(name.toLowerCase().startsWith(RIGHT.getSmallName()));
+   }
+   
+   //////////////////////////////////////////////////////////////////////////
+   static Hand createRight(boolean right) {
+      return right ? RIGHT : LEFT;
    }
    
    //////////////////////////////////////////////////////////////////////////

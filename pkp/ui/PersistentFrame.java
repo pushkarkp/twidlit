@@ -55,7 +55,10 @@ public class PersistentFrame extends JFrame {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
+   // PersistName is converted to tag in PersistentPrperties.
+   // If value is not found, try deleting ./Persistent.properties
    private String getPersistName() {
+//System.out.printf("getPersistName() %s%n", m_PersistName);
       if (m_PersistName == null || "".equals(m_PersistName)) {
          if ("".equals(getTitle())) {
             return getClass().getSimpleName();

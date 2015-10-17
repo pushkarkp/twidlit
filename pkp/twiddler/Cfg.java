@@ -320,7 +320,7 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    private void readText1(File f) {
       URL url = null;
-      if (f != null) {
+      if (f != null && f.exists()) {
          try {
             url = f.toURI().toURL();
          } catch (MalformedURLException e) {

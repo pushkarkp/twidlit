@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright 2015 Pushkar Piggott
  *
  * Twidlit.java
@@ -46,6 +46,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       setTitle("Twidlit");
       setResizable(true);
 
+      m_ChordTimes = new ChordTimes();
       m_MenuBar = new TwidlitMenu(this);
       setJMenuBar(m_MenuBar);
 
@@ -59,6 +60,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       setVisible(true);
       m_MenuBar.start();
       nextTwiddle(null);
+      startTime();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -80,9 +82,15 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    }
    
    /////////////////////////////////////////////////////////////////////////////
+   ChordTimes getChordTimes() {
+      return m_ChordTimes;
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
    @Override // Log.Quitter
    public void quit() {
       setVisible(false);
+      m_ChordTimes.persist("");
       if (m_MenuBar != null) {
          m_MenuBar.close();
       }
@@ -137,7 +145,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
 //System.out.println("keyPressed " + kp.toString(KeyPress.Format.HEX));
       m_TimerKeyWait.restart();
       if (m_KeyStartMs != 0) {
-         Log.log(String.format("keyPressed event %dms now %dms%n", 
+         Log.log(String.format("keyPressed event %dms now %dms", 
                   (int)(e.getWhen() - m_KeyStartMs),
                   (int)(System.currentTimeMillis() - m_KeyStartMs)));
       }
@@ -157,15 +165,15 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
          return;
       }
       if (m_KeyStartMs != 0) {
-         Log.log(String.format("keyPressed event %dms now %dms%n", 
+         Log.log(String.format("keyPressed event %dms now %dms", 
                   (int)(e.getWhen() - m_KeyStartMs),
                   (int)(System.currentTimeMillis() - m_KeyStartMs)));
       }
       m_KeyStartMs = 0;
       m_TimerKeyWait.stop();
       // convert keys to twiddle
-System.out.println("actionPerformed m_Assignment " + m_Assignment.toString());
-System.out.println("actionPerformed m_KeysPressed " + m_KeysPressed.toString());
+//System.out.println("actionPerformed m_Assignment " + m_Assignment.toString());
+//System.out.println("actionPerformed m_KeysPressed " + m_KeysPressed.toString());
       Assignment pressed = m_KeysPressed.findLongestPrefix(m_KeyMap);
       if (pressed == null) {
          // no matching twiddle
@@ -174,7 +182,7 @@ System.out.println("actionPerformed m_KeysPressed " + m_KeysPressed.toString());
          m_KeysPressed = new KeyPressList();
          return;
       }
-System.out.println("actionPerformed pressed " + pressed.toString());
+//System.out.println("actionPerformed pressed " + pressed.toString());
       if (!pressed.getKeyPressList().equals(m_KeysPressed)) {
          // only partial match
          Log.log("Only matched \"" 
@@ -183,11 +191,19 @@ System.out.println("actionPerformed pressed " + pressed.toString());
          Log.warn("Twidlit probably has a different cfg from your Twiddler.");
       }
       m_KeysPressed = new KeyPressList();
+      Twiddle tw = pressed.getTwiddle(0);
       if (pressed.hasSameKeys(m_Assignment)) {
-         nextTwiddle(pressed.getTwiddle(0));
+         if (m_Timed) {
+//System.out.printf("time: %d%n", m_TimeMs);
+            m_ChordTimes.add(tw.getChord().toInt(), 
+                             tw.getThumbKeys().getCount(), 
+                             m_TimeMs);
+         }
+         nextTwiddle(tw);
       } else {
-         m_MenuBar.getTwiddlerWindow().markMismatch(pressed.getTwiddle(0));
+         m_MenuBar.getTwiddlerWindow().markMismatch(tw);
       }
+      startTime();
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -195,6 +211,11 @@ System.out.println("actionPerformed pressed " + pressed.toString());
       m_KeyWaitMsec = newValue;
       m_TimerKeyWait = new Timer(m_KeyWaitMsec, this);
       m_TimerKeyWait.setActionCommand("key.collection.complete");
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setTimed(boolean set) {
+      m_Timed = set;
    }
 
    // Private /////////////////////////////////////////////////////////////////
@@ -226,6 +247,10 @@ System.out.println("actionPerformed pressed " + pressed.toString());
       m_Assignment = getNext();
 //System.out.println("nextTwiddle " + m_Assignment.toString());      
       m_MenuBar.getTwiddlerWindow().show(m_Assignment.getTwiddle(0), prev);
+  }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void startTime() {
       m_StartTimeMs = System.currentTimeMillis();
       m_TimeMs = 0;
   }
@@ -243,6 +268,8 @@ System.out.println("actionPerformed pressed " + pressed.toString());
    private long m_StartTimeMs;
    private int m_TimeMs;
    private long m_KeyStartMs;
+   private boolean m_Timed;
+   private ChordTimes m_ChordTimes;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {

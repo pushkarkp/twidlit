@@ -30,6 +30,12 @@ import pkp.ui.PersistentFrame;
 ////////////////////////////////////////////////////////////////////////////////
 class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson.Configurable*/ {
 
+   /////////////////////////////////////////////////////////////////////////////
+   static int getInitialWait() {
+      return Pref.getInt("twiddler.highlight.msec", sm_DEFAULT_HIGHLIGHT_MSEC)
+           + Pref.getInt("twiddler.rehighlight.msec", sm_DEFAULT_REHIGHLIGHT_MSEC);
+   }
+
   /////////////////////////////////////////////////////////////////////////////
    TwiddlerWindow(JCheckBoxMenuItem menuItem, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -54,16 +60,16 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       pack();
 
       m_RightHand = true;
-      setHand(false);
+      setRightHand(false);
 
       m_MarkTimer = new Timer(1000, this);
-      m_MarkTimer.setActionCommand(m_CLEAR_MARK_TEXT);
+      m_MarkTimer.setActionCommand(sm_CLEAR_MARK_TEXT);
       m_MarkTimer.stop();
       m_HighlightTimer = new Timer(1000, this);
-      m_HighlightTimer.setActionCommand(m_CLEAR_HIGHLIGHT_TEXT);
+      m_HighlightTimer.setActionCommand(sm_CLEAR_HIGHLIGHT_TEXT);
       m_HighlightTimer.stop();
-      m_ProgressTimer = new Timer(Pref.getInt("twiddler.progress.step.msec", m_DEFAULT_STEP_MSEC), this);
-      m_ProgressTimer.setActionCommand(m_PROGRESS_TEXT);
+      m_ProgressTimer = new Timer(Pref.getInt("twiddler.progress.step.msec", sm_DEFAULT_STEP_MSEC), this);
+      m_ProgressTimer.setActionCommand(sm_PROGRESS_TEXT);
       setWaitFactor(1.0);
    }
 
@@ -75,8 +81,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   void setHand(boolean right) {
-//System.out.println("setHand " + (right?"right":"left"));
+   void setRightHand(boolean right) {
+//System.out.println("setRightHand " + (right?"right":"left"));
       if (m_RightHand == right) {
          return;
       }
@@ -95,23 +101,17 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public int getInitialWait() {
-      return Pref.getInt("twiddler.highlight.msec", m_DEFAULT_HIGHLIGHT_MSEC)
-           + Pref.getInt("twiddler.rehighlight.msec", m_DEFAULT_REHIGHLIGHT_MSEC);
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
    public void setWaitFactor(double factor) {
       clearMark();
-      m_MarkMsec = (int)(factor * Pref.getInt("twiddler.mark.msec", m_DEFAULT_MARK_MSEC));
+      m_MarkMsec = (int)(factor * Pref.getInt("twiddler.mark.msec", sm_DEFAULT_MARK_MSEC));
       m_Mark = m_MarkMsec > 0;
       m_MarkTimer.setInitialDelay(m_MarkMsec);
 
-      m_HighlightMsec = (int)(factor * Pref.getInt("twiddler.highlight.msec", m_DEFAULT_HIGHLIGHT_MSEC));
+      m_HighlightMsec = (int)(factor * Pref.getInt("twiddler.highlight.msec", sm_DEFAULT_HIGHLIGHT_MSEC));
       m_Highlight = m_HighlightMsec > 0;
       m_HighlightTimer.setInitialDelay(m_HighlightMsec);
       m_HighlightTimer.restart();
-      m_RehighlightMsec = (int)(factor * Pref.getInt("twiddler.rehighlight.msec", m_DEFAULT_REHIGHLIGHT_MSEC));
+      m_RehighlightMsec = (int)(factor * Pref.getInt("twiddler.rehighlight.msec", sm_DEFAULT_REHIGHLIGHT_MSEC));
       rehighlightIf();
 
       m_ProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
@@ -171,20 +171,20 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    @Override // ActionListener
    public void actionPerformed(ActionEvent e) {
       switch (e.getActionCommand()) {
-      case m_HIGHLIGHT_TEXT:
+      case sm_HIGHLIGHT_TEXT:
          if (m_Highlight && m_Twiddle != null) {
             highlightNow();
             repaint();
          }
          break;
-      case m_CLEAR_HIGHLIGHT_TEXT:
+      case sm_CLEAR_HIGHLIGHT_TEXT:
          timerClearHighlight();
          break;
-     case m_CLEAR_MARK_TEXT:
+     case sm_CLEAR_MARK_TEXT:
          clearMark();
          repaint();
          break;
-      case m_PROGRESS_TEXT: 
+      case sm_PROGRESS_TEXT: 
          int elapsed = (int)(System.currentTimeMillis() - m_ProgressStart);
          if (elapsed > m_ProgressBar.getMaximum()) {
             m_ProgressTimer.stop();
@@ -323,7 +323,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    
    /////////////////////////////////////////////////////////////////////////////
    private void highlightNow() {
-      setHighlighter(m_CLEAR_HIGHLIGHT_TEXT, m_HighlightMsec);
+      setHighlighter(sm_CLEAR_HIGHLIGHT_TEXT, m_HighlightMsec);
       ThumbKeys thumbs = m_Twiddle.getThumbKeys();
       if (thumbs.isNum()) {
          m_ThumbPanel.getComponent(0).setBackground(m_COLOR_KEY_HIGHLIGHT);
@@ -374,7 +374,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
 
    /////////////////////////////////////////////////////////////////////////////
    private void timerClearHighlight() {
-      setHighlighter(m_HIGHLIGHT_TEXT, m_RehighlightMsec);
+      setHighlighter(sm_HIGHLIGHT_TEXT, m_RehighlightMsec);
       clearHighlight();
       repaint();
    }
@@ -443,15 +443,15 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
 
    // Data /////////////////////////////////////////////////////////////////////
-   private final String m_HIGHLIGHT_TEXT = "highlight";
-   private final String m_CLEAR_HIGHLIGHT_TEXT = "clear.highlight";
-   private final String m_PROGRESS_TEXT = "progress";
-   private final String m_CLEAR_MARK_TEXT = "clear.mark";
+   private static final String sm_HIGHLIGHT_TEXT = "highlight";
+   private static final String sm_CLEAR_HIGHLIGHT_TEXT = "clear.highlight";
+   private static final String sm_PROGRESS_TEXT = "progress";
+   private static final String sm_CLEAR_MARK_TEXT = "clear.mark";
 
-   private final int m_DEFAULT_HIGHLIGHT_MSEC = 2000;
-   private final int m_DEFAULT_REHIGHLIGHT_MSEC = 4000;
-   private final int m_DEFAULT_MARK_MSEC = 2000;
-   private final int m_DEFAULT_STEP_MSEC = 150;
+   private static final int sm_DEFAULT_HIGHLIGHT_MSEC = 2000;
+   private static final int sm_DEFAULT_REHIGHLIGHT_MSEC = 4000;
+   private static final int sm_DEFAULT_MARK_MSEC = 2000;
+   private static final int sm_DEFAULT_STEP_MSEC = 150;
    
    private final Color m_COLOR_BACKGROUND;
    private final Color m_COLOR_KEY;

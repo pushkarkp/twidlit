@@ -32,6 +32,7 @@ public class PersistentProperties {
    public boolean isEmpty() { return m_Properties.isEmpty(); }
    public boolean mustExist() { return m_MustExist; }
    public String getFileName() { return m_FileName; }
+   public String getFolderName() { return m_FileParent; }
 
    ////////////////////////////////////////////////////////////////////////////
    public String get(String name) {

@@ -7,6 +7,8 @@ package pkp.util;
 
 import java.util.Properties;
 import pkp.io.Io;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class Persist {
@@ -25,6 +27,11 @@ public class Persist {
    public static void init(String fName, String parent,  String jarParent) {
       sm_Persist = new PersistentProperties(fName, parent, jarParent, Io.MustExist);
       sm_Persist.read();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String getFolderName() {
+      return sm_Persist.getFolderName();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -66,6 +73,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static int getInt(String name, int defaultValue) {
+//System.out.printf("Persist.getInt(%s, %d)%n", name, defaultValue);
       if (sm_Persist == null && !sm_Persist.mustExist()) {
          return defaultValue;
       }

@@ -11,51 +11,15 @@ import java.util.ArrayList;
 public class SharedIndex {
    
    ////////////////////////////////////////////////////////////////////////////
-   public SharedIndex(ArrayList<SharedIndexableInts> sic, int lowest, int highest) {
-      m_Sic = sic;
-      // only index non-zero items
-      int indexSize = 0;
-      for (int i = 0; i < sic.size(); ++i) {
-         SharedIndexableInts s = sic.get(i);
-         int size = s.getSize();
-         for (int j = 0; j < size; ++j) {
-            int count = s.getCount(j);
-            if (lowest <= count && count <= highest) {
-               ++indexSize;
-            }
-         }
-      }
-      // only refer to non-zero items
-      m_Values = new int[indexSize];
-      m_CounterIndex = new int[indexSize];
-      m_Index = new int[indexSize];
-      m_Offset = new int[indexSize];
-      m_Percent = null;
-      int k = 0;
-      for (int i = 0; i < sic.size(); ++i) {
-         SharedIndexableInts s = sic.get(i);
-         int size = s.getSize();
-         for (int j = 0; j < size; ++j) {
-            int count = s.getCount(j);
-            if (lowest <= count && count <= highest) {
-               m_Values[k] = count;
-               m_CounterIndex[k] = i;
-               m_Index[k] = k;
-               m_Offset[k] = j;
-               ++k;
-            }
-         }
-      }
-      // sort
-      for (int i = 0; i < m_Index.length; ++i) {
-         for (int j = i + 1; j < m_Index.length; ++j) {
-            if (m_Values[m_Index[j]] > m_Values[m_Index[i]]) {
-               int tmp = m_Index[i];
-               m_Index[i] = m_Index[j];
-               m_Index[j] = tmp;
-            }
-         }
-      }
+   public static SharedIndex create(SharedIndexableInts si, int first, int last) {
+      ArrayList<SharedIndexableInts> sil = new ArrayList<SharedIndexableInts>(1);
+      sil.add(si);
+      return new SharedIndex(sil, first, last);
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   public static SharedIndex create(ArrayList<SharedIndexableInts> sil, int first, int last) {
+      return new SharedIndex(sil, first, last);
    }
    
    ///////////////////////////////////////////////////////////////////////////////
@@ -141,6 +105,63 @@ public class SharedIndex {
    
    // Private /////////////////////////////////////////////////////////////////
 
+   ////////////////////////////////////////////////////////////////////////////
+   private SharedIndex(ArrayList<SharedIndexableInts> sic, int first, int last) {
+      m_Sic = sic;
+      // only index non-zero items
+      int indexSize = 0;
+      int lowest = first;
+      int highest = last;
+      boolean ascending = true;
+      if (last < first) {
+         lowest = last;
+         highest = first;
+         ascending = false;
+      }
+      for (int i = 0; i < sic.size(); ++i) {
+         SharedIndexableInts s = sic.get(i);
+         int size = s.getSize();
+         for (int j = 0; j < size; ++j) {
+            int count = s.getCount(j);
+            if (lowest <= count && count <= highest) {
+               ++indexSize;
+            }
+         }
+      }
+      // only refer to non-zero items
+      m_Values = new int[indexSize];
+      m_CounterIndex = new int[indexSize];
+      m_Index = new int[indexSize];
+      m_Offset = new int[indexSize];
+      m_Percent = null;
+      int k = 0;
+      for (int i = 0; i < sic.size(); ++i) {
+         SharedIndexableInts s = sic.get(i);
+         int size = s.getSize();
+         for (int j = 0; j < size; ++j) {
+            int count = s.getCount(j);
+            if (lowest <= count && count <= highest) {
+               m_Values[k] = count;
+               m_CounterIndex[k] = i;
+               m_Index[k] = k;
+               m_Offset[k] = j;
+               ++k;
+            }
+         }
+      }
+      // sort
+      for (int i = 0; i < m_Index.length; ++i) {
+         for (int j = i + 1; j < m_Index.length; ++j) {
+            if (( ascending && m_Values[m_Index[j]] < m_Values[m_Index[i]])
+             || (!ascending && m_Values[m_Index[j]] > m_Values[m_Index[i]])) {
+               int tmp = m_Index[i];
+               m_Index[i] = m_Index[j];
+               m_Index[j] = tmp;
+            }
+         }
+      }
+   }
+   
    // Data ////////////////////////////////////////////////////////////////////
    private ArrayList<SharedIndexableInts> m_Sic;
    private int[] m_Values;

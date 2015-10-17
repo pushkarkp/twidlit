@@ -250,7 +250,7 @@ public class Counts {
       if (m_NGrams != null) {
          sic.add(m_NGrams);
       }
-      return new SharedIndex(sic, m_LowestCount, m_HighestCount);
+      return SharedIndex.create(sic, m_HighestCount, m_LowestCount);
    }
    
    // Data ////////////////////////////////////////////////////////////////////
