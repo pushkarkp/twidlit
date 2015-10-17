@@ -13,8 +13,10 @@ import pkp.util.Persist;
 public class PersistentFrame extends JFrame {
 
    ////////////////////////////////////////////////////////////////////////////
-   public void setPersistName(String name) {
-      m_PersistName = name;
+   @Override
+   public void setTitle(String title) {
+      super.setTitle(title);
+      m_PersistName = title;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -22,7 +24,7 @@ public class PersistentFrame extends JFrame {
    public void setVisible(boolean set) {
       if (set) {
          String persistName = getPersistName();
-//System.out.println(persistName);         
+//System.out.printf("%s %d%n", persistName, Persist.getInt(m_PersistName + ".x", 0));
          Rectangle r = new Rectangle(Persist.getInt(m_PersistName + ".x", 0),
                                      Persist.getInt(m_PersistName + ".y", 0),
                                      Persist.getInt(m_PersistName + ".w", 500),
@@ -37,11 +39,17 @@ public class PersistentFrame extends JFrame {
    public void dispose() {
       String persistName = getPersistName();
       Rectangle r = getBounds();
+//System.out.printf("%s %d%n", persistName + ".x", r.x);
       Persist.set(persistName + ".x", Integer.toString(r.x));
       Persist.set(persistName + ".y", Integer.toString(r.y));
       Persist.set(persistName + ".w", Integer.toString(r.width));
       Persist.set(persistName + ".h", Integer.toString(r.height));
       super.dispose();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public void setPersistName(String name) {
+      m_PersistName = name;
    }
 
    // Private /////////////////////////////////////////////////////////////////

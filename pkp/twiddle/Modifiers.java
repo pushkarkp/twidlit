@@ -11,50 +11,64 @@ import pkp.string.StringsInts;
 import pkp.util.Pref;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class Modifiers {
+class Modifiers {
 
    ////////////////////////////////////////////////////////////////////////////
-   private static final int sm_iGUI = 0x88;
-   private static final int sm_iALT = 0x44;
-   private static final int sm_iSHIFT = 0x22;
-   private static final int sm_iCTRL = 0x11;
-   public static final Modifiers sm_GUI = new Modifiers(sm_iGUI);
-   public static final Modifiers sm_ALT = new Modifiers(sm_iALT);
-   public static final Modifiers sm_SHIFT = new Modifiers(sm_iSHIFT);
-   public static final Modifiers sm_CTRL = new Modifiers(sm_iCTRL);
-   public static final Modifiers sm_TRANSFERABLE = sm_CTRL.plus(sm_SHIFT).plus(sm_ALT);
-   public static final Modifiers sm_EMPTY = new Modifiers(0);
+   private static final byte sm_iLEFT_GUI = 0x8;
+   private static final byte sm_iLEFT_ALT = 0x4;
+   private static final byte sm_iLEFT_SHIFT = 0x2;
+   private static final byte sm_iLEFT_CTRL = 0x1;
+   static final Modifiers sm_GUI = new Modifiers(sm_iLEFT_GUI);
+   static final Modifiers sm_ALT = new Modifiers(sm_iLEFT_ALT);
+   static final Modifiers sm_SHIFT = new Modifiers(sm_iLEFT_SHIFT);
+   static final Modifiers sm_CTRL = new Modifiers(sm_iLEFT_CTRL);
+   static final Modifiers sm_TRANSFERABLE = sm_CTRL.plus(sm_SHIFT).plus(sm_ALT);
+   static final Modifiers sm_EMPTY = new Modifiers(0);
 
    ////////////////////////////////////////////////////////////////////////////
-   public static void init(StringsInts keyCodeToName) {
-      sm_IgnoreKeyboardSide = Pref.getBool("ignore.keyboard.side", false);
+   static void init(StringsInts keyCodeToName) {
       sm_KeyCodeToName = keyCodeToName;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static Modifiers fromKeyCode(int keyCode) {
+   static Modifiers fromKeyCode(int keyCode) {
       return new Modifiers(keyCode >> sm_BITS & sm_KEYS);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static Modifiers[] getCombinations(Modifiers m) {
-      return sm_COMBINATIONS[m.transferable().toInt()];
+   static Modifiers[] getCombinations(Modifiers m) {
+//System.out.printf("getCombinations: m: 0x%x asButtons 0x%x%n", m.toInt(), m.asButtons().toInt());
+      return sm_COMBINATIONS[m.asButtons().toInt()];
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static Modifiers fromKeyEvent(KeyEvent ke) {
-      int m = 0;
+   static String toString(Modifiers[] m) {
+      if (m == null || m.length == 0) {
+         return "none";
+      }
+      String str = String.format("%d mods: ", m.length);
+      String sep = "";
+      for (int i = 0; i < m.length; ++i) {
+         str += sep + String.format("0x%x", m[i].toInt());
+         sep = ", ";
+      }
+      return str;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   static Modifiers fromKeyEvent(KeyEvent ke) {
+      byte m = 0;
       if (ke.isControlDown()) {
-         m |= sm_LEFT_CTRL;
+         m |= sm_iLEFT_CTRL;
       }
       if (ke.isShiftDown()) {
-         m |= sm_LEFT_SHIFT;
+         m |= sm_iLEFT_SHIFT;
       }
       if (ke.isAltDown()) {
-         m |= sm_LEFT_ALT;
+         m |= sm_iLEFT_ALT;
       }
       if (ke.isMetaDown()) {
-         m |= sm_LEFT_GUI;
+         m |= sm_iLEFT_GUI;
       }
       if (ke.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) {
          m <<= 4;
@@ -63,63 +77,78 @@ public class Modifiers {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Modifiers(Modifiers m) {
+   Modifiers(Modifiers m) {
       m_Value = m.m_Value;
+      m_Sided = m.m_Sided;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean equals(Modifiers m) {
-      return effect().m_Value == m.effect().m_Value;
+   boolean equals(Modifiers m) {
+      return m_Value == m.m_Value
+          || (!m_Sided && onLeft().m_Value == m.onLeft().m_Value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isSubsetOf(Modifiers m) {
-      int mEffect = m.effect().m_Value;
-      return (effect().m_Value & mEffect) == mEffect;
+   boolean isSubsetOf(Modifiers m) {
+      if ((m_Value & m.m_Value) == m_Value) {
+         return true;
+      }
+      if (m_Sided) {
+         return false;
+      }
+      byte onLeft = onLeft().m_Value;
+      return (onLeft & m.onLeft().m_Value) == onLeft;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Modifiers effect() {
+   // Makes side neutral.
+   Modifiers onLeft() {
       return new Modifiers((m_Value | m_Value >> 4) & sm_LEFT);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Modifiers plus(Modifiers m) {
+   Modifiers plus(Modifiers m) {
       return new Modifiers(m_Value | m.m_Value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Modifiers minus(Modifiers m) {
+   Modifiers minus(Modifiers m) {
       return new Modifiers(m_Value & ~m.m_Value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public int toKeyCode() {
-      return m_Value << KeyPress.sm_KEYCODE_BITS;
+   int toKeyCode() {
+      int value = (int)m_Value << KeyPress.sm_KEYCODE_BITS;
+//System.out.printf("toKeyCode: 0x%x%n", value);
+      return value;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isEmpty() { return m_Value == 0; }
-   public boolean isCtrl() { return (m_Value & sm_iCTRL) != 0; }
-   public boolean isShift() { return (m_Value & sm_iSHIFT) != 0; }
-   public boolean isAlt() { return (m_Value & sm_iALT) != 0; }
-   public boolean isGui() { return (m_Value & sm_iGUI) != 0; }
-   public boolean isValid() { return (m_Value & sm_KEYS) == 0; }
-   public int toInt() { return m_Value; }
+   boolean isEmpty() { return m_Value == 0; }
+   boolean isCtrl() { return (m_Value & sm_iBOTH_CTRL) != 0; }
+   boolean isShift() { return (m_Value & sm_iBOTH_SHIFT) != 0; }
+   boolean isAlt() { return (m_Value & sm_iBOTH_ALT) != 0; }
+   boolean isGui() { return (m_Value & sm_iBOTH_GUI) != 0; }
+   boolean isValid() { return (m_Value & sm_KEYS) == 0; }
+   int toInt() { return (int)m_Value & sm_KEYS; }
    public String toString() { return toString(true); }
-   public String toLeadTagString() { return toString(true); }
-   public String toTailTagString() { return toString(false); }
+   String toLeadTagString() { return toString(true); }
+   String toTailTagString() { return toString(false); }
 
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
    private Modifiers(int m) {
-      m_Value = m & sm_KEYS;
+      m_Value = (byte)(m & sm_KEYS);
+      m_Sided = true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private Modifiers transferable() {
-      return new Modifiers((m_Value | m_Value >> 4) & (sm_LEFT_ALT | sm_LEFT_SHIFT | sm_LEFT_CTRL));
+   private Modifiers asButtons() {
+      int value = m_Sided 
+                 ? m_Value
+                 : (m_Value | m_Value >> 4);
+      return new Modifiers(value & (sm_iLEFT_ALT | sm_iLEFT_SHIFT | sm_iLEFT_CTRL));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -129,14 +158,18 @@ public class Modifiers {
       }
       final String prefix = (lead) ? "" : "/";
       String str = "";
-      for (int i = sm_iCTRL; i < sm_MAX_BIT << 1; i <<= 1) {
+      for (int i = sm_iLEFT_CTRL; i <= sm_MAX_BIT; i <<= 1) {
          if ((m_Value & i) != 0) {
-			String strTag = KeyPress.sm_BeforeName + prefix + sm_KeyCodeToName.getString(i << 8, "undefined") + KeyPress.sm_AfterName;
-			if (lead) {
-			   str += strTag;
-			} else {
-			   str = strTag + str;
-			}
+            String strTag = 
+               KeyPress.sm_BeforeName 
+             + prefix 
+             + sm_KeyCodeToName.getString(i << 8, "undefined") 
+             + KeyPress.sm_AfterName;
+            if (lead) {
+               str += strTag;
+            } else {
+               str = strTag + str;
+            }
          }
       }
       return str;
@@ -145,19 +178,20 @@ public class Modifiers {
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_KEYS = 0xFF;
    private static final int sm_BITS = 8;
+   private static final int sm_MAX_BIT = 0x80;
    private static final int sm_LEFT = 0x0F;
    private static final int sm_RIGHT = 0xF0;
-   private static final int sm_MAX_BIT = 0x80;
-   private static final int sm_LEFT_GUI = 0x8;
+   private static final int sm_iBOTH_GUI = 0x88;
    private static final int sm_RIGHT_GUI = 0x80;
-   private static final int sm_LEFT_ALT = 0x4;
+   private static final int sm_iBOTH_ALT = 0x44;
    private static final int sm_RIGHT_ALT = 0x40;
-   private static final int sm_LEFT_SHIFT = 0x2;
+   private static final int sm_iBOTH_SHIFT = 0x22;
    private static final int sm_RIGHT_SHIFT = 0x20;
-   private static final int sm_LEFT_CTRL = 0x1;
+   private static final int sm_iBOTH_CTRL = 0x11;
    private static final int sm_RIGHT_CTRL = 0x10;
+   // Thumb buttons register only the left modifier key (0x8 not 0x80 or 0x88).
    private static final Modifiers sm_COMBINATIONS[][] = new Modifiers[][] {
-      {sm_EMPTY},
+      null,
       {sm_EMPTY, sm_CTRL},
       {sm_EMPTY, sm_SHIFT},
       {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_SHIFT.plus(sm_CTRL)},
@@ -166,7 +200,7 @@ public class Modifiers {
       {sm_EMPTY, sm_SHIFT, sm_ALT, sm_ALT.plus(sm_SHIFT)},
       {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_ALT, sm_SHIFT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT), sm_ALT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT.plus(sm_CTRL))},
    };
-   private static boolean sm_IgnoreKeyboardSide;
    private static StringsInts sm_KeyCodeToName;
-   private final int m_Value;
+   private final byte m_Value;
+   private final boolean m_Sided;
 }

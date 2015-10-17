@@ -127,6 +127,11 @@ public class Pref {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static URL getExistDirJarUrl(String dirName, String fileName) {
+      return Io.toExistUrl(fileName, Persist.get(dirName), m_JarParent);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static ImageIcon getIcon() {
       if (sm_Icon == null) {
 //Io.printClassPath();         

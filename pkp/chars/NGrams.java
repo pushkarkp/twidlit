@@ -9,9 +9,11 @@ import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import pkp.lookup.LookupBuilder;
 import pkp.lookup.LookupSet;
-import pkp.lookup.Lookup;
+import pkp.lookup.LookupSetBuilder;
+import pkp.lookup.LookupTable;
+import pkp.lookup.LookupTableBuilder;
+import pkp.lookup.LookupBuilder.Duplicates;
 import pkp.lookup.SharedIndexableInts;
 import pkp.io.LineReader;
 import pkp.io.Io;
@@ -30,19 +32,20 @@ class NGrams implements SharedIndexableInts {
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          m_Counts.add(0);
       }
-      LookupBuilder lbr = new LookupBuilder(128, false);
-      LookupBuilder lbs = new LookupBuilder(128, true);
+      LookupSetBuilder lsbr = new LookupSetBuilder(0x20, 0x7f);
+      LookupTableBuilder ltbs = new LookupTableBuilder(0x20, 0x7f);
+      ltbs.setDuplicates(Duplicates.STORE);
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          String chars = m_NGRAMS.get(i);
          for (int j = 0; j < chars.length(); ++j) {
 //System.out.printf("a>%c<%n", chars.charAt(j));
-            lbr.add((int)chars.charAt(j));
+            lsbr.add((int)chars.charAt(j));
          }
 //System.out.printf("i>%c< %d%n", chars.charAt(0), i);
-         lbs.add((int)chars.charAt(0), i + 1);
+         ltbs.add((int)chars.charAt(0), i + 1);
       }
-      m_RELEVANT = lbr.buildLookupSet();
-      m_START = lbs.buildLookup();
+      m_RELEVANT = lsbr.build();
+      m_START = ltbs.build();
 //System.out.println(m_START);
    }
    
@@ -86,7 +89,7 @@ class NGrams implements SharedIndexableInts {
             m_CurrentIndex.remove(i);
          }
       }
-      int[] indexes = m_START.getAll((int)c, Lookup.sm_NO_VALUE);
+      int[] indexes = m_START.getAll((int)c, LookupTable.sm_NO_VALUE);
 //System.out.printf("?>%c< indexes[0] %d ", c, indexes[0]);
       for (int i = 1; i < indexes[0]; ++i) {
 //System.out.printf("i %d ix %d ", i, indexes[i]);
@@ -120,7 +123,7 @@ class NGrams implements SharedIndexableInts {
       LineReader lr = new LineReader(url, Pref.get("comment", "#"), true);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
-         String ng = Io.parseChars(line);
+         String ng = Io.parseQuote(line);
          if (!NGram.isValid(ng)) {
             Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {
@@ -135,7 +138,7 @@ class NGrams implements SharedIndexableInts {
    // Data ////////////////////////////////////////////////////////////////////
    private final ArrayList<String> m_NGRAMS;
    private final LookupSet m_RELEVANT;
-   private final Lookup m_START;
+   private final LookupTable m_START;
    private ArrayList<NGram> m_Current;
    private ArrayList<Integer> m_CurrentIndex;
    private ArrayList<Integer> m_Counts;

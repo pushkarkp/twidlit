@@ -32,8 +32,9 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    public static Cfg read(File f) {
       Cfg cfg = new Cfg();
-      cfg.read1(f);
-//System.out.println(cfg);      
+      if (!cfg.read1(f)) {
+         cfg.readText1(null);
+      }
       return cfg;
    }
 
@@ -49,7 +50,7 @@ public class Cfg implements Settings {
    public static String toString(Settings tc, ArrayList<Assignment> asgs) {
       String str = "";
       for (Assignment asg: asgs) {
-			str += asg.toString() + '\n';
+			str += asg.toString(KeyPress.Format.CFG) + '\n';
 		}
       for (IntSettings is: tc.getIntSettings().values()) {
          str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
@@ -99,13 +100,18 @@ public class Cfg implements Settings {
       int k = 0;
       for (int i = 0; i < asgs.size(); ++i) {
          Assignment asg = asgs.get(i);
-         bb.putShort((short)asg.getTwiddle().toCfg());
          KeyPressList kpl = asg.getKeyPressList();
-         if (kpl.size() == 1) {
-            bb.putShort((short)kpl.get(0).toInt());
-         } else {
-            bb.put((byte)0xFF);
-            bb.put((byte)k++);
+         for (int j = 0; j < asg.getTwiddleCount(); ++j) {
+            bb.putShort((short)asg.getTwiddle(j).toCfg());
+            if (kpl.size() == 1) {
+               bb.putShort((short)kpl.get(0).toInt());
+            } else {
+               bb.put((byte)0xFF);
+               bb.put((byte)k);
+            }
+         }
+         if (kpl.size() > 1) {
+            ++k;
          }
       }
       bb.putInt(0);
@@ -158,6 +164,11 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean hasAssignments() {
+      return m_Assignments != null && m_Assignments.size() > 0;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public void writeText(File f) {
       writeText(f, this, getAssignments());
    }
@@ -189,21 +200,24 @@ public class Cfg implements Settings {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private void read1(File inputFile) {
-//System.out.println("0 read1 " + path);
-      if (inputFile == null || (int)inputFile.length() == 0) {
-         return;
+   private boolean read1(File inputFile) {
+      if (inputFile == null) {
+         Log.warn("No cfg file specified");
+         return false;
       }
       byte[] data = new byte[(int)inputFile.length()];
       FileInputStream fis = null;
       try {
          fis = new FileInputStream(inputFile);
       } catch (FileNotFoundException e) {
+         return false;
       }
       try {
          fis.read(data, 0, data.length);
          fis.close();
       } catch (IOException e) {
+         Log.warn("Failed to read \"" + inputFile.getPath() + "\" " + e);
+         return false;
       }
       ByteBuffer bb = ByteBuffer.wrap(data);
 
@@ -230,16 +244,19 @@ public class Cfg implements Settings {
       ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
       ArrayList<Integer> whichKpl = new ArrayList<Integer>();
       for (;;) {
+         if (bb.remaining() < 2) {
+            Log.err("Cfg file is corrupt.");
+         }
          short t = bb.getShort();
          short k = bb.getShort();
          if (t == 0 && k == 0) {
             break;
          }
          if (t == 0 || k == 0) {
-            Log.err(String.format("fg file format error: %x %x.", t, k));
+            Log.err(String.format("Cfg file format error: twiddle 0x%x key 0x%x%n", t, k));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
-         if (k > -1) {
+         if (k >= 0) {
             KeyPress kp = new KeyPress(k);
             if (!kp.isValid()) {
                continue;
@@ -255,25 +272,34 @@ public class Cfg implements Settings {
       }
       // mouse assignments
       for (;;) {
+         if (bb.remaining() < 2) {
+            Log.err("Cfg file is corrupt.");
+         }
          short t = bb.getShort();
          byte k = bb.get();
          if (t == 0 && k == 0) {
             break;
          }
          if (t == 0 || k == 0) {
-            Log.err(String.format("fg file format error: %x %x.", t, k));
+            Log.err(String.format("\"%s\" has a format error: %x %x.", inputFile.getPath(), t, k));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
 //System.out.printf("3 Mouse: %s (t 0x%x) (k 0x%x)\n", tw.toString(), t, k);
       }
       ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
       for (;;) {
+         if (bb.remaining() < 2) {
+            Log.err("Cfg file is corrupt.");
+         }
          short s = bb.getShort();
          if (s == 0) {
             break;
          }
          KeyPressList kpl = new KeyPressList();
          int len = ((s >> 9) & 0xFF) - 1;
+         if (bb.remaining() < len * 2) {
+            Log.err("Cfg file is corrupt.");
+         }
 //System.out.printf("4 s 0x%x: len %d\n", s, len);
          for (int i = 0; i < len; ++i) {
             short k = bb.getShort();
@@ -288,15 +314,21 @@ public class Cfg implements Settings {
          m_Assignments.add(asg);
 //System.out.println("5 " + asg);
       }
+      return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    private void readText1(File f) {
       URL url = null;
-      try {
-         url = f.toURI().toURL();
-      } catch (MalformedURLException e) {
-         Log.err("Failed to create URL from \"" + f.getPath() + "\".");
+      if (f != null) {
+         try {
+            url = f.toURI().toURL();
+         } catch (MalformedURLException e) {
+            Log.warn("Failed to create URL from \"" + f.getPath() + "\".");
+         }
+      }
+      if (url == null) {
+         url = Io.toUrl("chords.cfg.txt", null, "pref");
       }
       SpacedPairReader spr = new SpacedPairReader(url, Pref.get("comment", "#"), true);
       boolean readSettings = false;
@@ -310,7 +342,11 @@ public class Cfg implements Settings {
             m_Assignments.add(asg);
          } else if (asg != null || readSettings 
                  || !(readSettings = readTextSettings(spr))) {
-            Log.warn(String.format("Cfg failed to read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, f.getPath()));
+            String fName = "chords.cfg.txt";
+            if (f != null) {
+               fName = f.getPath();
+            }
+            Log.warn(String.format("Cfg failed to read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, fName));
          }
       }
       spr.close();

@@ -82,26 +82,26 @@ public class ThumbKeys extends java.lang.Object {
          case 'T': case 't':
          case 'L': case 'l':
             if (!twidorStyle && read == 0) {
-            m_Value = -1;
-            return;
-         }
-         twidorStyle = true;
-          break;
+               m_Value = -1;
+               return;
+            }
+            twidorStyle = true;
+            break;
          case 'M': case 'm':
          case 'I': case 'i':
          case 'F': case 'f':
          case 'R': case 'r':
          case '+':
             if (!twidorStyle) {
-            m_Value = -1;
-            return;
-          }
-         break;
+               m_Value = -1;
+               return;
+            }
+            break;
          default:
             m_Value = -1;
             return;
          }
-       ++read;
+         ++read;
       }
    }
 

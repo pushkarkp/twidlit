@@ -1,4 +1,6 @@
 /**
+ * Copyright 2015 Pushkar Piggott
+ *
  * IntegerTextField.java
  */
 package pkp.ui;

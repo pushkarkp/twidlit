@@ -11,14 +11,15 @@ import java.util.ArrayList;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
-class LookupImplementation implements Lookup, LookupSet {
+class LookupImplementation implements LookupTable, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
    static final int sm_TRUE = 1;
 
    ////////////////////////////////////////////////////////////////////////////
-   LookupImplementation(int tableSize, int scanSize, int overflowSize) {
+   LookupImplementation(int offset, int tableSize, int scanSize, int overflowSize) {
 //System.out.printf("create: tableSize %d scanSize %d overflowSize %d\n", tableSize, scanSize, overflowSize);
+	   m_Offset = offset;
 	   m_Lookup = new int[tableSize];
       m_Overflow = new int[overflowSize * 2];
       m_OverflowUsed = 0;
@@ -31,6 +32,7 @@ class LookupImplementation implements Lookup, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
    void empty(int key) {
+      key -= m_Offset;
       // only when uninitialized
       if (key < m_Lookup.length && m_Lookup[key] == 0) {
          m_Lookup[key] = sm_NO_VALUE;
@@ -39,9 +41,10 @@ class LookupImplementation implements Lookup, LookupSet {
    
    ////////////////////////////////////////////////////////////////////////////
    void add(int key, ArrayList<Integer> scanValues) {
+      key -= m_Offset;
       int size = scanValues.size();
-//System.out.printf("add1: key %d size %d\n", key, size);
-      if (key < m_Lookup.length) {
+//System.out.printf("add1: key %d m_Lookup.length %d scansize %d\n", key, m_Lookup.length, size);
+      if (0 <= key && key < m_Lookup.length) {
          if (size == 3 && scanValues.get(1) == sm_NO_VALUE) {
 //System.out.printf("add1: no scan %d m_Lookup[%d] = %d\n", m_Lookup[key], key, scanValues.get(2));
             m_Lookup[key] = scanValues.get(2);
@@ -51,6 +54,7 @@ class LookupImplementation implements Lookup, LookupSet {
             m_Lookup[key] = -m_ScanUsed;
          }
       } else {
+//System.out.printf("add1: m_OverflowUsed %d%n", m_OverflowUsed);
          if (m_OverflowUsed + 2 > m_Overflow.length) {
             Log.err(String.format("m_Overflow.length %d m_OverflowUsed %d\n", m_Overflow.length, m_OverflowUsed));
          }
@@ -76,10 +80,8 @@ class LookupImplementation implements Lookup, LookupSet {
    // or sm_NO_VALUE if none or out of range
    @Override // Lookup
    public int get(int key1) {
-      if (key1 < 0) {
-         return sm_NO_VALUE;
-      }
-      if (key1 < m_Lookup.length) {
+      key1 -= m_Offset;
+      if (0 <= key1 && key1 < m_Lookup.length) {
 //System.out.printf("get: m_Lookup[%d] %d%n", key1, m_Lookup[key1]);
          return m_Lookup[key1];
       }
@@ -126,6 +128,13 @@ class LookupImplementation implements Lookup, LookupSet {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   @Override // LookupSet
+   public boolean is(int key1, int key2) {
+//System.out.printf("0x%x 0x%x: 0x%x%n", key1, key2, get(key1 - m_Offset, key2));
+      return get(key1, key2) == sm_TRUE;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    // return all matching indices
    @Override // Lookup
    public int[] getAll(int key1, int key2) {
@@ -164,15 +173,17 @@ class LookupImplementation implements Lookup, LookupSet {
    public String toString() {
       String str = "";
       for (int i = 0; i < m_Lookup.length; ++i) {
-         str += foundToString(i, get(i));
+         int k = i + m_Offset;
+         str += foundToString(k, get(k));
       }
       for (int i = 0; i < m_OverflowUsed; i += 2) {
-         str += foundToString(m_Overflow[i], m_Overflow[i + 1]);
+         str += foundToString(m_Overflow[i] + m_Offset, m_Overflow[i + 1]);
       }
       return str;
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   int getOffset() { return m_Offset; }
    int getTableSize() { return m_Lookup.length; }
    int getOverflowUsed() { return m_OverflowUsed; }
    int getScanUsed() { return m_ScanUsed; }
@@ -220,6 +231,7 @@ class LookupImplementation implements Lookup, LookupSet {
    }
 
    // Data ////////////////////////////////////////////////////////////////////
+   private int m_Offset;
    private int[] m_Lookup;
    private int[] m_Overflow;
    private int m_OverflowUsed;

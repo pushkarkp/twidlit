@@ -1,11 +1,11 @@
 #
 # Copyright 2015 Pushkar Piggott
 #
-# default keycode names
-# //www.w3.org/TR/DOM-Level-3-Events-code
+# A list of the names of the keys.
+# see www.w3.org/TR/DOM-Level-3-Events-code
 #
-0x4400 Alt
-0x0400 AltLeft
+0x0400 Alt
+#0x0400 AltLeft
 0x4000 AltRight
 0x51 ArrowDown
 0x50 ArrowLeft
@@ -19,8 +19,8 @@
 0x39 CapsLock
 0x36 Comma
 0x65 ContextMenu
-0x1100 Ctrl
-0x0100 CtrlLeft
+0x0100 Ctrl
+#0x0100 CtrlLeft
 0x1000 CtrlRight
 0x8a Convert
 0x4c Delete
@@ -120,8 +120,8 @@
 0xb6 NumpadParenLeft
 0xb7 NumpadParenRight
 0x56 NumpadSubtract
-0x8800 OS
-0x0800 OSLeft
+0x0800 OS
+#0x0800 OSLeft
 0x8000 OSRight
 0x4e PageDown
 0x4b PageUp
@@ -131,8 +131,8 @@
 0x34 Quote
 0x47 ScrollLock
 0x33 Semicolon
-0x2200 Shift
-0x0200 ShiftLeft
+0x0200 Shift
+#0x0200 ShiftLeft
 0x2000 ShiftRight
 0x38 Slash
 0x2c Space

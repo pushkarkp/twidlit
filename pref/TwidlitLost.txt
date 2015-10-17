@@ -1,0 +1,20 @@
+#
+# Copyright 2015 Pushkar Piggott
+#
+# A list of the key-strokes that never reach an application.
+# Twidlit therefore can't use them. They vary with the OS.
+#
+# Entries are of the form:
+# <modifier> <key code>
+#
+# A single digit is used for the modifier as the side of the
+# keyboard it comes from is irrelevant. 
+# Key code and modifier names are in TwidlitKeyNames.txt. 
+#
+5 0x3d # <Ctrl><Alt><Delete></Alt></Ctrl>
+1 0x29 # <Ctrl><Escape></Ctrl> Eaten by Windows
+4 0x29 # <Alt><Escape></Alt> Eaten by Windows
+4 0x2b # <Alt><Tab></Alt> Eaten by Windows
+4 0x3d # <Alt><F4></Alt> Closes window
+4 0x2c # <Alt><Space></Alt> Eaten by Windows
+0 0x43 # F10 Eaten by Windows

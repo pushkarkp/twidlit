@@ -12,6 +12,16 @@ import pkp.io.Io;
 public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean match(String a, String b) {
+      return toTag(a).equals(toTag(b));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String toTag(String name) {
+      return PersistentProperties.toTag(name);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void init(String fName, String parent,  String jarParent) {
       sm_Persist = new PersistentProperties(fName, parent, jarParent, Io.MustExist);
       sm_Persist.read();

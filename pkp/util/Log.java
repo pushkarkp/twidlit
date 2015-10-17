@@ -51,21 +51,37 @@ public class Log implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public enum Level {
+      INFO("Info: "),
+      WARN("Warning: "),
+      ERROR("Error: ");
+      public final String m_Name;
+      private Level(String name) {
+         m_Name = name;
+      }
+   };
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void log(Level level, String msg) {
+      sm_Log.log1(level, msg);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void log(String msg) {
-      sm_Log.log(Level.INFO, msg);
+      sm_Log.log1(Level.INFO, msg);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static void warn(String msg) {
       JOptionPane.showMessageDialog(sm_Window, msg, "Warning", JOptionPane.WARNING_MESSAGE);
-      sm_Log.log(Level.WARN, msg);
+      sm_Log.log1(Level.WARN, msg);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static void err(String msg) {
       JOptionPane.showMessageDialog(sm_Window, msg, "Error", JOptionPane.ERROR_MESSAGE);
 		if (sm_Log != null) {
-			sm_Log.log(Level.ERROR, msg);
+			sm_Log.log1(Level.ERROR, msg);
 		}
       System.err.println("Error: " + msg);
 		if (!sm_ExitOnError) {
@@ -120,7 +136,7 @@ public class Log implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   protected void log(Level level, String text) {
+   protected void log1(Level level, String text) {
       String msg = sm_TIME_FORMAT.format(new Date()) + level.m_Name + text;
       write(msg);
       if (level == Level.ERROR) {
@@ -211,16 +227,6 @@ public class Log implements ActionListener {
    }
 
    // Data ////////////////////////////////////////////////////////////////////
-   public enum Level {
-      INFO("Info: "),
-      WARN("Warning: "),
-      ERROR("Error: ");
-      public final String m_Name;
-      private Level(String name) {
-         m_Name = name;
-      }
-   };
-
    private static final String sm_BUTTON_STRING = "Clear";
    private static final SimpleDateFormat sm_DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
    private static final SimpleDateFormat sm_TIME_FORMAT = new SimpleDateFormat("hh:mm:ss ");

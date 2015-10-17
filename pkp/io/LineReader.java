@@ -24,6 +24,12 @@ public class LineReader implements StringSource {
    public LineReader(URL url, String comment, boolean mustExist) {
       m_Url = url;
 //System.out.println(url);
+      if (m_Url == null) {
+         if (mustExist) {
+            Log.err(getClass().getName() + " could not open null URL.");
+         }
+         return;
+      }
       m_Comment = comment;
       try {
          m_In = new BufferedReader(new InputStreamReader(m_Url.openStream()));

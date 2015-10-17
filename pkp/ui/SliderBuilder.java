@@ -1,4 +1,6 @@
 /**
+ * Copyright 2015 Pushkar Piggott
+ *
  * SliderBuilder.java
  */
 package pkp.ui;

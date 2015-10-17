@@ -9,9 +9,15 @@ import java.util.Properties;
 import java.net.URL;
 import java.io.*;
 import pkp.io.Io;
+import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class PersistentProperties {
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String toTag(String name) {
+      return name.toLowerCase().replace(" ", ".");
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    public PersistentProperties(String fileName, String fileParent, String jarParent, boolean mustExist) {
@@ -29,14 +35,15 @@ public class PersistentProperties {
 
    ////////////////////////////////////////////////////////////////////////////
    public String get(String name) {
-//System.out.println("prop.get \"" + name.toLowerCase().replace(" ", ".") + "\"");
-      return m_Properties.getProperty(name.toLowerCase().replace(" ", "."));
+      String val = m_Properties.getProperty(toTag(name));
+//System.out.println("prop.get \"" + name + "\" \"" + toTag(name) + "\" " + val);
+      return val;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public void set(String name, String value) {
-//System.out.println("prop.set \"" + name.toLowerCase().replace(" ", ".") + "=" + value);
-      m_Properties.setProperty(name.toLowerCase().replace(" ", "."), value);
+//System.out.println("prop.set \"" + toTag(name) + "=" + value);
+      m_Properties.setProperty(toTag(name), value);
    }
 
    ////////////////////////////////////////////////////////////////////////////

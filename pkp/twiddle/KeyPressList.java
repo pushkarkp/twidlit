@@ -10,68 +10,10 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 import pkp.util.Pref;
 import pkp.util.Log;
+import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class KeyPressList extends java.lang.Object {
-
-   ////////////////////////////////////////////////////////////////////////////
-   // a comma separated list of ints, tags and quoted text
-   // do we really want to support all this?
-   public static KeyPressList parseLine(String in) {
-//System.out.println("parseLine " + in);
-      KeyPressList kpl = new KeyPressList();
-      int start = (in.charAt(0) == '"') ? 0 : 1;
-      StringTokenizer qTok = new StringTokenizer(in.trim(), "\"");
-      if (!qTok.hasMoreElements()) {
-//System.out.println("!qTok.hasMoreElements() " + in);
-         if (in.length() != 1 || in.charAt(0) != '"'
-          || !kpl.append(KeyPress.parseText(in.charAt(0), Modifiers.sm_EMPTY), in)) {
-            return new KeyPressList();
-         }
-      }
-      Modifiers modifiers = Modifiers.sm_EMPTY;
-      for (int i = 0; qTok.hasMoreElements(); ++i) {
-         String qStr = qTok.nextToken();
-         if (((i - start) & 1) == 0) {
-//System.out.println("((i - start) & 1) == 0 |" + in + "|" + qStr);
-            modifiers = kpl.parseQuote(qStr, modifiers);
-            if (!kpl.isValid()) {
-               return new KeyPressList();
-            }
-         } else {
-//System.out.println("else |" + in + "|" + qStr);
-            qStr = qStr.trim();
-            boolean first = (i == 0);
-            boolean last = !qTok.hasMoreElements();
-            int end = qStr.indexOf(Pref.get("comment", "#").charAt(0));
-            if (end != -1) {
-               qStr = qStr.substring(0, end).trim();
-               if (qStr.length() == 0) {
-                  return new KeyPressList();
-               }
-               last = true;
-            }
-            if ((!first && qStr.charAt(0) != ',')
-             || (!last && qStr.charAt(qStr.length() - 1) != ',')) {
-               System.err.println("missing comma");
-               kpl.clear();
-               return new KeyPressList();
-            }
-            StringTokenizer cTok = new StringTokenizer(qStr, ",");
-            for (int j = 0; cTok.hasMoreElements(); ++j) {
-               String cStr = cTok.nextToken().trim();
-               KeyPress kp = KeyPress.parseTag(cStr, modifiers);
-               if (kp.isModifiers()) {
-                  modifiers = kp.getModifiers();
-               }
-               if (!kpl.append(kp, cStr)) {
-                  return new KeyPressList();
-               }
-            }
-         }
-      }
-      return kpl;
-   }
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPressList parseText(String str) {
@@ -96,6 +38,10 @@ public class KeyPressList extends java.lang.Object {
          char c = str.charAt(i);
          if (c != KeyPress.sm_BeforeName) {
 //System.out.printf("parseTextAndTags1[%d] |%c| (%d) tagMod 0x%x\n", i, c, (int)c, tagMod.toInt());
+            if (c == '\\' && i < str.length() - 1) {
+               c = Io.parseEscaped(str.charAt(i + 1));
+               ++i;
+            }
 				kp = KeyPress.parseText(c, tagMod);
 			} else {
             String rest = str.substring(i + 1);
@@ -144,6 +90,7 @@ public class KeyPressList extends java.lang.Object {
       if (size != rhs.size()) {
          return false;
       }
+//System.out.printf("kpl equals %s =kpl= %s%n", toString(), rhs.toString());
       for (int i = 0; i < size; ++i) {
          if (!get(i).equals(rhs.get(i))) {
             return false;
@@ -155,32 +102,36 @@ public class KeyPressList extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public Assignment findLongestPrefix(KeyMap map) {
 //System.out.println("findLongestPrefix: \"" + toString() + "\"");
-     if (!isValid()) {
+      if (!isValid()) {
          Log.warn("KeyPressList is empty");
          return null;
       }
-      final Modifiers mods[] = Modifiers.getCombinations(get(0).getModifiers());
-//System.out.println("mods: " + get(0).getModifiers()); 
-      for (int i = 0; i < mods.length; ++i) {
-         KeyPressList kpl = getPrefixMinusModifiers(mods[i]);
-         if (mods[i].equals(get(0).getModifiers())) {
-//            System.out.println("findLongestPrefix: no mods: " + kpl);
-         }         
-//System.out.println(kpl); 
-         Assignment asg = map.findLongestPrefix(kpl);
-         if (asg != null) {
-            return new Assignment(asg.getTwiddle().createModified(mods[i]), asg.getKeyPressList().createModified(mods[i]));
+      // lookup as-is first
+      Assignment asg = map.findLongestPrefix(this);
+      if (asg == null && !get(0).getModifiers().isEmpty()) {
+         // try stripping off modifiers
+         final Modifiers mods[] = Modifiers.getCombinations(get(0).getModifiers());
+System.out.printf("findLongestPrefix: button mods: %s (%s)%n", get(0).getModifiers(), Modifiers.toString(mods));
+         for (int i = 0; i < mods.length; ++i) {
+            KeyPressList kpl = getPrefixMinusModifiers(mods[i]);
+System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toInt(), kpl.toString()); 
+            asg = map.findLongestPrefix(kpl);
+            if (asg != null) {
+//System.out.println("findLongestPrefix: asg " + asg); 
+//System.out.printf("findLongestPrefix: mod 0x%x%n", mods[i].toInt()); 
+               return new Assignment(asg, mods[i]);
+            }
          }
       }
-      Log.warn("\"" + toString() + "\" has no matching twiddle.");
-      return null;
+      return asg;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    private KeyPressList getPrefixMinusModifiers(Modifiers mod) {
+//System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size()); 
       KeyPressList kpl = new KeyPressList();
       for (int i = 0; i < size(); ++i) {
-         if (get(i).getModifiers().isSubsetOf(mod)) {
+         if (mod.isSubsetOf(get(i).getModifiers())) {
             kpl.add(new KeyPress(get(i).getKeyCode(), get(i).getModifiers().minus(mod)));
          } else {
            break;
@@ -201,17 +152,19 @@ public class KeyPressList extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString(KeyPress.Format.TEXT_);
+      return toString(KeyPress.Format.HEX);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(KeyPress.Format format) {
+//System.out.printf("kpl.toString(%s) %d%n", format, m_List.size());      
       if (m_List.size() == 0) {
          return "empty";
       }
       String str = "";
       String sep = "";
       for (KeyPress kp: m_List) {
+//System.out.println("kp " + kp.toString(KeyPress.Format.HEX));      
 			if (format == KeyPress.Format.HEX) {
             str += sep + kp.toString(KeyPress.Format.HEX);
 			   sep = " ";

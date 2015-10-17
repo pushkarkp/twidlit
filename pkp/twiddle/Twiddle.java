@@ -6,7 +6,12 @@
  
 package pkp.twiddle;
 
+import java.util.ArrayList;
+import java.net.URL;
+import pkp.io.LineReader;
 import pkp.io.SpacedPairReader;
+import pkp.util.Pref;
+import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class Twiddle extends java.lang.Object {
@@ -19,6 +24,27 @@ public class Twiddle extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public static final int sm_VALUES = Chord.sm_VALUES | ThumbKeys.sm_VALUES << 8;
 
+   ////////////////////////////////////////////////////////////////////////////
+   public static ArrayList<Twiddle> read(URL url) {
+      LineReader lr = new LineReader(url, Pref.get("comment", "#"), true);
+      if (lr == null) {
+         return null;
+      }
+      ArrayList<Twiddle> twiddles = new ArrayList<Twiddle>();
+      String line;
+      for (int i = 1; (line = lr.readLine()) != null; ++i) {
+         Twiddle tw = new Twiddle(line);
+         if (!tw.isValid()) {
+            Log.warn(String.format("Failed to read line %d \"%s\" of \"%s\"", i, line, url.getPath()));
+         } else {
+//System.out.println(tw);
+            twiddles.add(tw);
+         }
+      }
+      lr.close();
+      return twiddles;
+   }
+   
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle() {
       m_Chord = new Chord(0);
@@ -74,19 +100,33 @@ public class Twiddle extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public KeyPressList getKeyPressList(KeyMap map) {
-      final Modifiers mods[] = Modifiers.getCombinations(getThumbKeys().toModifiers());
-      for (int i = 0; i < mods.length; ++i) {
-         Twiddle tw = new Twiddle(getChord(), getThumbKeys().minus(mods[i]));
-         KeyPressList kpl = map.getKeyPressList(tw);
-         if (kpl != null) {
-			return kpl.createModified(mods[i]);
+      if (getThumbKeys().isEmpty()) {
+         // no modifiers, no options
+         return map.getKeyPressList(this);
+      } else {
+         // try stripping off modifiers
+         final Modifiers mods[] = Modifiers.getCombinations(getThumbKeys().toModifiers());
+         for (int i = 0; i < mods.length; ++i) {
+//System.out.println("Twiddle getKeyPressList " + mods[i].toString());
+            Twiddle tw = new Twiddle(getChord(), getThumbKeys().minus(mods[i]));
+            KeyPressList kpl = map.getKeyPressList(tw);
+            if (kpl != null) {
+               return kpl.createModified(mods[i]);
+            }
          }
       }
       return null;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isValid() { return m_Chord != null && m_Chord.isValid(); }
+   public boolean isValid() {
+      return m_Chord != null
+          && m_Chord.isValid()
+          && m_ThumbKeys != null
+          && m_ThumbKeys.isValid();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public Chord getChord() { return m_Chord; }
    public ThumbKeys getThumbKeys() { return m_ThumbKeys; }
    public int toInt() { return (m_ThumbKeys.toInt() << 8) + m_Chord.toInt(); }

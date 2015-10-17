@@ -1,0 +1,55 @@
+/**
+ * Copyright 2015 Pushkar Piggott
+ *
+ * Hand.java
+ */
+ 
+package pkp.twidlit;
+
+/////////////////////////////////////////////////////////////////////////////
+enum Hand {
+   LEFT("Left Hand", "left"),
+   RIGHT("Right Hand", "right");
+
+   //////////////////////////////////////////////////////////////////////////
+   static boolean isHand(String name) {
+      return name.toLowerCase().startsWith(RIGHT.getSmallName())
+          || name.toLowerCase().startsWith(LEFT.getSmallName());
+   }
+
+   //////////////////////////////////////////////////////////////////////////
+   static Hand create(String name) {
+      if (name.toLowerCase().startsWith(RIGHT.getSmallName())) {
+         return RIGHT;
+      }
+      return LEFT;
+   }
+   
+   //////////////////////////////////////////////////////////////////////////
+   public String toString() {
+      return m_Name;
+   }
+
+   //////////////////////////////////////////////////////////////////////////
+   boolean isRight() {
+      return m_Name.charAt(0) == 'R';
+   }
+
+   //////////////////////////////////////////////////////////////////////////
+   String getSmallName() {
+      return m_SmallName;
+   }
+
+   // Private ///////////////////////////////////////////////////////////////
+
+   //////////////////////////////////////////////////////////////////////////
+   private Hand(String name, String smallName) {
+      m_Name = name;
+      m_SmallName = smallName;
+   }
+
+   // Data //////////////////////////////////////////////////////////////////
+   private final String m_Name;
+   private final String m_SmallName;
+}
+

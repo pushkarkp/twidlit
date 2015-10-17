@@ -36,6 +36,15 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static URL toExistUrl(String fName, String fileParent, String jarParent) {
+      URL url = toUrl(fName, fileParent, null);
+      if (url == null) {
+         Log.err('"' + fName + "\" not found.");
+      }
+      return url;
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
    public static URL toUrl(String fName, String fileParent, String jarParent) {
       if (fileParent != null) {
          File f = createFile(fileParent, fName);
@@ -59,9 +68,10 @@ public class Io {
          jarParent += "/";
       }
 //System.out.println("toUrl jar: " + "/" + jarParent + fName);
-      return Io.class.getResource("/" + jarParent + fName);
+      URL url = Io.class.getResource("/" + jarParent + fName);
+      return url;
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static void saveFromJar(String fName, String inParent, String outParent) {
       File save = new File(outParent, fName);
@@ -102,15 +112,15 @@ public class Io {
    public static void crash() {
       String n = null;
       n.length();
-  }
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    public static File createFile(String parent, String file) {
       return parent != null && !"".equals(parent)
-             ? new File(parent, file)
-             : new File(file);
+           ? new File(parent, file)
+           : new File(file);
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static boolean dirExists(String dir) {
       if (dir == null) {
@@ -158,7 +168,7 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public static String getPath(String parent, String file) {
-      return (new File(parent, file)).getPath();
+      return createFile(parent, file).getPath();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -175,17 +185,43 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String trimComment(String comment, String str) {
-      int commentAt = str.indexOf(comment);
-      if (commentAt == -1) {
-         return str.trim();
+   public static String trimComment(String comment, String line) {
+      int commentAt = -1;
+      for (;;) {
+         int c = line.substring(commentAt + 1).indexOf(comment);
+         if (c == -1) {
+            // no comment
+            return line.trim();
+         }
+         commentAt += c + 1;
+         // odd number of preceding '\'?
+         int i = 1;
+         while (commentAt - i >= 0
+             && line.charAt(commentAt - i) == '\\') {
+            ++i;
+         }
+         // even
+         if ((i & 1) == 1) {
+            return line.substring(0, commentAt).trim();
+         }
       }
-      return str.substring(0, commentAt).trim();
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public interface StringToInt {
        int cvt(String str);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toPosInt(String value) {
+       int i = toInt(value);
+       return (i >= 0) ? i : ParseFailed;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toPosInt(int max, String value) {
+      int i = Io.toInt(value); 
+      return (i >= 0 && i <= max) ? i : Io.ParseFailed;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -273,58 +309,59 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public static String toEscaped(char c) {
-      String out = "";
       switch (c) {
-      case '\b': out += "\\b"; break;
-      case '\f': out += "\\f"; break;
-      case '\n': out += "\\n"; break;
-      case '\t': out += "\\t"; break;
-      case '\r': out += "\\r"; break;
-      case ' ': out += "\\s"; break;
-      default: out += c; break;
+      case '\b': return "\\b";
+      case '\f': return "\\f";
+      case '\n': return "\\n";
+      case '\t': return "\\t";
+      case '\r': return "\\r";
+      case ' ': return "\\s";
+      case '\\': return "\\\\";
+      case '#': return "\\#";
+      default: return "" + c;
       }
-      return out;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String parseChars(String str) {
+   public static char parseEscaped(char c) {
+      switch (c) {
+      case 'b': return '\b';
+      case 'n': return '\n';
+      case 'r': return '\r';
+      case 's': return ' ';
+      case 't': return '\t';
+      case 'f': return '\f';
+      default: return c;
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String parseEscaped(String str) {
       if ("".equals(str)) {
          return "";
       }
+      char[] buf = new char[str.length() + 1];
+      int skipped = 0;
+      int i = 0;
+      for (; i < str.length(); ++i) {
+         char c = str.charAt(i);
+         if (c == '\\' && i < str.length() - 1) {
+            ++i;
+            ++skipped;
+            c = parseEscaped(str.charAt(i));
+         }
+         buf[i - skipped] = c;
+      }
+      buf[i - skipped] = 0;
+      return new String(buf);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String parseQuote(String str) {
       if (str.length() > 1 && isQuote(str.charAt(0)) && isQuote(str.charAt(str.length() - 1))) {
          str = str.substring(1, str.length() - 1);
       }
-      int extra = 0;
-      for (int i = 0; i < str.length(); ++i) {
-         if (str.charAt(i) == '\\') {
-            ++extra;
-            ++i;
-         }
-      }
-      byte[] seps = new byte[str.length() - extra];
-      extra = 0;
-      for (int i = 0; i < str.length(); ++i) {
-         byte c = (byte)str.charAt(i);
-         if (c != '\\') {
-            seps[i - extra] = c;
-         } else {
-            if (str.length() <= i + 1) {
-               return "";
-            }
-            switch (str.charAt(i + 1)) {
-            case 'b': seps[i - extra] = '\b'; break;
-            case 'n': seps[i - extra] = '\n'; break;
-            case 'r': seps[i - extra] = '\r'; break;
-            case 's': seps[i - extra] = ' '; break;
-            case 't': seps[i - extra] = '\t'; break;
-            case 'f': seps[i - extra] = '\f'; break;
-            default: seps[i - extra] = (byte)str.charAt(i + 1); break;
-            }
-            ++i;
-            ++extra;
-         }
-      }
-      return new String(seps);
+      return parseEscaped(str);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -349,5 +386,10 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static boolean isQuote(char c) {
       return c == '"' || c == '\'';
+   }
+
+   // Main /////////////////////////////////////////////////////////////////////
+   public static void main (String[] args) {
+      System.out.println(trimComment("#", args[0]));
    }
 }
