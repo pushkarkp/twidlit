@@ -38,13 +38,43 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static ArrayList<Assignment> listAllByFingerCount() {
+   public static ArrayList<Assignment> listAllNamedByFingerCount() {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
       for (int fingers = 1; fingers <= 4; ++fingers) {
          for (int i = 1; i <= 255; ++i) {
             if (Chord.countFingers(i) == fingers) {
                Twiddle tw = new Twiddle(i, 0);
                asgs.add(new Assignment(tw, KeyPressList.parseText(tw.getChord().toString() + " ")));
+            }
+         }
+      }
+      return asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static ArrayList<Assignment> listAllByFingerCount() {
+      final int MIN_CODE = 4;
+      final int MAX_CODE = 0x64;
+      final int MODE_INC = 0x2200;
+      int code = MIN_CODE;
+      int mod = 0;
+      Modifiers modifiers = Modifiers.fromKeyCode(mod);
+      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+      for (int fingers = 1; fingers <= 4; ++fingers) {
+         for (int i = 1; i <= Chord.sm_VALUES; ++i) {
+            if (Chord.countFingers(i) == fingers) {
+               Twiddle tw = new Twiddle(i, 0);
+               KeyPress kp;
+               do {
+                  kp = new KeyPress(code, modifiers);
+                  ++code;
+                  if (code > MAX_CODE) {
+                     code = MIN_CODE;
+                     mod += MODE_INC;
+                     modifiers = Modifiers.fromKeyCode(mod);
+                  }
+               } while (!kp.isValid());
+               asgs.add(new Assignment(tw, new KeyPressList(kp)));
             }
          }
       }

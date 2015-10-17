@@ -478,7 +478,7 @@ class TwidlitMenu extends JMenuBar implements ActionListener, ItemListener, Pers
          }
          ArrayList<Assignment> asgs =
             (m_Action == sm_VIEW_CHORD_LIST_TEXT)
-            ? Assignment.listAll()
+            ? Assignment.listAllByFingerCount()
             : (m_Action == sm_VIEW_REVERSED_TEXT)
              ? m_Twidlit.getKeyMap().getAssignmentsReversed()
              : m_Twidlit.getKeyMap().getAssignments();
