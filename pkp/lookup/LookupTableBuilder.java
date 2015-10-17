@@ -19,7 +19,6 @@ public class LookupTableBuilder extends LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
    public static LookupTable read(URL url, 
-                                  String comment,
                                   boolean reverse, 
                                   boolean mustExist,
                                   LookupBuilder.Duplicates duplicates,
@@ -30,13 +29,13 @@ public class LookupTableBuilder extends LookupBuilder {
       LookupTableBuilder lb = new LookupTableBuilder(minFreq, maxFreq);
       lb.setDuplicates(duplicates);
       lb.setMessage(String.format(" in %s", url.getPath()));
-      SpacedPairReader spr = new SpacedPairReader(url, comment, mustExist);
+      SpacedPairReader spr = new SpacedPairReader(url, mustExist);
       String first;
       while ((first = spr.getNextFirst()) != null) {
          String second = spr.getNextSecond();
          int i1 = si1.cvt(first);
          int i2 = si2.cvt(second);
-         if (i1 == Io.ParseFailed || i2 == Io.ParseFailed) {
+         if (i1 == Io.sm_PARSE_FAILED || i2 == Io.sm_PARSE_FAILED) {
             Log.err(String.format("Failed to parse \"%s %s\" in line %d of \"%s\".",
                                   first, second, spr.getLineNumber(), url.getPath()));
          }

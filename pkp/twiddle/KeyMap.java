@@ -115,7 +115,7 @@ public class KeyMap {
 
    ////////////////////////////////////////////////////////////////////////////
    private void read(URL url) {
-      LineReader lr = new LineReader(url, Pref.get("comment", "#"), true);
+      LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
          Assignment asg = Assignment.parseLine(line);

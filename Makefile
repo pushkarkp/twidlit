@@ -8,7 +8,7 @@ UTIL=pkp/util/Log.class pkp/util/Persist.class pkp/util/Persistent.class pkp/uti
 CHARS=pkp/chars/CharCounts.class pkp/chars/Counts.class pkp/chars/NGram.class pkp/chars/NGrams.class
 TWIDDLE=pkp/twiddle/Assignment.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
 TWIDDLER=pkp/twiddler/Cfg.class pkp/twiddler/Settings.class pkp/twiddler/SettingsWindow.class 
-TWIDLIT=pkp/twidlit/ChordTimes.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/SortedChordTimes.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
+TWIDLIT=pkp/twidlit/ChordSource.class pkp/twidlit/ChordTimes.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/SortedChordTimes.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 CLASSES= ${TEST} ${IO} ${STRING} ${LOOKUP} ${UI} ${UTIL} ${CHARS} ${TWIDDLE} ${TWIDDLER} ${TWIDLIT}
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null
@@ -55,5 +55,5 @@ classlist.txt: ${CLASSES}
 
 Twidlit.jar: Manifest.txt ${JAR_DATA} classlist.txt
 	jar cfm $@ Manifest.txt ${JAR_DATA} $(shell cat classlist.txt)
-	cp Twidlit.jar ../Program\ Files/Twidlit
+	mv Twidlit.jar ../Program\ Files/Twidlit
 

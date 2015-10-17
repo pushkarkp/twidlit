@@ -330,7 +330,7 @@ public class Cfg implements Settings {
       if (url == null) {
          url = Io.toUrl("chords.cfg.txt", null, "pref");
       }
-      SpacedPairReader spr = new SpacedPairReader(url, Pref.get("comment", "#"), true);
+      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
       boolean readSettings = false;
 
       m_Assignments = new ArrayList<Assignment>();

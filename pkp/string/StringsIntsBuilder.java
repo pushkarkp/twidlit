@@ -18,7 +18,7 @@ public class StringsIntsBuilder extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public StringsIntsBuilder(URL url, boolean singleWord) {
       this();
-      SpacedPairReader spr = new SpacedPairReader(url, Pref.get("comment", "#"), true);
+      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
       spr.setSingleToken(singleWord);
       String value;
       while ((value = spr.getNextFirst()) != null) {

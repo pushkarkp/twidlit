@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.net.URL;
 import pkp.io.LineReader;
 import pkp.io.SpacedPairReader;
+import pkp.io.Io;
 import pkp.util.Pref;
 import pkp.util.Log;
 
@@ -26,7 +27,7 @@ public class Twiddle extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public static ArrayList<Twiddle> read(URL url) {
-      LineReader lr = new LineReader(url, Pref.get("comment", "#"), true);
+      LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       if (lr == null) {
          return null;
       }

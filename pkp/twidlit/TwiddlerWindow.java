@@ -81,6 +81,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   boolean isRightHand() {
+      return m_RightHand;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    void setRightHand(boolean right) {
 //System.out.println("setRightHand " + (right?"right":"left"));
       if (m_RightHand == right) {
@@ -116,6 +121,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
 
       m_ProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
       zeroProgress();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   int getProgressMax() {
+      return m_ProgressBar.getMaximum();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -165,6 +175,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
          markNow(tw, MarkType.MISMATCH);
          repaint();
       }
+      //zeroProgress();
    }
 
    /////////////////////////////////////////////////////////////////////////////

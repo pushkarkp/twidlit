@@ -99,7 +99,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       ButtonModel bm = m_HandButtons.getSelection();
       boolean right = bm != null && Hand.create(bm.getActionCommand()).isRight();
       m_TwiddlerWindow.setRightHand(right);
-      m_Twidlit.getChordTimes().setRightHand(right);
+      m_Twidlit.setRightHand(right);
       
       JMenu helpMenu = new JMenu(sm_HELP_MENU_TEXT);
       add(helpMenu);
@@ -277,8 +277,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          }
          return;
       case sm_TUTOR_CLEAR_TIMES_TEXT: {
-         ChordTimes times = m_Twidlit.getChordTimes();
-         String hand = Hand.createRight(times.isRightHand()).toString();
+         String hand = Hand.createRight(m_Twidlit.isRightHand()).toString();
          if (JOptionPane.showConfirmDialog(
                 m_Twidlit,
                 "Sure you want to clear the chord times for the "
@@ -286,7 +285,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                 sm_TUTOR_CLEAR_TIMES_TEXT, 
                 JOptionPane.YES_NO_OPTION)
               == JOptionPane.YES_OPTION) {
-            times.clear();
+            m_Twidlit.clearTimes();
          }
          return;
       }
@@ -308,7 +307,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       case sm_HELP_REF_TEXT: {
          m_RefWindow = showHtml(m_RefWindow, sm_HELP_REF_TEXT, "/data/ref.html");
          return;
-		}
+      }
       case sm_HELP_SHOW_LOG_TEXT:
          Log.get().setVisible(true);
          return;
@@ -321,7 +320,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          if (Hand.isHand(command)) {
             Hand hand = Hand.create(command);
             m_TwiddlerWindow.setRightHand(hand.isRight());
-            m_Twidlit.getChordTimes().setRightHand(hand.isRight());
+            m_Twidlit.setRightHand(hand.isRight());
             m_Twidlit.extendTitle(hand.getSmallName());
             return;
          }
@@ -370,7 +369,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       case sm_VIEW_CHORDS_BY_TIME_TEXT:
          tw = new MenuSaveTextWindow(
             command,
-            (new SortedChordTimes(m_Twidlit.getChordTimes())).listChordsByTime(),
+            m_Twidlit.getChordTimes().listChordsByTime(),
             m_CfgDir);
          break;
        default:

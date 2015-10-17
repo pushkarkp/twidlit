@@ -25,7 +25,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void init(String fName, String parent,  String jarParent) {
-      sm_Persist = new PersistentProperties(fName, parent, jarParent, Io.MustExist);
+      sm_Persist = new PersistentProperties(fName, parent, jarParent, Io.sm_MUST_EXIST);
       sm_Persist.read();
    }
 

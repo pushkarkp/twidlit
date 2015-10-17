@@ -16,21 +16,14 @@ import pkp.util.Log;
 public class LineReader implements StringSource {
 
    ////////////////////////////////////////////////////////////////////////////
-/*   public LineReader(String parent, String fileName, String comment, boolean mustExist) {
-      this(Io.getPath(parent, fileName), comment, mustExist);
-   }
-*/
-   ////////////////////////////////////////////////////////////////////////////
-   public LineReader(URL url, String comment, boolean mustExist) {
+   public LineReader(URL url, boolean mustExist) {
       m_Url = url;
-//System.out.println(url);
       if (m_Url == null) {
          if (mustExist) {
             Log.err(getClass().getName() + " could not open null URL.");
          }
          return;
       }
-      m_Comment = comment;
       try {
          m_In = new BufferedReader(new InputStreamReader(m_Url.openStream()));
       } catch (IOException e) {
@@ -52,9 +45,7 @@ public class LineReader implements StringSource {
          if (line == null) {
             return null;
          }
-         if (m_Comment != null) {
-            line = Io.trimComment(m_Comment, line);
-         }
+         line = Io.trimComment(line);
          ++m_LineNumber;
       } while ("".equals(line));
       return line;
@@ -99,7 +90,6 @@ public class LineReader implements StringSource {
 
    // Data ////////////////////////////////////////////////////////////////////
    private URL m_Url;
-   private String m_Comment;
    private BufferedReader m_In;
    private int m_LineNumber = 0;
 }

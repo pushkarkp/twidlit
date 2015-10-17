@@ -21,24 +21,13 @@ public class SpacedPairReader {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public SpacedPairReader(URL url, String comment, boolean mustExist) {
-      m_Comment = comment;
-      m_In = new LineReader(url, null, mustExist);
+   public SpacedPairReader(URL url, boolean mustExist) {
+      m_In = new LineReader(url, mustExist);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public void setSingleToken(boolean single) {
       m_SingleToken2 = single;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public SpacedPairReader(URL url, boolean mustExist) {
-      this(url, null, mustExist);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public void setComment(String comment) {
-      m_Comment = comment;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -94,23 +83,18 @@ public class SpacedPairReader {
    ////////////////////////////////////////////////////////////////////////////
    private void parseLine() {
       String in = null;
-      m_Line = null;
       do {
          in = m_In.readLine();
          if (in == null) {
             return;
          }
-         if (m_Comment == null) {
-            m_Line = in;
-         } else {
-            m_Line = Io.trimComment(m_Comment, in);
-         }
+         m_Line = Io.trimComment(in);
       } while ("".equals(m_Line));
       int split = findWhiteSpace(m_Line);
       if (split == -1) {
          m_Line = in.trim();
          split = findWhiteSpace(m_Line);
-         if (split == -1 || !m_Comment.equals(m_Line.substring(split).trim())) {
+         if (split == -1) {
             Log.log(String.format("Failed to parse \"%s\", line %d of \"%s\".",
                                   in, getLineNumber(), m_In.getPath()));
          }
@@ -125,7 +109,6 @@ public class SpacedPairReader {
 
    // Data ////////////////////////////////////////////////////////////////////
    private LineReader m_In = null;
-   private String m_Comment = null;
    private String m_Line = null;
    private String m_1 = null;
    private String m_2 = null;

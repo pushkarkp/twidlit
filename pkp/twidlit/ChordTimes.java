@@ -1,4 +1,6 @@
 /**
+ * Copyright 2015 Pushkar Piggott
+ *
  * ChordTimes.java
  */
 
@@ -19,7 +21,7 @@ import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Chord 0 is not counted so we subtract 1 and use Chord.sm_VALUES counts.
-public class ChordTimes implements Persistent {
+class ChordTimes implements Persistent {
    
    /////////////////////////////////////////////////////////////////////////////
    // with and without thumbkeys
@@ -28,9 +30,14 @@ public class ChordTimes implements Persistent {
    static final int sm_SPAN = 8;
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordTimes() {
+   ChordTimes() {
       m_RightHand = false;
       load();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public boolean hasData() {
+      return m_DataStatus != DataStatus.NONE;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -39,7 +46,7 @@ public class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public void setRightHand(boolean isRightHand) {
+   void setRightHand(boolean isRightHand) {
 //System.out.println("setRightHand " + isRightHand);
       if (isRightHand == m_RightHand) {
          return;
@@ -50,7 +57,7 @@ public class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public void clear() {
+   void clear() {
       File f = Io.createFile(Persist.getFolderName(), getFileName());
       if (f.exists() && !f.isDirectory()) {
          f.delete();
@@ -59,10 +66,20 @@ public class ChordTimes implements Persistent {
    }
       
    /////////////////////////////////////////////////////////////////////////////
-   public void add(int chord, int thumbKeys, int timeMs) {
-      if (timeMs > Short.MAX_VALUE) {
-         return;
+   public int[] getCounts() {
+      int[] counts = new int[Chord.sm_VALUES];
+      for (int c = 0; c < Chord.sm_VALUES; ++c) {
+         counts[c] = getCount(c + 1, 0);
       }
+      return counts;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   boolean add(int chord, int thumbKeys, int timeMs) {
+      if (timeMs > Short.MAX_VALUE) {
+         return false;
+      }
+      m_DataStatus = DataStatus.NEW;
       if ((chord & ~Chord.sm_VALUES) != 0) {
          Log.err(String.format("Chord value %d is greater than %d\n", chord, Chord.sm_VALUES));
          chord &= Chord.sm_VALUES;
@@ -79,88 +96,80 @@ public class ChordTimes implements Persistent {
       }
       m_Counts[thumb][chord - 1] = (byte)(full | i);
 //System.out.printf("add i %d full %d m_Counts[thumb][chord - 1] %d%n", i, full, m_Counts[thumb][chord - 1]);
+      return true;
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public int getMedian(int chord, int thumbKeys) {
+   int getMedian(int chord, int thumbKeys) {
       int thumb = Math.min(thumbKeys, 1);
       int count = getCount(chord, thumb);
       if (count == 0) {
-         // no count
+         // no time
          return Integer.MAX_VALUE;
       }
-      // median
-      short[] times = m_Times[thumb][chord - 1];
-      short[] sorted = new short[count];
-		for (int i = 0; i < count; ++i) {
-         sorted[i] = times[i];
+      if (count == 1) {
+         return m_Times[thumb][chord - 1][0];
       }
-      int min;
-		for (min = 0; min < count; min += 2) {
-         for (int i = min + 1; i < count; ++i) {
-            if (sorted[i] < sorted[min]) {
-               short swap = sorted[i];
-               sorted[i] = sorted[min];
-               sorted[min] = swap;
-            } else
-            if (sorted[i] > sorted[min + 1]) {
-               short swap = sorted[i];
-               sorted[i] = sorted[min + 1];
-               sorted[min + 1] = swap;
-            }
-/*          System.out.print("Sorting ");
-            for (int j = 0; j < count; ++j) {
-               System.out.printf("%d ", sorted[j]);
-            }
-            System.out.println();
-*/       }
-      }
-/*    System.out.print("Sorted ");
-      for (int j = 0; j < count; ++j) {
-         System.out.printf("%d ", sorted[j]);
-      }
-      System.out.println();
-*/    if ((count & 1) == 1) {
-         return sorted[count - 1];
-      }
-      return (sorted[count - 1] + sorted[count - 2]) / 2;
-   }
-/*
-   /////////////////////////////////////////////////////////////////////////////
-   public double getMs1(int chord, int thumbKeys) {
-      int thumb = Math.min(thumbKeys, 1);
-      int count = m_Counts[thumb][chord - 1] & sm_SPAN;
-      if (count == 0) {
-         count = m_Counts[thumb][chord - 1] & (sm_SPAN - 1);
-         if (count == 0) {
-            // no count
-            return Double.MAX_VALUE;
-         }
-      }
-      // median
-      short[] times = m_Times[thumb][chord - 1];
-      short[] sort = new short[count];
-      int less = 0;
-      int more = count - 1;
-      int pivot = count / 2;
-		while (less != pivot) {
-         short test = src[pivot];
-         for (; less < more; ++less) {
-            if (src[less] > test) {
-               while (src[more] > test) {
-                  --more;
+      short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count);
+      int less = -1;
+      int more = count;
+      final int MID = (count - 1) / 2;
+      short test = sort[MID];
+//System.out.printf("%s%n", list(sort));
+      for (;;) {
+//System.out.printf("less %d more %d test %d%n", less, more, test);
+         int le = less + 1;
+         int gt = more;
+         int pivot = -1;
+         while (le < gt) {
+            if (sort[le] <= test) {
+               ++le;
+            } else {
+               while (sort[gt - 1] > test) {
+                  --gt;
                }
-               swap(src[less], src[more]); 
+               if (gt - 1 > le) {
+                  --gt;
+                  short swap = sort[le];
+                  sort[le] = sort[gt];
+                  sort[gt] = swap;
+                  ++le;
+               }
+            }
+            if (sort[le - 1] == test) {
+               pivot = le - 1;
             }
          }
+         int found = le - 1;
+         if (found != pivot) {
+            short swap = sort[found];
+            sort[found] = sort[pivot];
+            sort[pivot] = swap;
+         }
+//System.out.printf("%s%nfound %d pivot %d MID %d%n", list(sort), found, pivot, MID);
+         if (sort[MID] == test) {
+//System.out.printf("return %d%n", test);
+            return test;
+         }
+         if (found <= MID) {
+            less = found;
+            test = sort[le];
+         } else {
+            more = le;
+            // hangs when test = sort[found]
+            test = sort[found - 1];//(short)Math.min(sort[found], sort[found - 1]);
+         }
       }
-      return (sorted[count - 1] + sorted[count - 2]) / 2.0;
    }
-*/
+
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public void persist(String tag) {
 //System.out.println("persist " + getFileName());
+      if (m_DataStatus != DataStatus.NEW) {
+         return;
+      }
+      m_DataStatus = DataStatus.SAVED;
       byte[] data = new byte[sm_CHORD_TYPES * Chord.sm_VALUES * (1 + sm_SPAN * 2)];
       ByteBuffer bb = ByteBuffer.wrap(data);
       for (int thumb = 0; thumb < sm_CHORD_TYPES; ++thumb) {
@@ -177,7 +186,7 @@ public class ChordTimes implements Persistent {
          fos = new FileOutputStream(f);
       } catch (FileNotFoundException e) {
          Log.warn("Failed to open: \"" + f.getPath() + "\".");
-			return;
+         return;
       }
       try {
          fos.write(data, 0, data.length);
@@ -189,7 +198,7 @@ public class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public String getTimes(int chord, int thumbKeys) {
+   String getTimes(int chord, int thumbKeys) {
       int thumb = Math.min(thumbKeys, 1);
       int count = getCount(chord, thumb);
       String str = String.format("%d:", count);
@@ -202,12 +211,21 @@ public class ChordTimes implements Persistent {
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
+   private static String list(short[] a) {
+      String str = "";
+      for (int i = 0; i < a.length; ++i) {
+         str += String.format("%d ", a[i]);
+      }
+      return str;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    private int getCount(int chord, int thumb) {
       int count = m_Counts[thumb][chord - 1] & sm_SPAN;
-      if (count == 0) {
-         return m_Counts[thumb][chord - 1] & (sm_SPAN - 1);
+      if (count != 0) {
+         return count;
       }
-      return count;
+      return m_Counts[thumb][chord - 1] & (sm_SPAN - 1);
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -219,8 +237,10 @@ public class ChordTimes implements Persistent {
       m_Counts = new byte[sm_CHORD_TYPES][Chord.sm_VALUES];
       File f = Io.createFile(Persist.getFolderName(), getFileName());
       if (!f.exists() || f.isDirectory()) {
+         m_DataStatus = DataStatus.NONE;
          return;
       }
+      m_DataStatus = DataStatus.SAVED;
       byte[] data = new byte[(int)f.length()];
       FileInputStream fis = null;
       try {
@@ -252,7 +272,13 @@ public class ChordTimes implements Persistent {
    }
       
    // Data /////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////
+   enum DataStatus {
+      NONE, SAVED, NEW;
+   }
+   
    private boolean m_RightHand;
+   private DataStatus m_DataStatus;
    private short[][][] m_Times;
    private byte[][] m_Counts;
 

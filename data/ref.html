@@ -10,9 +10,12 @@ The Twiddler window indicates the chord to press, while the progress bar to one 
 The chord is highlighted for two seconds or until pressed. 
 If it isn't pressed it is highlighted again every six seconds. 
 <br><br>
-The window also marks any chord that is pressed, in yellow if it matches and black otherwise. 
-<br><br>
 The six second cycle time can be adjusted via the menu, and the component times can be changed individually in the preferences. 
+<br><br>
+The window also marks any chord that is pressed, in yellow if it matches and black otherwise. 
+Sometimes nothing appears when you thought you pressed a chord. 
+This is the result of a miss-key. 
+The Twiddler generates nothing if two or more buttons are pressed in the same row. 
 <h3>Ambiguity</h3>
 If you like, you can map more than one chord to a keystroke.
 You might choose to map a Shift-less finger cord to <em>A</em>, for example. 
@@ -35,8 +38,10 @@ If there is still ambiguity it displays the chord with the least number of finge
 <dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping with reversed chords. You might want to experiment with this for chording with your other hand. 
 <dt><b>Chord List</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with a one keystroke mapping. 
+This is the default mapping, and is ideal for chording practice and timing. 
 <dt><b>Chords By Time</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with (and sorted by) the median time taken to press it. 
+Initially these times are all zero.
 </dl>
 <dt><b>Twiddler Settings...</b>
 <dd>Opens a dialog that allows you to modify the current configuration's Twiddler settings. These were used by Twiddler 2. I am not sure which ones affect Twiddler 3.
@@ -71,7 +76,7 @@ This is a simple text graph just to give a better indication of the relative mag
 <dt><b>Timed</b>
 <dd>Whether your chording (for the current hand) is timed.
 <dt><b>Clear Times</b>
-<dd>Clear the chording times for the current hand.
+<dd>Clears the chording times for the current hand.
 <dt><b>Speed...</b>
 <dd>Opens a dialog that allows you to adjust the time the Twiddler window waits for a chord to be pressed.
 <dt><b>Show Twiddler</b>

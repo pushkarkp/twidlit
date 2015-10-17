@@ -4,6 +4,7 @@
 # Twidlit default preferences
 #
 background.color 0xffffd9
+chord.pool.fraction 16
 control.separation.size 10
 count.repeats.max 2
 count.clear.confirm true

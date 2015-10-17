@@ -12,14 +12,13 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
-import pkp.util.Pref;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class Io {
 
-   public static final boolean MustExist = true;
-   public static final int ParseFailed = Integer.MIN_VALUE;
+   public static final boolean sm_MUST_EXIST = true;
+   public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
 
    ////////////////////////////////////////////////////////////////////////////
    public static int read(String prompt) {
@@ -28,6 +27,11 @@ public class Io {
          return System.in.read();
       } catch (IOException e) {}
       return 0;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void setComment(char comment) {
+      sm_Comment = comment;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -185,24 +189,32 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String trimComment(String comment, String line) {
-      int commentAt = -1;
+   public static String trimComment(String line) {
+      if (sm_Comment == 0) {
+         return line;
+      }
+      return trimToLineEnd(sm_Comment, line);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String trimToLineEnd(char from, String line) {
+      int strAt = -1;
       for (;;) {
-         int c = line.substring(commentAt + 1).indexOf(comment);
+         int c = line.substring(strAt + 1).indexOf(from);
          if (c == -1) {
-            // no comment
+            // not there
             return line.trim();
          }
-         commentAt += c + 1;
+         strAt += c + 1;
          // odd number of preceding '\'?
          int i = 1;
-         while (commentAt - i >= 0
-             && line.charAt(commentAt - i) == '\\') {
+         while (strAt - i >= 0
+             && line.charAt(strAt - i) == '\\') {
             ++i;
          }
          // even
          if ((i & 1) == 1) {
-            return line.substring(0, commentAt).trim();
+            return line.substring(0, strAt).trim();
          }
       }
    }
@@ -215,13 +227,13 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(String value) {
        int i = toInt(value);
-       return (i >= 0) ? i : ParseFailed;
+       return (i >= 0) ? i : sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(int max, String value) {
       int i = Io.toInt(value); 
-      return (i >= 0 && i <= max) ? i : Io.ParseFailed;
+      return (i >= 0 && i <= max) ? i : Io.sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -240,7 +252,7 @@ public class Io {
             }
          } catch (NumberFormatException e) {}
       }
-      return ParseFailed;
+      return sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -251,7 +263,7 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static int parseInt(String str, String value) {
       int result = toInt(value);
-      if (result != ParseFailed) {
+      if (result != sm_PARSE_FAILED) {
          return result;
       }
       if (value == null || "".equals(value)) {
@@ -263,7 +275,7 @@ public class Io {
          Log.err("Failed to parse number \"" + value + "\".");
       }
       Log.err("Failed to parse \"" + str + "\" value \"" + value + "\".");
-      return ParseFailed;
+      return sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -388,8 +400,11 @@ public class Io {
       return c == '"' || c == '\'';
    }
 
+   // Data ////////////////////////////////////////////////////////////////////
+   private static char sm_Comment = '#';
+
    // Main /////////////////////////////////////////////////////////////////////
    public static void main (String[] args) {
-      System.out.println(trimComment("#", args[0]));
+      System.out.println(trimComment(args[0]));
    }
 }

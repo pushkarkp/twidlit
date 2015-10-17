@@ -18,7 +18,7 @@ public class Pref {
    ////////////////////////////////////////////////////////////////////////////
    public static void init(String name, String parent, String jarParent) {
       m_JarParent = jarParent;
-      sm_Pref = new PersistentProperties(name, parent, jarParent, Io.MustExist);
+      sm_Pref = new PersistentProperties(name, parent, jarParent, Io.sm_MUST_EXIST);
       sm_Pref.read();
    }
    

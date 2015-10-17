@@ -10,6 +10,10 @@ Twidlit will copy any of them not already there to that location, and will read 
 <dl>
 <dt><tt>background.color 0xffffd9</tt><br>
 <dd>The color of the background of most windows.
+<dt><tt>chord.pool.fraction 16</tt><br>
+<dd>The fraction (1/x) of available chords in the sliding window from which the next chord is randomly chosen. 
+A small value (eg 1) is undesirable as some chords will turn up more frequently than others. 
+A large value (eg 255) makes chords appear in a fixed order.
 <dt><tt>control.separation.size 10</tt><br>
 <dd>The size of the separation between controls on the Twiddler Settings windows.
 <dt><tt>count.repeats.max 2</tt><br>

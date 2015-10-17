@@ -120,7 +120,7 @@ class NGrams implements SharedIndexableInts {
       if (url == null) {
          return nGrams;
       }
-      LineReader lr = new LineReader(url, Pref.get("comment", "#"), true);
+      LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
          String ng = Io.parseQuote(line);
@@ -161,7 +161,7 @@ class NGrams implements SharedIndexableInts {
       } catch (MalformedURLException e) {
          Log.err("Failed to create URL from \"" + argv[1] + "\".");
       }
-      LineReader lr = new LineReader(url, "#", true);
+      LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
          for (int j = 0; j < line.length(); ++j) {

@@ -10,10 +10,10 @@ import pkp.lookup.SharedIndex;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Chord 0 is not counted so we subtract 1 and use Chord.sm_VALUES counts.
-public class SortedChordTimes implements SharedIndexableInts {
+class SortedChordTimes implements SharedIndexableInts {
    
    /////////////////////////////////////////////////////////////////////////////
-   public SortedChordTimes(ChordTimes times) {
+   SortedChordTimes(ChordTimes times) {
       m_Times = new int[Chord.sm_VALUES];
       m_Labels = new String[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
@@ -46,12 +46,12 @@ public class SortedChordTimes implements SharedIndexableInts {
    }
 
    ///////////////////////////////////////////////////////////////////////////////
-   public String getSortedLabel(int i) {
+   String getSortedLabel(int i) {
       return m_Index.getLabel(i);
    }
    
    ///////////////////////////////////////////////////////////////////////////////
-   public String listChordsByTime() {
+   String listChordsByTime() {
       String str = "";
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          str += m_Index.getLabel(i) + "\n";
@@ -60,7 +60,7 @@ public class SortedChordTimes implements SharedIndexableInts {
    }
    
    ///////////////////////////////////////////////////////////////////////////////
-   public int getSortedValue(int i) {
+   int getSortedValue(int i) {
       return m_Index.getValue(i);
    }
    

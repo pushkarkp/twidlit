@@ -114,6 +114,11 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public Chord(byte value) {
+      m_Value = value & sm_VALUES;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public boolean equals(Object o) {
       Chord other = (Chord)o;
       return other != null && other.m_Value == m_Value;
