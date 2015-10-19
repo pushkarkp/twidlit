@@ -17,7 +17,7 @@ class SortedChordTimes implements SharedIndexableInts {
       m_Times = new int[Chord.sm_VALUES];
       m_Labels = new String[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
-         m_Times[i] = times.getMedian(i + 1, 0);
+         m_Times[i] = times.getMean(i + 1, 0);
          m_Labels[i] = (new Chord(i + 1)).toString() + " = "
                      + ((m_Times[i] == Integer.MAX_VALUE)
                         ? "-" 
