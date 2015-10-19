@@ -60,7 +60,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       m_MenuBar.start();
       // uses m_ChordSource
       nextTwiddle(null);
-      startTime();
+      startUnrecordedTime();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -209,10 +209,13 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       Twiddle tw = pressed.getTwiddle(0);
       if (pressed.hasSameKeys(m_Assignment)) {
 //System.out.printf("%d %s timeMs %d%n", tw.getChord().toInt(), tw.getChord(), m_TimeMs);
+         // only skip chord if not timing or successfully timed
          if (!m_Timed
-          || m_ChordTimes.add(tw.getChord().toInt(), 
-                              tw.getThumbKeys().getCount(), 
-                              m_TimeMs)) {
+          // only record times within 2* progress bar
+          || (m_TimeMs < 2 * m_MenuBar.getTwiddlerWindow().getProgressMax()
+           && m_ChordTimes.add(tw.getChord().toInt(),
+                               tw.getThumbKeys().toInt(),
+                               m_TimeMs))) {
 //System.out.printf("%s %s%n", tw.getChord(), m_ChordTimes.getTimes(tw.getChord().toInt(), 0));
             m_ChordSource.next();
          }
@@ -269,6 +272,14 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
   }
 
    ////////////////////////////////////////////////////////////////////////////
+   // Start the timer in the past so the resulting time is not recorded.
+   private void startUnrecordedTime() {
+      m_StartTimeMs = 2 * m_MenuBar.getTwiddlerWindow().getProgressMax();
+      m_TimeMs = 0;
+  }
+
+   ////////////////////////////////////////////////////////////////////////////
+   // Discard the current interval's end so it can continue to grow.
    private void continueTime() {
       m_TimeMs = 0;
   }

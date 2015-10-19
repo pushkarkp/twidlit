@@ -85,11 +85,12 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       add(tutorMenu);
       addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
       add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
-      m_ChordWait = Persist.getInt(sm_TUTOR_SPEED_PERSIST, TwiddlerWindow.getInitialWait());
       add(tutorMenu, sm_TUTOR_SPEED_TEXT);
       tutorMenu.addSeparator();
       int startChecks = tutorMenu.getItemCount();
       m_TwiddlerWindow = new TwiddlerWindow(addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), m_Twidlit);
+      m_ChordWait = Persist.getInt(sm_TUTOR_SPEED_PERSIST, TwiddlerWindow.getInitialWait());
+      m_TwiddlerWindow.setWaitFactor((double)m_ChordWait / m_TwiddlerWindow.getInitialWait());
       addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT, m_TwiddlerWindow.isHighlight());
       addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT, m_TwiddlerWindow.isMark());
       tutorMenu.addSeparator();

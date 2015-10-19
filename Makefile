@@ -45,6 +45,7 @@ version:
 major minor update:
 	@cp data/about.html data/about.html~
 	@script/incVersion.sh $@ data/about.html~ > data/about.html
+	@unix2dos.exe data/about.html 2> /dev/null
    
 %.class: %.java
 	javac $<

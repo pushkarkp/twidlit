@@ -5,7 +5,7 @@
  *
  * If we just choose chords at random then pretty soon they
  * have very different frequencies. This class returns a
- * random-ish stream with uniform frequencies.
+ * random-ish stream with uniform-ish frequencies.
  */
 
 package pkp.twidlit;
@@ -38,11 +38,15 @@ class ChordSource {
    }
    
    /////////////////////////////////////////////////////////////////////////////
+   // Returns a random chord from the pool.
+   // It may be the same as the lst one unless next has been called.
    int get() {
       return get(m_POOL_SIZE);
    }
    
    /////////////////////////////////////////////////////////////////////////////
+   // Move the pool (sliding window) up one.
+   // The old m_Next-th will not be delivered til next time round.
    void next() {
       m_Next = (m_Next + 1) % m_Chords.length;
    }

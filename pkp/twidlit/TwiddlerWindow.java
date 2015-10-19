@@ -167,6 +167,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       m_Twiddle = tw;
       rehighlightIf();
       zeroProgress();
+      // don't time the first twiddle
+      if (pressed != null) {
+         m_ProgressTimer.start();
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -175,7 +179,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
          markNow(tw, MarkType.MISMATCH);
          repaint();
       }
-      //zeroProgress();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -197,11 +200,16 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
          break;
       case sm_PROGRESS_TEXT: 
          int elapsed = (int)(System.currentTimeMillis() - m_ProgressStart);
-         if (elapsed > m_ProgressBar.getMaximum()) {
-            m_ProgressTimer.stop();
-            m_ProgressBar.setForeground(m_COLOR_KEY_HIGHLIGHT);
-         }
          m_ProgressBar.setValue(elapsed);
+         if (elapsed > m_ProgressBar.getMaximum()) {
+            if (elapsed < m_ProgressBar.getMaximum() * 2) {
+               m_ProgressBar.setForeground(m_COLOR_KEY_HIGHLIGHT);
+            } else {
+               m_ProgressTimer.stop();
+               m_ProgressBar.setValue(0);
+               repaint();
+            }
+         }
          break;
       }
    }
@@ -311,9 +319,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       m_ProgressBar.setValue(0);
       m_ProgressBar.setForeground(m_COLOR_KEY);
       repaint();
-      if (m_Twiddle != null) {
-         m_ProgressTimer.start();
-      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -357,7 +362,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   void markNow(Twiddle tw, MarkType type) {
+   private void markNow(Twiddle tw, MarkType type) {
       clearMark();
       ThumbKeys thumbs = tw.getThumbKeys();
       if (thumbs.isNum()) {
