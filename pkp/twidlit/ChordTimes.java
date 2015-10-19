@@ -100,66 +100,47 @@ class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   int getMedian(int chord, int thumbKeys) {
+   int getMean(int chord, int thumbKeys) {
       int thumb = Math.min(thumbKeys, 1);
       int count = getCount(chord, thumb);
       if (count == 0) {
          // no time
          return Integer.MAX_VALUE;
       }
-      if (count == 1) {
-         return m_Times[thumb][chord - 1][0];
-      }
+      int start = 0;
+      int end = count;
       short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count);
-      int less = -1;
-      int more = count;
-      final int MID = (count - 1) / 2;
-      short test = sort[MID];
-//System.out.printf("%s%n", list(sort));
-      for (;;) {
-//System.out.printf("less %d more %d test %d%n", less, more, test);
-         int le = less + 1;
-         int gt = more;
-         int pivot = -1;
-         while (le < gt) {
-            if (sort[le] <= test) {
-               ++le;
-            } else {
-               while (sort[gt - 1] > test) {
-                  --gt;
-               }
-               if (gt - 1 > le) {
-                  --gt;
-                  short swap = sort[le];
-                  sort[le] = sort[gt];
-                  sort[gt] = swap;
-                  ++le;
-               }
+      if (count > 2) {
+         start = 1;
+         end = count - 1;
+         for (int i = 0; i < count; ++i) {
+            if (sort[0] > sort[i]) {
+               short swap = sort[0];
+               sort[0] = sort[i];
+               sort[i] = swap;
+            } else
+            if (sort[end] < sort[i]) {
+               short swap = sort[end];
+               sort[end] = sort[i];
+               sort[i] = swap;
             }
-            if (sort[le - 1] == test) {
-               pivot = le - 1;
-            }
-         }
-         int found = le - 1;
-         if (found != pivot) {
-            short swap = sort[found];
-            sort[found] = sort[pivot];
-            sort[pivot] = swap;
-         }
-//System.out.printf("%s%nfound %d pivot %d MID %d%n", list(sort), found, pivot, MID);
-         if (sort[MID] == test) {
-//System.out.printf("return %d%n", test);
-            return test;
-         }
-         if (found <= MID) {
-            less = found;
-            test = sort[le];
-         } else {
-            more = le;
-            // hangs when test = sort[found]
-            test = sort[found - 1];//(short)Math.min(sort[found], sort[found - 1]);
          }
       }
+      if (count > 6) {
+         end = count - 2;
+         for (int i = 1; i < count - 1; ++i) {
+            if (sort[end] < sort[i]) {
+               short swap = sort[end];
+               sort[end] = sort[i];
+               sort[i] = swap;
+            }
+         }
+      }
+      int sum = 0;
+      for (int i = start; i < end; ++i) {
+         sum += sort[i];
+      }
+      return sum / (end - start);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -297,7 +278,7 @@ class ChordTimes implements Persistent {
       for (int i = 0; i < limit; ++i) {
          System.out.printf("ChordTimes %d %d%n", times.m_Times[0][0][i], times.m_Times[1][Chord.sm_VALUES - 1][i]);
       }
-      System.out.printf("Result %d %d%n", times.getMedian(1, 0), times.getMedian(Chord.sm_VALUES, 1));
+      System.out.printf("Result %d %d%n", times.getMean(1, 0), times.getMean(Chord.sm_VALUES, 1));
 /*      times.persist("");
       times = new ChordTimes();
       System.out.printf("Result %g %g%n", times.getMs(1, 0), times.getMs(Chord.sm_VALUES, 1));
