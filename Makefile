@@ -40,7 +40,12 @@ clean:
 	@cd pkp/twiddler; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twidlit; ${QUIET_CLEAN_AND_BACK}
 	@${QUIET_CLEAN} pref/TwidlitPreferences.txt classlist.txt TwidlitLog.txt TwidlitPersist.properties ||:
-
+version:
+	@script/incVersion.sh show data/about.html
+major minor update:
+	@cp data/about.html data/about.html~
+	@script/incVersion.sh $@ data/about.html~ > data/about.html
+   
 %.class: %.java
 	javac $<
 
