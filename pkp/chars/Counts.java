@@ -6,17 +6,19 @@
 package pkp.chars;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.net.URL;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
+import pkp.twiddle.KeyPress;
 import pkp.lookup.SharedIndex;
 import pkp.lookup.SharedIndexableInts;
 import pkp.ui.ProgressWindow;
 import pkp.util.Log;
-//import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
 public class Counts {
@@ -172,7 +174,7 @@ public class Counts {
 				if (last > WIDTH - 1) {
 					last = WIDTH - 1;
 				}
-				str += m_Index.getLabel(i).substring(m_Index.getLabel(i).length() - labelSize);
+				str += m_Index.getLabel(i);
 				for (int j = 0; j < last; ++j) {
 					str += '=';
 				}

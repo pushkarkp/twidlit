@@ -18,8 +18,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Desktop;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -45,7 +43,7 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   public HtmlWindow(URL url) {//, boolean withBackButton) {
+   public HtmlWindow(URL url) {
       setIconImage(Pref.getIcon().getImage());
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
       m_Position = -1;
@@ -127,6 +125,14 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
       setButtons();
    }
    
+   ////////////////////////////////////////////////////////////////////////////
+   public void startWith(String link) {
+      if (show(link)) {
+         ++m_Position;
+         m_History.add(link);
+      }
+   }
+
    // Private/////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
@@ -150,14 +156,6 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
       b.setMargin(new Insets(2, 2, 2, 2));
       b.setEnabled(false);
       return b;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void startWith(String link) {
-      if (show(link)) {
-         ++m_Position;
-         m_History.add(link);
-      }
    }
 
    ////////////////////////////////////////////////////////////////////////////

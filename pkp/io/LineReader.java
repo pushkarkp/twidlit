@@ -47,7 +47,7 @@ public class LineReader implements StringSource {
          }
          line = Io.trimComment(line);
          ++m_LineNumber;
-      } while ("".equals(line));
+      } while ("".equals(line.trim()));
       return line;
    }
 

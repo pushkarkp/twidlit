@@ -35,20 +35,16 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       m_Twidlit = twidlit;
       m_CharCounts = null;
 
-      JMenu viewMenu = new JMenu(sm_FILE_VIEW_TEXT);
-      add(viewMenu, sm_VIEW_CHORDS_TEXT);
-      add(viewMenu, sm_VIEW_REVERSED_TEXT);
-      add(viewMenu, sm_VIEW_CHORD_LIST_TEXT);
-      add(viewMenu, sm_VIEW_CHORDS_BY_TIME_TEXT);
-
       JMenu fileMenu = new JMenu(sm_FILE_MENU_TEXT);
       add(fileMenu);
       add(fileMenu, sm_FILE_OPEN_TEXT);
-      fileMenu.add(viewMenu);
+      add(fileMenu, sm_FILE_SAVE_AS_TEXT);
+      fileMenu.addSeparator();
+      add(fileMenu, sm_FILE_LIST_CHORDS_TEXT);
+      add(fileMenu, sm_FILE_MAP_CHORDS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_TWIDDLER_SETTINGS_TEXT);
       m_SettingsWindow = new SettingsWindow(new Cfg());
-      fileMenu.addSeparator();
       add(fileMenu, sm_FILE_PREF_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_QUIT_TEXT);
@@ -61,7 +57,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       add(m_CountsMenu);
       m_CountsBigrams = addCheckItem(m_CountsMenu, sm_COUNTS_BIGRAMS_TEXT).isSelected();
       JCheckBoxMenuItem nGrams = addCheckItem(m_CountsMenu, sm_COUNTS_NGRAMS_TEXT);
-      m_NGramsUrl = Pref.getDirJarUrl("pref.dir", "TwidlitNGrams.txt");
+      m_NGramsUrl = Persist.getDirJarUrl("pref.dir", "TwidlitNGrams.txt");
       if (m_NGramsUrl == null) {
          nGrams.setEnabled(false); 
          nGrams.setState(false);
@@ -83,29 +79,29 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       
       JMenu tutorMenu = new JMenu(sm_TUTOR_MENU_TEXT);
       add(tutorMenu);
-      addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
-      add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
-      add(tutorMenu, sm_TUTOR_SPEED_TEXT);
+      m_HandButtons = new ButtonGroup();
+      addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
+      addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
       tutorMenu.addSeparator();
-      int startChecks = tutorMenu.getItemCount();
+      ButtonModel bm = m_HandButtons.getSelection();
+      boolean right = bm != null && Hand.create(bm.getActionCommand()).isRight();
+      m_Twidlit.setRightHand(right);
       m_TwiddlerWindow = new TwiddlerWindow(addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), m_Twidlit);
+      m_TwiddlerWindow.setRightHand(right);
       m_ChordWait = Persist.getInt(sm_TUTOR_SPEED_PERSIST, TwiddlerWindow.getInitialWait());
       m_TwiddlerWindow.setWaitFactor((double)m_ChordWait / m_TwiddlerWindow.getInitialWait());
       addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT, m_TwiddlerWindow.isHighlight());
       addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT, m_TwiddlerWindow.isMark());
+      add(tutorMenu, sm_TUTOR_SPEED_TEXT);
       tutorMenu.addSeparator();
-      m_HandButtons = new ButtonGroup();
-      addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
-      addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
-      ButtonModel bm = m_HandButtons.getSelection();
-      boolean right = bm != null && Hand.create(bm.getActionCommand()).isRight();
-      m_TwiddlerWindow.setRightHand(right);
-      m_Twidlit.setRightHand(right);
+      addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
+      add(tutorMenu, sm_TUTOR_CHORDS_BY_TIME_TEXT);
+      add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
       
       JMenu helpMenu = new JMenu(sm_HELP_MENU_TEXT);
       add(helpMenu);
       add(helpMenu, sm_HELP_INTRO_TEXT);
-      add(helpMenu, sm_HELP_PREF_TEXT);
+      add(helpMenu, sm_HELP_ACTIVITIES_TEXT);
       add(helpMenu, sm_HELP_REF_TEXT);
       helpMenu.addSeparator();
       add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
@@ -214,15 +210,16 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       switch (command) {
       case sm_FILE_OPEN_TEXT:
          m_FileChooser = makeCfgFileChooser(new FileOpenActionListener());
-         //m_FileChooser.setSelectedFile(new File("twiddler"));
          m_FileChooser.showOpenDialog(m_Twidlit);
          m_FileChooser = null;
          return;
-      case sm_VIEW_CHORDS_TEXT:
-      case sm_VIEW_REVERSED_TEXT:
-      case sm_VIEW_CHORD_LIST_TEXT:
-      case sm_VIEW_CHORDS_BY_TIME_TEXT:
+      case sm_FILE_SAVE_AS_TEXT:
+      case sm_FILE_LIST_CHORDS_TEXT:
+      case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
+         return;
+      case sm_FILE_MAP_CHORDS_TEXT:
+         new ChordMapper(m_Twidlit);
          return;
       case sm_FILE_PREF_TEXT:
          m_FileChooser = makeFileChooser(new PrefActionListener(), m_PrefDir);
@@ -298,15 +295,15 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          }
          return;
       case sm_HELP_INTRO_TEXT: {
-         m_IntroWindow = showHtml(m_IntroWindow, sm_HELP_INTRO_TEXT, "/data/intro.html");
+         m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/intro.html");
          return;
       }
-      case sm_HELP_PREF_TEXT: {
-         m_PrefWindow = showHtml(m_PrefWindow, sm_HELP_PREF_TEXT, "/data/pref.html");
+      case sm_HELP_ACTIVITIES_TEXT: {
+         m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/act.html");
          return;
       }
       case sm_HELP_REF_TEXT: {
-         m_RefWindow = showHtml(m_RefWindow, sm_HELP_REF_TEXT, "/data/ref.html");
+         m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/ref.html");
          return;
       }
       case sm_HELP_SHOW_LOG_TEXT:
@@ -314,7 +311,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          return;
       case sm_HELP_ABOUT_TEXT: {
          m_AboutWindow = showHtml(m_AboutWindow, sm_HELP_ABOUT_TEXT, "/data/about.html");
-         m_AboutWindow.setResizable(true);
          return;
       }
       default:
@@ -332,6 +328,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private HtmlWindow showHtml(HtmlWindow hw, String title, String path) {
       if (hw != null) {
          hw.toFront();
+         hw.startWith(getClass().getResource(path).toString());
       } else {
          hw = new HtmlWindow(getClass().getResource(path));
          hw.setTitle(title);
@@ -346,37 +343,33 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private void viewSaveText(String command) {
       MenuSaveTextWindow tw = null;
       switch (command) {
-      case sm_VIEW_CHORDS_TEXT:
+      case sm_FILE_SAVE_AS_TEXT:
          tw = new MenuSaveTextWindow(
-            command, 
+            "Chords", 
             Cfg.toString(m_SettingsWindow,
                          m_Twidlit.getKeyMap().getAssignments()), 
             m_CfgDir);
+         tw.setPersistName("chord.list");
          break;
-      case sm_VIEW_REVERSED_TEXT:
+      case sm_FILE_LIST_CHORDS_TEXT:
          tw = new MenuSaveTextWindow(
-            command,
-            Cfg.toString(m_SettingsWindow,
-                         m_Twidlit.getKeyMap().getAssignmentsReversed()), 
-            m_CfgDir);
-         break;
-      case sm_VIEW_CHORD_LIST_TEXT:
-         tw = new MenuSaveTextWindow(
-            command, 
+            "All Chords", 
             Cfg.toString(m_SettingsWindow, 
                          Assignment.listAllByFingerCount()),
             m_CfgDir);
+         tw.setPersistName("chord.list");
          break;
-      case sm_VIEW_CHORDS_BY_TIME_TEXT:
+      case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          tw = new MenuSaveTextWindow(
-            command,
+            "Chords By Time",
+            "#   Mean Range (Times)\n" + 
             m_Twidlit.getChordTimes().listChordsByTime(),
             m_CfgDir);
          break;
        default:
-         Log.err("TwidlitMenu.viewSaveText: unexpected command " + command);  
+         Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);  
       }
-      if (command != sm_VIEW_CHORDS_BY_TIME_TEXT) {
+      if (command != sm_TUTOR_CHORDS_BY_TIME_TEXT) {
          tw.setPersistName(sm_CFG);
          tw.setSaver(new CfgSaver(command));
          tw.setExtension(sm_CFG_TXT);
@@ -411,7 +404,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          Log.warn("No counts to show");
       }
       (new CharCountShowThread(m_CharCounts, 
-                               command == sm_COUNTS_GRAPH_TEXT, 
+                               command, 
                                m_CountsOutDir)).start();
    }
 
@@ -439,7 +432,11 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    ///////////////////////////////////////////////////////////////////
    class MenuSaveTextWindow extends SaveTextWindow {
       public MenuSaveTextWindow(String title, String str, String dir) {
-         super(title, str);
+         this(title, str, "txt", dir);
+      }
+      
+      public MenuSaveTextWindow(String title, String str, String ext, String dir) {
+         super(title, str, ext);
          setDirectory(dir);
          Font font = getFont();
          setFont(new Font("monospaced", font.getStyle(), font.getSize()));
@@ -507,10 +504,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          switch (action) {
          default:
             Log.err("CfgSaver: unknown action \"" + action + '"');
-         case sm_VIEW_CHORDS_TEXT:
-         case sm_VIEW_REVERSED_TEXT:
-         case sm_VIEW_CHORD_LIST_TEXT:
-         case sm_VIEW_CHORDS_BY_TIME_TEXT:
+         case sm_FILE_SAVE_AS_TEXT:
+         case sm_FILE_LIST_CHORDS_TEXT:
+         case sm_TUTOR_CHORDS_BY_TIME_TEXT:
             m_Action = action;
          }   
       }
@@ -518,8 +514,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       ////////////////////////////////////////////////////////////////
       @Override 
       public void fileChosen(JFileChooser fc) {
-         if (m_Action == sm_VIEW_CHORDS_BY_TIME_TEXT) {
-            Log.err(String.format("m_Action == %s", sm_VIEW_CHORDS_BY_TIME_TEXT));
+         if (m_Action == sm_TUTOR_CHORDS_BY_TIME_TEXT) {
+            Log.err(String.format("m_Action == %s", sm_TUTOR_CHORDS_BY_TIME_TEXT));
          }
          ExtensionFileFilter eff = getFileFilter(fc);
          File f = fc.getSelectedFile();
@@ -533,11 +529,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             return;
          }
          ArrayList<Assignment> asgs =
-           (m_Action == sm_VIEW_CHORD_LIST_TEXT)
+           (m_Action == sm_FILE_LIST_CHORDS_TEXT)
              ? Assignment.listAllByFingerCount()
-             : (m_Action == sm_VIEW_REVERSED_TEXT)
-              ? m_Twidlit.getKeyMap().getAssignmentsReversed()
-              : m_Twidlit.getKeyMap().getAssignments();
+             : m_Twidlit.getKeyMap().getAssignments();
          switch (eff.getExtension()) {
          case sm_CFG_TXT:
             Cfg.writeText(f, m_SettingsWindow, asgs);
@@ -658,9 +652,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    class CharCountShowThread extends Thread {
       
       /////////////////////////////////////////////////////////////////////////////
-      CharCountShowThread(Counts counts, boolean graph, String outDir) {
+      CharCountShowThread(Counts counts, String what, String outDir) {
          m_Counts = new Counts(counts);
-         m_Graph = graph;
+         m_ShowWhat = what;
          m_OutDir = outDir;
       }
 
@@ -671,16 +665,21 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                                     0, (int)(Counts.getProgressCount()));
          pw.setVisible(true);
          MenuSaveTextWindow tw = null;
-         if (m_Graph) {
-            tw = new MenuSaveTextWindow(
-               "Graph of Character Counts", 
-               m_Counts.graph(pw), 
-               m_OutDir);
-         } else {
+         switch (m_ShowWhat) {
+         case sm_COUNTS_TABLE_TEXT:
             tw = new MenuSaveTextWindow(
                "Table of Character Counts", 
-               m_Counts.table(pw), 
+               m_Counts.table(pw),
+               "counts", 
                m_OutDir);
+            break;
+         case sm_COUNTS_GRAPH_TEXT:
+            tw = new MenuSaveTextWindow(
+               "Graph of Character Counts", 
+               m_Counts.graph(pw),
+               "graph",
+               m_OutDir);
+            break;
          }
          tw.setChoosenFileUser(new CountsChoosenFileUser());
          tw.setVisible(true);
@@ -689,18 +688,16 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
       // Data ////////////////////////////////////////////////////////////////////
       private Counts m_Counts;
-      private boolean m_Graph;
+      private String m_ShowWhat;
       private String m_OutDir;
    }
 
    // Final //////////////////////////////////////////////////////////
    static final String sm_FILE_MENU_TEXT = "File";
    static final String sm_FILE_OPEN_TEXT = "Open...";
-   static final String sm_FILE_VIEW_TEXT = "View & Save";
-   static final String sm_VIEW_CHORDS_TEXT = "Chords";
-   static final String sm_VIEW_REVERSED_TEXT = "Chords Reversed";
-   static final String sm_VIEW_CHORD_LIST_TEXT = "Chord List";
-   static final String sm_VIEW_CHORDS_BY_TIME_TEXT = "Chords By Time";
+   static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
+   static final String sm_FILE_LIST_CHORDS_TEXT = "List Chords";
+   static final String sm_FILE_MAP_CHORDS_TEXT = "Map Chords...";
    static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
    static final String sm_FILE_PREF_TEXT = "Preferences...";
    static final String sm_FILE_QUIT_TEXT = "Quit";
@@ -714,16 +711,17 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
    static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
    static final String sm_TUTOR_MENU_TEXT = "Tutor";
-   static final String sm_TUTOR_TIMED_TEXT = "Timed";
-   static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
    static final String sm_TUTOR_SPEED_TEXT = "Speed...";
    static final String sm_TUTOR_SHOW_MENU_TEXT = "Show";
    static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
    static final String sm_TUTOR_HIGHLIGHT_CHORD_TEXT = "Highlight Expected Chord";
    static final String sm_TUTOR_MARK_PRESSED_TEXT = "Mark Chord Pressed";
+   static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
+   static final String sm_TUTOR_TIMED_TEXT = "Timed";
+   static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
    static final String sm_HELP_MENU_TEXT = "Help";
    static final String sm_HELP_INTRO_TEXT = "Introduction";
-   static final String sm_HELP_PREF_TEXT = "Preferences";
+   static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
    static final String sm_HELP_REF_TEXT = "Reference";
    static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    static final String sm_HELP_ABOUT_TEXT = "About";
@@ -772,8 +770,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private TwiddlerWindow m_TwiddlerWindow;
    private ButtonGroup m_HandButtons;
    private int m_ChordWait;
-   private HtmlWindow m_IntroWindow;
-   private HtmlWindow m_PrefWindow;
-   private HtmlWindow m_RefWindow;
+   private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;
 }

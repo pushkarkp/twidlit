@@ -61,7 +61,6 @@ class TwiddlerWaitSetter implements ActionListener {
    ///////////////////////////////////////////////////////////////////
    private JButton createButton(String label) {
       JButton button = new JButton(label);
-      button.setBackground(Pref.getColor("background.color"));
       button.addActionListener(this);
       return button;
    }

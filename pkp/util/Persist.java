@@ -6,9 +6,11 @@
 package pkp.util;
 
 import java.util.Properties;
-import pkp.io.Io;
+import java.io.File;
+import java.net.URL;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class Persist {
@@ -25,6 +27,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void init(String fName, String parent,  String jarParent) {
+      sm_JarParent = jarParent;
       sm_Persist = new PersistentProperties(fName, parent, jarParent, Io.sm_MUST_EXIST);
       sm_Persist.read();
    }
@@ -106,6 +109,33 @@ public class Persist {
       return Io.parseBool(name, value);
    }
 
+   ////////////////////////////////////////////////////////////////////////////
+   public static File getFile(String name) {
+      String fileName = get(name);
+      if (fileName == null || fileName == "") {
+         return null;
+      }
+      File f = new File(fileName);
+      while (!f.exists() && !"".equals(f.getPath())) {
+         f = new File(f.getParent());
+      }
+      if (!f.exists()) {
+         return null;
+      }
+      return f;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static URL getDirJarUrl(String dirName, String fileName) {
+      return Io.toUrl(fileName, get(dirName), sm_JarParent);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static URL getExistDirJarUrl(String dirName, String fileName) {
+      return Io.toExistUrl(fileName, get(dirName), sm_JarParent);
+   }
+
    // Data ////////////////////////////////////////////////////////////////////
+   private static String sm_JarParent;
    private static PersistentProperties sm_Persist;
 }

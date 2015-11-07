@@ -9,7 +9,6 @@ import java.util.Properties;
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.lang.reflect.Field;
-import java.net.URL;
 import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,7 +16,6 @@ public class Pref {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void init(String name, String parent, String jarParent) {
-      m_JarParent = jarParent;
       sm_Pref = new PersistentProperties(name, parent, jarParent, Io.sm_MUST_EXIST);
       sm_Pref.read();
    }
@@ -39,6 +37,7 @@ public class Pref {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void set(String name, String value) {
+System.out.println(name + " " + value);      
       sm_Pref.set(name, value);
    }
 
@@ -122,16 +121,6 @@ public class Pref {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static URL getDirJarUrl(String dirName, String fileName) {
-      return Io.toUrl(fileName, Persist.get(dirName), m_JarParent);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static URL getExistDirJarUrl(String dirName, String fileName) {
-      return Io.toExistUrl(fileName, Persist.get(dirName), m_JarParent);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public static ImageIcon getIcon() {
       if (sm_Icon == null) {
 //Io.printClassPath();         
@@ -143,7 +132,6 @@ public class Pref {
 
    // Data ////////////////////////////////////////////////////////////////////
    private static PersistentProperties sm_Pref;
-   private static String m_JarParent;
    private static ImageIcon sm_Icon = null;
    private static String sm_IconPath = null;
 }

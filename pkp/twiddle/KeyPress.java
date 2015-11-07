@@ -59,7 +59,7 @@ public class KeyPress {
       sm_AfterName = Pref.get("name.delimiter.end", ">").charAt(0);
       final Io.StringToInt charToInt = new Io.StringToInt() {
                                           public int cvt(String str) {
-                                             return parseKeyValue(str);
+                                             return Io.parseEscapedChar(str);
                                           }
                                        };
       final Io.StringToInt parsePos = new Io.StringToInt() {
@@ -83,39 +83,39 @@ public class KeyPress {
                                           }
                                        };
       sm_KeyValueToCode = LookupTableBuilder.read(
-         Pref.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"), 
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"), 
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
          Duplicates.OVERWRITE, 
          1, 0x7F, 
          parsePos0xFFFF, charToInt);
 //System.out.println("sm_KeyValueToCode:\n" + sm_KeyValueToCode.toString());
       sm_KeyEventToCode = LookupTableBuilder.read(
-         Pref.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
          Duplicates.ERROR, 
          0x10, 0x7F, 
          parsePos0xFFFF, parsePos0xFFFF);
 //System.out.println("sm_KeyEventToCode:%n" + sm_KeyEventToCode.toString());
-      sm_KeyCodeToName = (new StringsIntsBuilder(Pref.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true)).build();
+      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
-         Pref.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"), 
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"), 
          Io.sm_MUST_EXIST, 
          0, 0x20, parsePos0xFF);
 //System.out.println("sm_Unprintable:\n" + sm_Unprintable.toString());
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
-         Pref.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
          Io.sm_MUST_EXIST, 
          0x54, 0x70, parsePos0xFF);
 //System.out.println("sm_Duplicate:\n" + sm_Duplicate.toString());
       sm_Lost = LookupSetBuilder.read2(
-         Pref.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
          LookupSetBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST, 
          0x1, 0x0, 
          parsePos0xF, parsePos0xFF);
 //System.out.println("sm_Lost:\n" + sm_Lost.toString());
-      int[] kcv = readKeyCodeValues(Pref.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
+      int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
       sm_KeyCodeToValue = new HashMap<Integer, Character>(0x80);
       for (int i = 0; kcv[i] > 0; i += 2) {
          sm_KeyCodeToValue.put(kcv[i], (char)kcv[i + 1]);
@@ -197,6 +197,20 @@ public class KeyPress {
 //System.out.printf("parseText |%c| (%d) -> 0x%x (mod 0x%x)\n", ch, (int)ch, keyCodeWithShift, mod.toInt());
       return new KeyPress(keyCodeWithShift,
                           Modifiers.fromKeyCode(keyCodeWithShift).plus(mod));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress parseText(char ch) {
+      return parseText(ch, Modifiers.fromKeyCode(0));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String parseText(String in, Format f) {
+      String out = "";
+      for (int i = 0; i < in.length(); ++i) {
+         out += parseText(in.charAt(i)).toString(f);
+      }
+      return out;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -381,8 +395,8 @@ public class KeyPress {
                                   keyCode, spr.getLineNumber(), url.getPath()));
          }
          String value = spr.getNextSecond();
-         kv[key + 1] = parseKeyValue(value);
-         if (kv[key + 1] <= 0) {
+         kv[key + 1] = Io.parseEscapedChar(value);
+         if (kv[key + 1] < 0) {
             Log.err(String.format("Failed to parse \"%s\" on line %d of \"%s\".",
                                   value, spr.getLineNumber(), url.getPath()));
          }
@@ -390,28 +404,6 @@ public class KeyPress {
       spr.close();
       kv[key] = 0;
       return kv;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static int parseKeyValue(String keyValue) {
-//System.out.println("kp parseKeyValue \"" + keyValue + "\"");      
-      int v = 0;
-      if (keyValue.length() > 1 && Character.isDigit(keyValue.charAt(0))) {
-         v = Io.toInt(keyValue);
-         if (v <= 0) {
-            return Io.sm_PARSE_FAILED;
-         }
-      } else {
-         if (keyValue.length() > 2 || (keyValue.length() == 2 && keyValue.charAt(0) != '\\')) {
-            return Io.sm_PARSE_FAILED;
-         }
-         String ch = Io.parseQuote(keyValue);
-         if ("".equals(ch)) {
-            return Io.sm_PARSE_FAILED;
-         }
-         v = ch.charAt(0);
-      }
-      return v;
    }
 
    // Data ////////////////////////////////////////////////////////////////////

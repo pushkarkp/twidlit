@@ -1,4 +1,4 @@
-DATA=data/about.html data/icon.gif data/intro.html data/pref.html data/ref.html pref/chords.cfg.txt pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitNGrams.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
+DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html pref/chords.cfg.txt pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitNGrams.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
 JAR_DATA=${DATA}
 IO=pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
 STRING=pkp/string/StringSource.class pkp/string/StringInt.class pkp/string/StringsInts.class pkp/string/StringsIntsBuilder.class
@@ -8,7 +8,7 @@ UTIL=pkp/util/Log.class pkp/util/Persist.class pkp/util/Persistent.class pkp/uti
 CHARS=pkp/chars/CharCounts.class pkp/chars/Counts.class pkp/chars/NGram.class pkp/chars/NGrams.class
 TWIDDLE=pkp/twiddle/Assignment.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
 TWIDDLER=pkp/twiddler/Cfg.class pkp/twiddler/Settings.class pkp/twiddler/SettingsWindow.class 
-TWIDLIT=pkp/twidlit/ChordSource.class pkp/twidlit/ChordTimes.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/SortedChordTimes.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
+TWIDLIT=pkp/twidlit/ChordMapper.class pkp/twidlit/ChordSource.class pkp/twidlit/ChordTimes.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/SortedChordTimes.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 CLASSES= ${TEST} ${IO} ${STRING} ${LOOKUP} ${UI} ${UTIL} ${CHARS} ${TWIDDLE} ${TWIDDLER} ${TWIDLIT}
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null
@@ -50,8 +50,8 @@ major minor update:
 %.class: %.java
 	javac $<
 
-pref/TwidlitPreferences.txt: data/pref.html script/makePrefs.sh
-	@script/makePrefs.sh data/pref.html pref/TwidlitPreferences.tmp
+pref/TwidlitPreferences.txt: data/ref.html script/makePrefs.sh
+	@script/makePrefs.sh data/ref.html pref/TwidlitPreferences.tmp
 	@diff pref/TwidlitPreferences.txt pref/TwidlitPreferences.tmp 2> /dev/null ||:
 	@mv pref/TwidlitPreferences.tmp pref/TwidlitPreferences.txt
    

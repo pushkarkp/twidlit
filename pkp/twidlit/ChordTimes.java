@@ -79,12 +79,13 @@ class ChordTimes implements Persistent {
       if (timeMs > Short.MAX_VALUE) {
          return false;
       }
+      int thumb = Math.min(thumbKeys, 1);
+      addMean(false, chord, thumb);
       m_DataStatus = DataStatus.NEW;
       if ((chord & ~Chord.sm_VALUES) != 0) {
          Log.err(String.format("Chord value %d is greater than %d\n", chord, Chord.sm_VALUES));
          chord &= Chord.sm_VALUES;
       }
-      int thumb = Math.min(thumbKeys, 1);
       byte count = m_Counts[thumb][chord - 1];
       int i = count & (sm_SPAN - 1);
       m_Times[thumb][chord - 1][i] = (short)timeMs;
@@ -95,52 +96,52 @@ class ChordTimes implements Persistent {
          full = sm_SPAN;
       }
       m_Counts[thumb][chord - 1] = (byte)(full | i);
+      addMean(true, chord, thumb);
 //System.out.printf("add i %d full %d m_Counts[thumb][chord - 1] %d%n", i, full, m_Counts[thumb][chord - 1]);
       return true;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    int getMean(int chord, int thumbKeys) {
-      int thumb = Math.min(thumbKeys, 1);
-      int count = getCount(chord, thumb);
-      if (count == 0) {
-         // no time
+      short[] sort = getIq(chord, thumbKeys);
+      if (sort == null) {
          return Integer.MAX_VALUE;
       }
-      int start = 0;
-      int end = count;
-      short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count);
-      if (count > 2) {
-         start = 1;
-         end = count - 1;
-         for (int i = 0; i < count; ++i) {
-            if (sort[0] > sort[i]) {
-               short swap = sort[0];
-               sort[0] = sort[i];
-               sort[i] = swap;
-            } else
-            if (sort[end] < sort[i]) {
-               short swap = sort[end];
-               sort[end] = sort[i];
-               sort[i] = swap;
-            }
-         }
-      }
-      if (count > 6) {
-         end = count - 2;
-         for (int i = 1; i < count - 1; ++i) {
-            if (sort[end] < sort[i]) {
-               short swap = sort[end];
-               sort[end] = sort[i];
-               sort[i] = swap;
-            }
-         }
-      }
       int sum = 0;
-      for (int i = start; i < end; ++i) {
+      int i = 0;
+      for (; sort[i] != -1; ++i) {
          sum += sort[i];
       }
-      return sum / (end - start);
+      return sum / i;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   int getRange(int chord, int thumbKeys) {
+      short[] sort = getIq(chord, thumbKeys);
+      if (sort == null) {
+         return Integer.MAX_VALUE;
+      }
+      int i = sm_SPAN - 3;
+      while (sort[i] != -1) {
+         --i;
+      }
+      if (i == 1) {
+         return 0;
+      }
+      getMinMax(sort, i);
+//System.out.printf("getRange() max %d min %d%n", sort[i - 1], sort[i - 2]);
+      return sort[i - 1] - sort[i - 2];
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public int getMeanMean(int thumbKeys) {
+      int thumb = Math.min(thumbKeys, 1);
+      if (m_MeanCount[thumb] == 0) {
+         return 0;
+      }
+      int meanMean = m_MeanSum[thumb] / m_MeanCount[thumb];
+//System.out.printf("getMeanMean() thumbKeys %d meanmean %d%n", thumbKeys, meanMean);
+      return meanMean;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -209,6 +210,71 @@ class ChordTimes implements Persistent {
       return m_Counts[thumb][chord - 1] & (sm_SPAN - 1);
    }
    
+   ////////////////////////////////////////////////////////////////////////////
+   private void addMean(boolean add, int chord, int thumb) {
+      int mean = getMean(chord, thumb);
+//System.out.printf("addMean() chord %d thumb %d mean %d%n", chord, thumb, mean);
+      if (mean == Integer.MAX_VALUE) {
+         mean = 0;
+         ++m_MeanCount[thumb];
+      }
+      m_MeanSum[thumb] += add ? mean : -mean;
+//System.out.printf("addMean() m_MeanCount[thumb] %d m_MeanSum[thumb] %d%n", m_MeanCount[thumb], m_MeanSum[thumb]);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private short[] getIq(int chord, int thumbKeys) {
+      int thumb = Math.min(thumbKeys, 1);
+      int count = getCount(chord, thumb);
+      if (count == 0) {
+         // no time
+         return null;
+      }
+      int end = count;
+      short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count);
+      if (count > 2) {
+         getMinMax(sort, end);
+         end -= 2;
+         if (count > 6) {
+            getMax(sort, end);
+            end -= 1;
+         }
+      }
+      sort[end] = -1;
+//System.out.printf("getIq() (%d) %d %d %d %d %d %d %d %d%n", count, sort[0], sort[1], sort[2], sort[3], sort[4], sort[5], sort[6], sort[7]);
+      return sort;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void getMinMax(short[] data, int count) {
+      int min = count - 2;
+      int max = count - 1;
+      for (int i = 0; i < max; ++i) {
+         if (data[min] > data[i]) {
+            short swap = data[min];
+            data[min] = data[i];
+            data[i] = swap;
+         }
+         if (data[max] < data[i]) {
+            short swap = data[max];
+            data[max] = data[i];
+            data[i] = swap;
+         }
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void getMax(short[] data, int count) {
+      int max = count - 1;
+      for (int i = 0; i < max; ++i) {
+         if (data[max] < data[i]) {
+            short swap = data[max];
+            data[max] = data[i];
+            data[i] = swap;
+         }
+      }
+   }
+
    /////////////////////////////////////////////////////////////////////////////
    private void load() {
 //System.out.println("load " + getFileName());
@@ -216,6 +282,12 @@ class ChordTimes implements Persistent {
       m_Times = new short[sm_CHORD_TYPES][Chord.sm_VALUES][sm_SPAN];
       // the actual number of times held
       m_Counts = new byte[sm_CHORD_TYPES][Chord.sm_VALUES];
+      m_MeanSum = new int[sm_CHORD_TYPES];
+      m_MeanSum[0] = 0;
+      m_MeanSum[1] = 0;
+      m_MeanCount = new int[sm_CHORD_TYPES];
+      m_MeanCount[0] = 0;
+      m_MeanCount[1] = 0;
       File f = Io.createFile(Persist.getFolderName(), getFileName());
       if (!f.exists() || f.isDirectory()) {
          m_DataStatus = DataStatus.NONE;
@@ -239,10 +311,12 @@ class ChordTimes implements Persistent {
       ByteBuffer bb = ByteBuffer.wrap(data);
       for (int thumb = 0; thumb < sm_CHORD_TYPES; ++thumb) {
          for (int c = 0; c < Chord.sm_VALUES; ++c) {
+            addMean(false, c + 1, thumb);
             m_Counts[thumb][c] = bb.get();
             for (int i = 0; i < sm_SPAN; ++i) {
                m_Times[thumb][c][i] = bb.getShort();
             }
+            addMean(true, c + 1, thumb);
          }
       }
    }
@@ -262,6 +336,8 @@ class ChordTimes implements Persistent {
    private DataStatus m_DataStatus;
    private short[][][] m_Times;
    private byte[][] m_Counts;
+   private int m_MeanSum[];
+   private int m_MeanCount[];
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] args) {

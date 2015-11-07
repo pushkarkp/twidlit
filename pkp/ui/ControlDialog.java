@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.BorderFactory;
 import javax.swing.border.EmptyBorder;
 import pkp.util.Pref;
 
@@ -31,15 +32,18 @@ public class ControlDialog extends PersistentDialog {
       setIconImage(Pref.getIcon().getImage());
       setResizable(true);
       JPanel cp = (JPanel)getContentPane();
-      cp.setBackground(Pref.getColor("background.color"));
       cp.setLayout(new BorderLayout());
+      JPanel p = new JPanel();
+      p.setLayout(new BorderLayout());
+      p.setBorder(BorderFactory.createLineBorder(Pref.getColor("border.color")));
+      cp.add(p, BorderLayout.CENTER);
       m_CenterPanel = new Box(BoxLayout.PAGE_AXIS);
-      m_CenterPanel.setOpaque(false);
+      m_CenterPanel.setOpaque(true);
+      m_CenterPanel.setBackground(Pref.getColor("background.color"));
       int sp = Pref.getInt("window.border.size");
       m_CenterPanel.setBorder(new EmptyBorder(sp, sp, sp, sp));
-      cp.add(m_CenterPanel, BorderLayout.CENTER);
+      p.add(m_CenterPanel, BorderLayout.CENTER);
       m_BottomPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-      m_BottomPanel.setOpaque(false);
       cp.add(m_BottomPanel, BorderLayout.PAGE_END);
    }
 

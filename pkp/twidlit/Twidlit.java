@@ -64,7 +64,9 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   String getHomeDir() { return m_HomeDir; }
+   String getHomeDir() {
+      return m_HomeDir;
+   }
 
    /////////////////////////////////////////////////////////////////////////////
    KeyMap getKeyMap() {
@@ -262,6 +264,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    private void nextTwiddle(Twiddle prev) {
       Twiddle tw = new Twiddle(m_ChordSource.get(), 0);
       m_Assignment = new Assignment(tw, tw.getKeyPressList(m_KeyMap));
+      m_MenuBar.getTwiddlerWindow().setMean(m_ChordTimes.getMeanMean(0));
       m_MenuBar.getTwiddlerWindow().show(m_Assignment.getTwiddle(0), prev);
   }
 

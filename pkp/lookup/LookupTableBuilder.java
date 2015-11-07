@@ -26,6 +26,7 @@ public class LookupTableBuilder extends LookupBuilder {
                                   int maxFreq,
                                   Io.StringToInt si1, 
                                   Io.StringToInt si2) {
+//System.out.println(url.getPath());
       LookupTableBuilder lb = new LookupTableBuilder(minFreq, maxFreq);
       lb.setDuplicates(duplicates);
       lb.setMessage(String.format(" in %s", url.getPath()));

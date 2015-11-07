@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import pkp.lookup.SharedIndexableInts;
+import pkp.io.Io;
 import pkp.util.Pref;
 import pkp.util.Log;
 
@@ -51,7 +52,7 @@ class CharCounts implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return String.format("    %3d     ", i) + printSymbol(i);
+      return String.format("%8s", Io.toEscaped((char)i));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -91,45 +92,11 @@ class CharCounts implements SharedIndexableInts {
       /////////////////////////////////////////////////////////////////////////
       @Override // SharedIndexableInts
       public String getLabel(int i) {
-         int first = i / sm_CHARS;
-         int second = i % sm_CHARS;   
-         String codes = String.format("%3d %3d ", first, second);
-         if (isPrintable(first) && isPrintable(second)) {
-            return codes + String.format("    %c%c ", (char)first, (char)second);
-         } else {
-            return codes + printSymbol(first) + " " + printSymbol(second);
-         }
+         return String.format("%8s", Io.toEscaped((char)(i / sm_CHARS)) + Io.toEscaped((char)(i % sm_CHARS)));
       }
    }
    
    // Private /////////////////////////////////////////////////////////////////
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static String[] s_SYM = new String[] 
-      {"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS", "TAB", 
-       "LF", "VT", "FF", "CR", "SO", "SI", "DLE", "DC1", "DC2", "DC3", "DC4", 
-       "NAK", "SYN", "ETB", "CAN", "EM", "SUB", "ESC",  "FS", "GS", "RS", "US", 
-       "SPC"
-      };
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static String printSymbol(int ch) {
-      if (isPrintable(ch)) {
-         return String.format("%c  ", (char)ch);
-      }
-      if (ch < 33) {
-         return String.format("%-3s", s_SYM[ch]);
-      }
-      if (ch == 127) {
-         return "BKS";
-      }
-      return String.format("%3d", ch);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static boolean isPrintable(int ch) {
-      return 32 < ch && ch < 127;
-   }
 
    ////////////////////////////////////////////////////////////////////////////
    private static int combine(int first, int second) {

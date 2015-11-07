@@ -56,6 +56,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       m_ChordPanel = createChordPanel();
       m_TwiddlerPanel = createTwiddlerPanel(m_ThumbPanel, m_ChordPanel);
       m_ProgressBar = createProgressBar();
+      m_MeanProgressBar = createProgressBar();
       getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
       pack();
 
@@ -94,11 +95,13 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       getContentPane().removeAll();
       m_RightHand = right;
       if (right) {
+         getContentPane().add(m_MeanProgressBar);
          getContentPane().add(m_ProgressBar);
          getContentPane().add(m_TwiddlerPanel);
       } else {
          getContentPane().add(m_TwiddlerPanel);
          getContentPane().add(m_ProgressBar);
+         getContentPane().add(m_MeanProgressBar);
       }
       if (isVisible()) {
          super.setVisible(true);
@@ -120,6 +123,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       rehighlightIf();
 
       m_ProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
+      m_MeanProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
       zeroProgress();
    }
 
@@ -153,6 +157,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
          clearMark();
          repaint();
      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setMean(int mean) {
+      m_MeanProgressBar.setValue(mean);
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -482,6 +491,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    private JPanel m_ChordPanel;
    private JPanel m_TwiddlerPanel;
    private JProgressBar m_ProgressBar;
+   private JProgressBar m_MeanProgressBar;
    private Timer m_ProgressTimer;
    private long m_ProgressStart;
    private Button[] m_Thumb;

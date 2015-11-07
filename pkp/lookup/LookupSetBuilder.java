@@ -28,7 +28,7 @@ public class LookupSetBuilder extends LookupBuilder {
       LineReader lr = new LineReader(url, mustExist);
       String line;
       while ((line = lr.readLine()) != null) {
-         int i = si.cvt(line);
+         int i = si.cvt(line.trim());
          if (i == Io.sm_PARSE_FAILED) {
             Log.err(String.format("Failed to parse \"%s\" in line %d of \"%s\".",
                                   line, lr.getLineNumber(), url.getPath()));

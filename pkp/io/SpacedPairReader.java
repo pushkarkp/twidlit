@@ -12,15 +12,6 @@ import pkp.util.Log;
 public class SpacedPairReader {
 
    ////////////////////////////////////////////////////////////////////////////
-   public static int findWhiteSpace(String str) {
-      int ws = str.indexOf('\t');
-      if (ws == -1) {
-         return str.indexOf(' ');
-      }
-      return ws;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public SpacedPairReader(URL url, boolean mustExist) {
       m_In = new LineReader(url, mustExist);
    }
@@ -82,26 +73,19 @@ public class SpacedPairReader {
 
    ////////////////////////////////////////////////////////////////////////////
    private void parseLine() {
-      String in = null;
-      do {
-         in = m_In.readLine();
-         if (in == null) {
-            return;
-         }
-         m_Line = Io.trimComment(in);
-      } while ("".equals(m_Line));
-      int split = findWhiteSpace(m_Line);
+      String in = m_In.readLine();
+      if (in == null) {
+         return;
+      }
+      m_Line = in.trim();
+      int split = Io.findFirstOf(m_Line, Io.sm_WS);
       if (split == -1) {
-         m_Line = in.trim();
-         split = findWhiteSpace(m_Line);
-         if (split == -1) {
-            Log.log(String.format("Failed to parse \"%s\", line %d of \"%s\".",
-                                  in, getLineNumber(), m_In.getPath()));
-         }
+         Log.log(String.format("Failed to parse \"%s\", line %d of \"%s\".",
+                               in, getLineNumber(), m_In.getPath()));
       }
       m_1 = m_Line.substring(0, split);
       m_2 = m_Line.substring(split).trim();
-      if (m_SingleToken2 && findWhiteSpace(m_2) != -1) {
+      if (m_SingleToken2 && Io.findFirstOf(m_2, Io.sm_WS) != -1) {
          Log.err(String.format("Failed to parse \"%s\", line %d of \"%s\".",
                                in, getLineNumber(), m_In.getPath()));
       }

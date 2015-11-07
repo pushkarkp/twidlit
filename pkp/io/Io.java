@@ -19,6 +19,7 @@ public class Io {
 
    public static final boolean sm_MUST_EXIST = true;
    public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
+   public static final String sm_WS = "   ";
 
    ////////////////////////////////////////////////////////////////////////////
    public static int read(String prompt) {
@@ -35,13 +36,18 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static URL toUrl(String fName, String fileParent) {
-      return toUrl(fName, fileParent, null);
+   public static URL toExistUrl(File f) {
+      return toExistUrl(f.getName(), f.getParent(), null);
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   public static URL toUrl(File f) {
+      return toUrl(f.getName(), f.getParent(), null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static URL toExistUrl(String fName, String fileParent, String jarParent) {
-      URL url = toUrl(fName, fileParent, null);
+      URL url = toUrl(fName, fileParent, jarParent);
       if (url == null) {
          Log.err('"' + fName + "\" not found.");
       }
@@ -189,6 +195,46 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static int findFirstOf(String str, String chars) {
+      return findFirstOfUpTo(str, chars, str.length());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int findFirstOfUpTo(String str, String chars, int upTo) {
+      upTo = Math.min(upTo, str.length());
+      for (int i = 0; i < chars.length(); ++i) {
+         int p = str.indexOf(chars.charAt(i));
+         if (p < upTo) {
+            upTo = p;
+         }
+      }
+      return upTo;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int findFirstNotOf(String str, String chars) {
+      return findFirstNotOfUpTo(str, chars, str.length());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int findFirstNotOfUpTo(String str, String chars, int upTo) {
+      upTo = Math.min(upTo, str.length());
+      for (int j = 0; j < upTo; ++j) {
+         char c = str.charAt(j);
+         int i = 0;
+         for (; i < chars.length(); ++i) {
+            if (c == chars.charAt(i)) {
+               break;
+            }
+         }
+         if (i == chars.length()) {
+            return j;
+         }
+      }
+      return upTo;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static String trimComment(String line) {
       if (sm_Comment == 0) {
          return line;
@@ -203,7 +249,7 @@ public class Io {
          int c = line.substring(strAt + 1).indexOf(from);
          if (c == -1) {
             // not there
-            return line.trim();
+            return line;
          }
          strAt += c + 1;
          // odd number of preceding '\'?
@@ -214,7 +260,7 @@ public class Io {
          }
          // even
          if ((i & 1) == 1) {
-            return line.substring(0, strAt).trim();
+            return line.substring(0, strAt);
          }
       }
    }
@@ -322,29 +368,47 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static String toEscaped(char c) {
       switch (c) {
+      case 7: return "\\a";
       case '\b': return "\\b";
+      case 27: return "\\e";
       case '\f': return "\\f";
       case '\n': return "\\n";
-      case '\t': return "\\t";
       case '\r': return "\\r";
       case ' ': return "\\s";
+      case '\t': return "\\t";
       case '\\': return "\\\\";
       case '#': return "\\#";
+      case 11: return "\\v";
+      case 0: return "\\0";
       default: return "" + c;
       }
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static char parseEscaped(char c) {
+   public static char parseEscaped(char c) { 
       switch (c) {
+      case 'a': return 7;
       case 'b': return '\b';
+      case 'e': return 27;
+      case 'f': return '\f';
       case 'n': return '\n';
       case 'r': return '\r';
       case 's': return ' ';
       case 't': return '\t';
-      case 'f': return '\f';
+      case 'v': return 11;
+      case '0': return 0;
       default: return c;
       }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int parseEscapedChar(String str) {
+      String c = parseEscaped(str);
+      if (c.length() != 1) {
+         Log.err(String.format("%s->%s (%d)", str, c, c.length()));
+         return -1;
+      }
+      return c.charAt(0) & 0xFF;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -352,7 +416,7 @@ public class Io {
       if ("".equals(str)) {
          return "";
       }
-      char[] buf = new char[str.length() + 1];
+      char[] buf = new char[str.length()];
       int skipped = 0;
       int i = 0;
       for (; i < str.length(); ++i) {
@@ -360,12 +424,24 @@ public class Io {
          if (c == '\\' && i < str.length() - 1) {
             ++i;
             ++skipped;
-            c = parseEscaped(str.charAt(i));
+            if ((str.charAt(i) == 'x' || str.charAt(i) == 'X')
+             && i < str.length() - 2) {
+               skipped += 2;
+               i += 2;
+               c = (char)Integer.parseInt(str.substring(i - 1, i + 1), 16);
+//System.out.printf("%s %d%n", str.substring(i - 1, i + 1), (int)c);
+            } else {
+               c = parseEscaped(str.charAt(i));
+            }
          }
          buf[i - skipped] = c;
       }
-      buf[i - skipped] = 0;
-      return new String(buf);
+      return new String(buf, 0, i - skipped);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static boolean isPrintable(int ch) {
+      return 32 < ch && ch < 127;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -374,6 +450,11 @@ public class Io {
          str = str.substring(1, str.length() - 1);
       }
       return parseEscaped(str);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static boolean isQuote(char c) {
+      return c == '"' || c == '\'';
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -393,11 +474,6 @@ public class Io {
          }
       }
       return out;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static boolean isQuote(char c) {
-      return c == '"' || c == '\'';
    }
 
    // Data ////////////////////////////////////////////////////////////////////

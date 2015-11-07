@@ -58,7 +58,7 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return (new String(new char[15 - m_NGRAMS.get(i).length()]).replace('\0', ' ')) + m_NGRAMS.get(i);
+      return (new String(new char[8 - m_NGRAMS.get(i).length()]).replace('\0', ' ')) + m_NGRAMS.get(i);
    }
 
    ////////////////////////////////////////////////////////////////////////////

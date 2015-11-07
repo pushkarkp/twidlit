@@ -9,7 +9,6 @@ import java.util.Properties;
 import java.net.URL;
 import java.io.*;
 import pkp.io.Io;
-import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class PersistentProperties {

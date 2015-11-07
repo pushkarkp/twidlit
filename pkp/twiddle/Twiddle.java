@@ -9,7 +9,6 @@ package pkp.twiddle;
 import java.util.ArrayList;
 import java.net.URL;
 import pkp.io.LineReader;
-import pkp.io.SpacedPairReader;
 import pkp.io.Io;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -79,7 +78,7 @@ public class Twiddle extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(String in) {
       String str = in.trim();
-      int split = SpacedPairReader.findWhiteSpace(str);
+      int split = Io.findFirstOf(str, Io.sm_WS);
       if (split != -1) {
          m_ThumbKeys = new ThumbKeys(str.substring(0, split));
          m_Chord = new Chord(str.substring(split).trim());

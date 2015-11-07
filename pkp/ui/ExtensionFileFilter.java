@@ -5,11 +5,22 @@
  */
 package pkp.ui;
 
+import java.util.List;
 import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 //////////////////////////////////////////////////////////////////////
 public class ExtensionFileFilter extends FileFilter {
+
+   ///////////////////////////////////////////////////////////////////
+   public static void setFileFilters(JFileChooser fc, List<String> extensions) {
+      fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
+      for (int i = 0; i < extensions.size(); ++i) {
+         fc.addChoosableFileFilter(new ExtensionFileFilter(extensions.get(i)));
+      }
+      fc.addChoosableFileFilter(fc.getAcceptAllFileFilter());
+   }
 
    ///////////////////////////////////////////////////////////////////
    public ExtensionFileFilter(String extension) {

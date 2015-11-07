@@ -38,11 +38,16 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public SaveTextWindow(String title, String str) {
+      this(title, str, "txt");
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public SaveTextWindow(String title, String str, String ext) {
       super(title, str);
       m_FileChooser = null;
       m_ButtonText = "Save As...";
       m_Extension = new ArrayList<String>();
-      m_Extension.add("txt");
+      m_Extension.add(ext);
       m_Dir = ".";
       m_Saver = null;
       m_ChoosenFileUser = null;
@@ -124,11 +129,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
          m_Dir = ".";
       }
       m_FileChooser.setCurrentDirectory(new File(m_Dir));
-      m_FileChooser.removeChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
-      for (int i = 0; i < m_Extension.size(); ++i) {
-         m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter(m_Extension.get(i)));
-      }
-      m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
+      ExtensionFileFilter.setFileFilters(m_FileChooser, m_Extension);
    }
    
    ////////////////////////////////////////////////////////////////////////////
