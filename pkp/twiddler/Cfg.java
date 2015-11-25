@@ -48,7 +48,7 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public static String toString(Settings tc, ArrayList<Assignment> asgs) {
-      String str = Assignment.toString(asgs, KeyPress.Format.CFG);
+      String str = Assignment.toString(asgs, KeyPress.Format.TEXT_);
       for (IntSettings is: tc.getIntSettings().values()) {
          if (!is.isDefault()) {
             str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';

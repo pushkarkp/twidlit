@@ -27,16 +27,15 @@ import pkp.util.Log;
 public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
-   public static final int sm_KEYCODE_BITS = 8;
+   static final int sm_KEYCODE_BITS = 8;
 
    ////////////////////////////////////////////////////////////////////////////
    public enum Format {
-      TEXT_("Text"),
-      TEXT("Text with named space"),
+      TEXT("Text"),
+      TEXT_("Text with named white space"),
       TAG("Tags"),
       ESCAPED("Escaped"),
-      HEX("Hexadecimal"),
-      CFG("cfg.txt");
+      HEX("Hexadecimal");
 
       public String toString() {
          return m_Name;
@@ -120,7 +119,7 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-	// a legal empty kp
+	// a legal empty kp (!isValid())
    public KeyPress() {
       m_KeyCode = 0;
       m_Modifiers = Modifiers.sm_EMPTY;
@@ -237,14 +236,8 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString() {
-      return toString(Format.TEXT_);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public String toTagString() {
-      return toString(Format.TAG);
-   }
+   public String toString() { return toString(Format.TEXT_); }
+   public String toTagString() { return toString(Format.TAG); }
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(Format format) {
@@ -252,7 +245,7 @@ public class KeyPress {
          return String.format("k 0x%x m 0x%x: 0x%x", m_KeyCode, m_Modifiers.toInt(), (m_Modifiers.toKeyCode() | (sm_KEYS & m_KeyCode)));
 		}
 	   if (format == Format.TAG) {
-         return m_Modifiers.toString(keyCodeToString(m_KeyCode));
+         return m_Modifiers.toString(keyCodeToTagString(m_KeyCode));
 		}
 		if (m_KeyCode == 0) {
 			if (m_Modifiers.isEmpty()) {
@@ -278,36 +271,31 @@ public class KeyPress {
       }
       if (keyValue == null) {
          keyValue = sm_KeyCodeToValue.get(m_KeyCode);
-      }
-      if (keyValue == null) {
-         String str = toName(modifiers);
-         if (str != null) {
-            return str;
-         }
-         if (!sm_Warned) {
-            sm_Warned = true;
-            Log.warn(String.format("One or more mapped key codes have no name or value (see log for details)."));
-         }
-         Log.log(String.format("Key 0x%x has no name or value", m_KeyCode));
-         return "no name or value";
-      }
-      if (sm_Unprintable.is(keyValue)) {
-         String str = toName(modifiers);
-         if (str != null) {
-            return str;
+         if (keyValue == null) {
+            // no value, try name
+            String str = toTag(modifiers);
+            if (str != null) {
+               return str;
+            }
+            if (!sm_Warned) {
+               sm_Warned = true;
+               Log.warn(String.format("One or more mapped key codes have no name or value (see log for details)."));
+            }
+            Log.log(String.format("Key 0x%x has no name or value", m_KeyCode));
+            return "no name or value";
          }
       }
       if (format == Format.ESCAPED) {
          return modifiers.toString(Io.toEscaped(keyValue));
       }
-      if (format == Format.TAG) {
-         String str = toName(modifiers);
+      if (format == Format.TAG
+       || (format == Format.TEXT_ 
+       &&  (keyValue == 32 || keyValue == 10 || keyValue == 9))
+       || sm_Unprintable.is(keyValue)) {
+         String str = toTag(modifiers);
          if (str != null) {
             return str;
          }
-      }
-      if (format == Format.TEXT_ && keyValue == 32) {
-         return modifiers.toString("" + keyValue);
       }
       return modifiers.toString("" + keyValue);
    }
@@ -319,23 +307,10 @@ public class KeyPress {
          str = prevModifiers.minus(m_Modifiers).toTailTagString()
              + m_Modifiers.minus(prevModifiers).toLeadTagString();
       }
-      return str + keyCodeToString(m_KeyCode);
+      return str + keyCodeToTagString(m_KeyCode);
    }
 */
 
-   ////////////////////////////////////////////////////////////////////////////
-   public String toName(Modifiers modifiers) {
-      String keyName = sm_KeyCodeToName.getString(m_KeyCode, "");
-      if (!"".equals(keyName)) {
-         return modifiers.toString('<' + keyName + '>');
-      }
-      keyName = sm_KeyCodeToName.getString(toInt(), "");
-      if (!"".equals(keyName)) {
-         return '<' + keyName + '>';
-      }
-      return null;
-   }
-   
    ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
    public boolean isValid() { return m_KeyCode != 0 || !m_Modifiers.isEmpty(); }
@@ -361,46 +336,7 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private String getValue() {
-		if (m_KeyCode == 0) {
-			if (m_Modifiers.isEmpty()) {
-				Log.err("Empty KeyPress.");
-				return "empty";
-			}
-			return m_Modifiers.toLeadTagString();
-		}
-      if (sm_Duplicate.is(m_KeyCode)) {
-         //Log.log(String.format("Key 0x%x is a duplicate", m_KeyCode));
-         return null;
-      }
-      Modifiers modifiers = new Modifiers(m_Modifiers);
-      Character keyValue = null;
-      if (isShift()) {
-         // attempt to convert to shifted value
-//System.out.printf("shifting m_KeyCode 0x%x m_Modifiers 0x%x\n", m_KeyCode, m_Modifiers.toInt());
-         int shiftedKeyCode = m_KeyCode | Modifiers.sm_SHIFT.toKeyCode();
-         keyValue = sm_KeyCodeToValue.get(shiftedKeyCode);
-         if (keyValue != null) {
-            // succeeded, cancel shift modifier
-            modifiers = modifiers.minus(Modifiers.sm_SHIFT);
-         }
-      }
-      if (keyValue == null) {
-         keyValue = sm_KeyCodeToValue.get(m_KeyCode);
-      }
-      if (keyValue == null) {
-         //Log.log(String.format("Key 0x%x has no value", m_KeyCode));
-         return null;
-      }
-      if (sm_Unprintable.is(keyValue)) {
-         //Log.log(String.format("Key 0x%x value 0x%x is unprintable", m_KeyCode, (int)keyValue));
-         return null;
-      }
-      return modifiers.toString("" + keyValue);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static String keyCodeToString(int i) {
+   private static String keyCodeToTagString(int i) {
       String str = sm_KeyCodeToName.getString(i, "");
       if (!"".equals(str)) {
          return '<' + str + '>';
@@ -432,6 +368,19 @@ public class KeyPress {
       return kv;
    }
 
+   ////////////////////////////////////////////////////////////////////////////
+   private String toTag(Modifiers modifiers) {
+      String keyName = sm_KeyCodeToName.getString(m_KeyCode, "");
+      if (!"".equals(keyName)) {
+         return modifiers.toString('<' + keyName + '>');
+      }
+      keyName = sm_KeyCodeToName.getString(toInt(), "");
+      if (!"".equals(keyName)) {
+         return '<' + keyName + '>';
+      }
+      return null;
+   }
+   
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_KEYS = 0xFF;
    private static LookupTable sm_KeyEventToCode;
