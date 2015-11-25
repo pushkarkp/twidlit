@@ -9,6 +9,8 @@ import java.net.URL;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
+// Reads and trims 2 space separated items on a line.
+// Use SetSingleToken() to insist on no space in the second item.
 public class SpacedPairReader {
 
    ////////////////////////////////////////////////////////////////////////////
@@ -80,8 +82,9 @@ public class SpacedPairReader {
       m_Line = in.trim();
       int split = Io.findFirstOf(m_Line, Io.sm_WS);
       if (split == -1) {
-         Log.log(String.format("Failed to parse \"%s\", line %d of \"%s\".",
+         Log.warn(String.format("Failed to parse \"%s\", line %d of \"%s\".",
                                in, getLineNumber(), m_In.getPath()));
+         return;
       }
       m_1 = m_Line.substring(0, split);
       m_2 = m_Line.substring(split).trim();

@@ -3,7 +3,7 @@
  *
  * Cfg.java
  */
- 
+
 package pkp.twiddler;
 
 import java.util.ArrayList;
@@ -42,25 +42,28 @@ public class Cfg implements Settings {
    public static Cfg readText(File f) {
       Cfg cfg = new Cfg();
       cfg.readText1(f);
-//System.out.println(cfg);      
+//System.out.println(cfg);
       return cfg;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static String toString(Settings tc, ArrayList<Assignment> asgs) {
-      String str = "";
-      for (Assignment asg: asgs) {
-			str += asg.toString(KeyPress.Format.CFG) + '\n';
-		}
+      String str = Assignment.toString(asgs, KeyPress.Format.CFG);
       for (IntSettings is: tc.getIntSettings().values()) {
-         str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
+         if (!is.isDefault()) {
+            str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
+         }
       }
-      str += String.format("%s %s",
-                           Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME),
-                           Boolean.toString(tc.isEnableRepeat())) + '\n';
-      str += String.format("%s %s",
-                           Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME),
-                           Boolean.toString(tc.isEnableStorage())) + '\n';
+      if (tc.isEnableRepeat()) {
+         str += String.format("%s %s",
+                              Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME),
+                              Boolean.toString(tc.isEnableRepeat())) + '\n';
+      }
+      if (tc.isEnableStorage()) {
+         str += String.format("%s %s",
+                              Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME),
+                              Boolean.toString(tc.isEnableStorage())) + '\n';
+      }
       return str;
    }
 
@@ -115,16 +118,16 @@ public class Cfg implements Settings {
          }
       }
       bb.putInt(0);
-      
+
       // mouse assignments here
       byte mouseBytes[] = new byte[] {
-      0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82, 
-      0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11, 
-      0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09, 
-      0x0, 0x0, 0x0, 
+      0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
+      0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
+      0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09,
+      0x0, 0x0, 0x0,
       };
       bb.put(mouseBytes);
-      
+
       for (int i = 0; i < asgs.size(); ++i) {
          KeyPressList kpl = asgs.get(i).getKeyPressList();
          if (kpl.size() > 1) {
@@ -134,9 +137,9 @@ public class Cfg implements Settings {
             }
          }
       }
-//System.out.printf("bb.position() %d 0x%x%n", (bb.position() - 1), (bb.position() - 1));      
+//System.out.printf("bb.position() %d 0x%x%n", (bb.position() - 1), (bb.position() - 1));
       if ((bb.position() - 1) % 4 != 0) {
-//System.out.printf("(bb.position() - 1) %% 4 %d%n", (bb.position() - 1) % 4);      
+//System.out.printf("(bb.position() - 1) %% 4 %d%n", (bb.position() - 1) % 4);
          if ((bb.position() - 1) % 2 != 0) {
             Log.warn("Wrote an odd number of bytes");
          }
@@ -225,10 +228,10 @@ public class Cfg implements Settings {
       m_IntSettings.MINOR_VERSION.setValue(otherEndian(bb.getShort()));
       int endOfTwiddles = otherEndian(bb.getShort());
       int startOfMulti = otherEndian(bb.getShort());
-//System.out.printf("endOfTwiddles %d 0x%x startOfMulti %d 0x%x sum %d 0x%x diff %d 0x%x%n", 
+//System.out.printf("endOfTwiddles %d 0x%x startOfMulti %d 0x%x sum %d 0x%x diff %d 0x%x%n",
 //                  endOfTwiddles, endOfTwiddles, startOfMulti, startOfMulti,
 //                  endOfTwiddles + startOfMulti, endOfTwiddles + startOfMulti,
-//                  endOfTwiddles - startOfMulti, endOfTwiddles - startOfMulti);      
+//                  endOfTwiddles - startOfMulti, endOfTwiddles - startOfMulti);
       m_IntSettings.MOUSE_EXIT_DELAY.setValue(otherEndian(bb.getShort()));
       m_IntSettings.MS_BETWEEN_TWIDDLES.setValue((int)otherEndian(bb.getShort()));
       m_IntSettings.START_SPEED.setValue(bb.get() & 0xFF);
@@ -340,7 +343,7 @@ public class Cfg implements Settings {
          if (asg != null && asg.getKeyPressList().isValid()) {
             //Log.log(String.format("Cfg read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, path));
             m_Assignments.add(asg);
-         } else if (asg != null || readSettings 
+         } else if (asg != null || readSettings
                  || !(readSettings = readTextSettings(spr))) {
             String fName = "chords.cfg.txt";
             if (f != null) {
@@ -351,10 +354,10 @@ public class Cfg implements Settings {
       }
       spr.close();
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    private boolean readTextSettings(SpacedPairReader spr) {
-      boolean found = true;      
+      boolean found = true;
       for (IntSettings is: m_IntSettings.values()) {
          if (!spr.isMatchFirst(Io.toCamel(is.m_Name), "Cfg")) {
             if (is == m_IntSettings.MAJOR_VERSION) {

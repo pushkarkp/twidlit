@@ -1,5 +1,6 @@
 classlist.txt
 pref/TwidlitPreferences.txt
-Twidlit.jar
+*.jar
 *.class
 *~
+Twidlit

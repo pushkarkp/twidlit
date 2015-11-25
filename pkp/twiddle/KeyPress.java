@@ -28,8 +28,6 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static final int sm_KEYCODE_BITS = 8;
-   public static char sm_BeforeName;
-   public static char sm_AfterName;
 
    ////////////////////////////////////////////////////////////////////////////
    public enum Format {
@@ -55,8 +53,6 @@ public class KeyPress {
    // Load the conversion tables.
    public static void init() {
       sm_Warned = false;
-		sm_BeforeName = Pref.get("name.delimiter.start", "<").charAt(0);
-      sm_AfterName = Pref.get("name.delimiter.end", ">").charAt(0);
       final Io.StringToInt charToInt = new Io.StringToInt() {
                                           public int cvt(String str) {
                                              return Io.parseEscapedChar(str);
@@ -64,7 +60,7 @@ public class KeyPress {
                                        };
       final Io.StringToInt parsePos = new Io.StringToInt() {
                                           public int cvt(String str) {
-                                             return Io.toPosInt(str); 
+                                             return Io.toPosInt(str);
                                           }
                                        };
       final Io.StringToInt parsePos0xFFFF = new Io.StringToInt() {
@@ -83,36 +79,36 @@ public class KeyPress {
                                           }
                                        };
       sm_KeyValueToCode = LookupTableBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"), 
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"),
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
-         Duplicates.OVERWRITE, 
-         1, 0x7F, 
+         Duplicates.OVERWRITE,
+         1, 0x7F,
          parsePos0xFFFF, charToInt);
 //System.out.println("sm_KeyValueToCode:\n" + sm_KeyValueToCode.toString());
       sm_KeyEventToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
-         Duplicates.ERROR, 
-         0x10, 0x7F, 
+         Duplicates.ERROR,
+         0x10, 0x7F,
          parsePos0xFFFF, parsePos0xFFFF);
 //System.out.println("sm_KeyEventToCode:%n" + sm_KeyEventToCode.toString());
       sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"), 
-         Io.sm_MUST_EXIST, 
+         Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"),
+         Io.sm_MUST_EXIST,
          0, 0x20, parsePos0xFF);
 //System.out.println("sm_Unprintable:\n" + sm_Unprintable.toString());
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
-         Io.sm_MUST_EXIST, 
+         Io.sm_MUST_EXIST,
          0x54, 0x70, parsePos0xFF);
 //System.out.println("sm_Duplicate:\n" + sm_Duplicate.toString());
       sm_Lost = LookupSetBuilder.read2(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
-         LookupSetBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST, 
-         0x1, 0x0, 
+         LookupSetBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
+         0x1, 0x0,
          parsePos0xF, parsePos0xFF);
 //System.out.println("sm_Lost:\n" + sm_Lost.toString());
       int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
@@ -154,6 +150,9 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseTag(String tag, Modifiers modifiers) {
+      if ("".equals(tag)) {
+         return new KeyPress();
+      }
       char c0 = tag.charAt(0);
 //System.out.printf("kp parseTag tag %s c0 %c\n", tag, c0);
       if ('0' <= c0 && c0 <= '9') {
@@ -188,7 +187,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseText(char ch, Modifiers mod) {
-//System.out.println("kp parseText '" + ch + "'");      
+//System.out.println("kp parseText '" + ch + "'");
       int keyCodeWithShift = sm_KeyValueToCode.get(ch);
 		if (keyCodeWithShift < 0) {
 			Log.log("\"" + ch + "\" has no code.");
@@ -218,7 +217,7 @@ public class KeyPress {
       return String.format("key event code 0x%x ", ke.getKeyCode())
            + Modifiers.fromKeyEvent(ke).toString();
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseEvent(KeyEvent ke) {
 //System.out.printf("java key code %d modifiers 0x%x side %d\n", ke.getKeyCode(), Modifiers.fromKeyEvent(ke).toInt(), ke.getKeyLocation());
@@ -253,40 +252,64 @@ public class KeyPress {
          return String.format("k 0x%x m 0x%x: 0x%x", m_KeyCode, m_Modifiers.toInt(), (m_Modifiers.toKeyCode() | (sm_KEYS & m_KeyCode)));
 		}
 	   if (format == Format.TAG) {
-         return toString(keyCodeToString(m_KeyCode));
+         return m_Modifiers.toString(keyCodeToString(m_KeyCode));
 		}
-      String str = toStringCommon();
-      if (str != null) {
-         if (format == Format.CFG) { 
-            str = Io.toEscaped(str);
-         }
-//System.out.println("kp toString " + str);
-         return str;
-      }
-      Character keyValue = sm_KeyCodeToValue.get(m_KeyCode);
-		if (format == Format.ESCAPED) {
-			if (keyValue != null && (keyValue <= 32 || keyValue > 126)) {
-				return toString(Io.toEscaped(keyValue));
+		if (m_KeyCode == 0) {
+			if (m_Modifiers.isEmpty()) {
+				Log.err("Empty KeyPress.");
+				return "empty";
 			}
-			return toTagString();
+			return m_Modifiers.toLeadTagString();
 		}
-      if (format == Format.TEXT_ && keyValue != null && keyValue == 32) {
-			return toString("" + keyValue);
-		}
-      String keyName = sm_KeyCodeToName.getString(m_KeyCode, "");
-      if (!"".equals(keyName)) {
-         return toString(sm_BeforeName + keyName + sm_AfterName);
+      if (sm_Duplicate.is(m_KeyCode)) {
+         Log.log(String.format("Key 0x%x is a duplicate", m_KeyCode));
+         return "duplicate";
       }
-      keyName = sm_KeyCodeToName.getString(toInt(), "");
-      if (!"".equals(keyName)) {
-         return sm_BeforeName + keyName + sm_AfterName;
+      Modifiers modifiers = new Modifiers(m_Modifiers);
+      Character keyValue = null;
+      if (isShift()) {
+         // attempt to convert to shifted value
+         int shiftedKeyCode = m_KeyCode | Modifiers.sm_SHIFT.toKeyCode();
+         keyValue = sm_KeyCodeToValue.get(shiftedKeyCode);
+         if (keyValue != null) {
+            // succeeded, cancel shift modifier
+            modifiers = modifiers.minus(Modifiers.sm_SHIFT);
+         }
       }
-      if (!sm_Warned) {
-         sm_Warned = true;
-         Log.warn(String.format("One or more mapped key codes have no name or value (see log for details)."));
+      if (keyValue == null) {
+         keyValue = sm_KeyCodeToValue.get(m_KeyCode);
       }
-      Log.log(String.format("Key code %d (0x%x) has no name or value.", toInt(), toInt()));
-      return null;
+      if (keyValue == null) {
+         String str = toName(modifiers);
+         if (str != null) {
+            return str;
+         }
+         if (!sm_Warned) {
+            sm_Warned = true;
+            Log.warn(String.format("One or more mapped key codes have no name or value (see log for details)."));
+         }
+         Log.log(String.format("Key 0x%x has no name or value", m_KeyCode));
+         return "no name or value";
+      }
+      if (sm_Unprintable.is(keyValue)) {
+         String str = toName(modifiers);
+         if (str != null) {
+            return str;
+         }
+      }
+      if (format == Format.ESCAPED) {
+         return modifiers.toString(Io.toEscaped(keyValue));
+      }
+      if (format == Format.TAG) {
+         String str = toName(modifiers);
+         if (str != null) {
+            return str;
+         }
+      }
+      if (format == Format.TEXT_ && keyValue == 32) {
+         return modifiers.toString("" + keyValue);
+      }
+      return modifiers.toString("" + keyValue);
    }
 /*
    ////////////////////////////////////////////////////////////////////////////
@@ -299,6 +322,19 @@ public class KeyPress {
       return str + keyCodeToString(m_KeyCode);
    }
 */
+
+   ////////////////////////////////////////////////////////////////////////////
+   public String toName(Modifiers modifiers) {
+      String keyName = sm_KeyCodeToName.getString(m_KeyCode, "");
+      if (!"".equals(keyName)) {
+         return modifiers.toString('<' + keyName + '>');
+      }
+      keyName = sm_KeyCodeToName.getString(toInt(), "");
+      if (!"".equals(keyName)) {
+         return '<' + keyName + '>';
+      }
+      return null;
+   }
    
    ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
@@ -307,13 +343,14 @@ public class KeyPress {
    public boolean isPrintable() { return !sm_Unprintable.is(m_KeyCode); }
    public boolean isDuplicate() { return sm_Duplicate.is(m_KeyCode); }
    public boolean isLost() { return sm_Lost.is(m_KeyCode, m_Modifiers.onLeft().toInt()); }
-   public int getKeyCode() { return m_KeyCode; }
-   public Modifiers getModifiers() { return m_Modifiers; }
    public boolean isCtrl() { return m_Modifiers.isCtrl(); }
    public boolean isShift() { return m_Modifiers.isShift(); }
    public boolean isAlt() { return m_Modifiers.isAlt(); }
    public boolean isGui() { return m_Modifiers.isGui(); }
    public int toInt() { return m_Modifiers.toKeyCode() + m_KeyCode; }
+
+   int getKeyCode() { return m_KeyCode; }
+   Modifiers getModifiers() { return m_Modifiers; }
 
    // Private /////////////////////////////////////////////////////////////////
 
@@ -324,11 +361,11 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private String toStringCommon() {
+   private String getValue() {
 		if (m_KeyCode == 0) {
 			if (m_Modifiers.isEmpty()) {
 				Log.err("Empty KeyPress.");
-				return "";
+				return "empty";
 			}
 			return m_Modifiers.toLeadTagString();
 		}
@@ -356,32 +393,21 @@ public class KeyPress {
          return null;
       }
       if (sm_Unprintable.is(keyValue)) {
-         //Log.log(String.format("Key 0x%x value 0x%x is unprintable", m_KeyCode, (int)keyValue));   
+         //Log.log(String.format("Key 0x%x value 0x%x is unprintable", m_KeyCode, (int)keyValue));
          return null;
       }
-      return toString("" + keyValue, modifiers);
+      return modifiers.toString("" + keyValue);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    private static String keyCodeToString(int i) {
       String str = sm_KeyCodeToName.getString(i, "");
       if (!"".equals(str)) {
-         return sm_BeforeName + str + sm_AfterName;
+         return '<' + str + '>';
       }
       return "0x" + Integer.toHexString((char)i);
    }
 
-
-   ////////////////////////////////////////////////////////////////////////////
-   private String toString(String k) {
-		return toString(k, m_Modifiers);
-   }
-	
-   ////////////////////////////////////////////////////////////////////////////
-   private static String toString(String k, Modifiers m) {
-		return m.toLeadTagString() + k + m.toTailTagString();
-   }
-	
 	////////////////////////////////////////////////////////////////////////////
    private static int[] readKeyCodeValues(URL url) {
       int kv[] = new int[513];
@@ -434,7 +460,7 @@ public class KeyPress {
       }
       for (int i = 0; i < args.length; ++i) {
 			char c = args[i].charAt(0);
-         if (c == sm_BeforeName) {
+         if (c == '<') {
             KeyPress act = KeyPress.parseTag(args[i].substring(1, args[i].length() - 1), Modifiers.sm_EMPTY);
             System.out.printf("'%s': '%s' '%s'\n", args[i], act.toString(), act.toTagString());
          } else if (c == '-') {

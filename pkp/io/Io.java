@@ -39,7 +39,7 @@ public class Io {
    public static URL toExistUrl(File f) {
       return toExistUrl(f.getName(), f.getParent(), null);
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static URL toUrl(File f) {
       return toUrl(f.getName(), f.getParent(), null);
@@ -53,7 +53,7 @@ public class Io {
       }
       return url;
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static URL toUrl(String fName, String fileParent, String jarParent) {
       if (fileParent != null) {
@@ -105,7 +105,7 @@ public class Io {
                if (fos != null) {
                   fos.close();
                }
-            } catch (Exception e) {} 
+            } catch (Exception e) {}
          }
       }
    }
@@ -117,7 +117,7 @@ public class Io {
         	System.out.println(url.getFile());
       }
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static void crash() {
       String n = null;
@@ -182,16 +182,21 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static File asRelative(File f) {
+      return new File(getRelativePath(f.getPath()));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static String getRelativePath(String path) {
       String cd = System.getProperty("user.dir");
-      if (path.startsWith(cd)) {
-         int prefix = cd.length();
-         if (prefix < path.length()) {
-            ++prefix;
-         }
-         return path.substring(prefix);
+      if (!path.startsWith(cd)) {
+         return path;
       }
-      return path;
+      int prefix = cd.length();
+      if (prefix < path.length()) {
+         ++prefix;
+      }
+      return path.substring(prefix);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -267,18 +272,18 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public interface StringToInt {
-       int cvt(String str);
+      int cvt(String str);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(String value) {
-       int i = toInt(value);
-       return (i >= 0) ? i : sm_PARSE_FAILED;
+      int i = toInt(value);
+      return (i >= 0) ? i : sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(int max, String value) {
-      int i = Io.toInt(value); 
+      int i = Io.toInt(value);
       return (i >= 0 && i <= max) ? i : Io.sm_PARSE_FAILED;
    }
 
@@ -378,6 +383,7 @@ public class Io {
       case '\t': return "\\t";
       case '\\': return "\\\\";
       case '#': return "\\#";
+      case '<': return "\\<";
       case 11: return "\\v";
       case 0: return "\\0";
       default: return "" + c;
@@ -385,7 +391,7 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static char parseEscaped(char c) { 
+   public static char parseEscaped(char c) {
       switch (c) {
       case 'a': return 7;
       case 'b': return '\b';
@@ -402,6 +408,7 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   // returns an interpretation of the string representing one escaped character
    public static int parseEscapedChar(String str) {
       String c = parseEscaped(str);
       if (c.length() != 1) {
@@ -412,6 +419,7 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   // returns an interpretation of the string of escaped characters
    public static String parseEscaped(String str) {
       if ("".equals(str)) {
          return "";

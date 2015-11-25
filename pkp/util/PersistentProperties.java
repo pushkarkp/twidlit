@@ -47,6 +47,11 @@ public class PersistentProperties {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public void unset(String name) {
+      m_Properties.remove(toTag(name));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public void read() {
       URL url = Io.toUrl(m_FileName, m_FileParent, m_JarParent);
       if (url == null) {

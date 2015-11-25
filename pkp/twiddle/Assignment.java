@@ -13,10 +13,19 @@ import pkp.util.Log;
 public class Assignment extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
+   public static String toString(ArrayList<Assignment> asgs, KeyPress.Format format) {
+      String str = "";
+      for (Assignment asg: asgs) {
+			str += asg.toString(format) + '\n';
+		}
+      return str;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static Assignment combine(Assignment a1, Assignment a2) {
       return new Assignment(a1, a2);
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static Assignment parseLine(String str) {
       Twiddle twiddle = new Twiddle(str);
@@ -28,8 +37,9 @@ public class Assignment extends java.lang.Object {
          return null;
       }
       str = str.substring(eq + 1).trim();
-      KeyPressList kpl = KeyPressList.parseTextAndTags(str);
-      Assignment asg = new Assignment(twiddle, kpl);
+      Assignment asg = 
+         new Assignment(twiddle, 
+                        KeyPressList.parseTextAndTags(str));
       return asg;
    }
 
@@ -141,7 +151,7 @@ public class Assignment extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString(KeyPress.Format.TEXT);
+      return toString(KeyPress.Format.CFG);
    }
 
    ////////////////////////////////////////////////////////////////////////////

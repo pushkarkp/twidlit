@@ -17,7 +17,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.Timer;
 import java.util.Random;
 import pkp.twiddle.Chord;
@@ -46,7 +45,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       setFocusTraversalKeysEnabled(false);
       addKeyListener(keyListener);
       m_MenuItem = menuItem;
-
+      getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
+      getContentPane().setBackground(Color.white);
       m_COLOR_BACKGROUND = Pref.getColor("twiddler.background.color", Color.black);
       m_COLOR_KEY = Pref.getColor("twiddler.button.color", Color.lightGray);
       m_COLOR_LABEL = Pref.getColor("twiddler.label.color", Color.white);
@@ -55,13 +55,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       m_ThumbPanel = createThumbPanel();
       m_ChordPanel = createChordPanel();
       m_TwiddlerPanel = createTwiddlerPanel(m_ThumbPanel, m_ChordPanel);
-      m_ProgressBar = createProgressBar();
-      m_MeanProgressBar = createProgressBar();
-      getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
-      pack();
+      m_ProgressPanel = new ProgressPanel(6, 8, m_COLOR_KEY_HIGHLIGHT, m_COLOR_KEY, m_COLOR_BACKGROUND);
 
       m_RightHand = true;
       setRightHand(false);
+      pack();
 
       m_MarkTimer = new Timer(1000, this);
       m_MarkTimer.setActionCommand(sm_CLEAR_MARK_TEXT);
@@ -92,16 +90,14 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       if (m_RightHand == right) {
          return;
       }
-      getContentPane().removeAll();
       m_RightHand = right;
+      getContentPane().removeAll();
       if (right) {
-         getContentPane().add(m_MeanProgressBar);
-         getContentPane().add(m_ProgressBar);
+         getContentPane().add(m_ProgressPanel);
          getContentPane().add(m_TwiddlerPanel);
       } else {
          getContentPane().add(m_TwiddlerPanel);
-         getContentPane().add(m_ProgressBar);
-         getContentPane().add(m_MeanProgressBar);
+         getContentPane().add(m_ProgressPanel);
       }
       if (isVisible()) {
          super.setVisible(true);
@@ -122,14 +118,13 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
       m_RehighlightMsec = (int)(factor * Pref.getInt("twiddler.rehighlight.msec", sm_DEFAULT_REHIGHLIGHT_MSEC));
       rehighlightIf();
 
-      m_ProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
-      m_MeanProgressBar.setMaximum(m_HighlightMsec + m_RehighlightMsec);
+      m_ProgressPanel.setMaximum(m_HighlightMsec + m_RehighlightMsec, 8);
       zeroProgress();
    }
 
    /////////////////////////////////////////////////////////////////////////////
    int getProgressMax() {
-      return m_ProgressBar.getMaximum();
+      return m_ProgressPanel.getMaximum();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -161,7 +156,12 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
 
    /////////////////////////////////////////////////////////////////////////////
    void setMean(int mean) {
-      m_MeanProgressBar.setValue(mean);
+      m_ProgressPanel.setMean(mean);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setMeanMean(int mean) {
+      m_ProgressPanel.setMeanMean(mean);
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -209,13 +209,13 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
          break;
       case sm_PROGRESS_TEXT: 
          int elapsed = (int)(System.currentTimeMillis() - m_ProgressStart);
-         m_ProgressBar.setValue(elapsed);
-         if (elapsed > m_ProgressBar.getMaximum()) {
-            if (elapsed < m_ProgressBar.getMaximum() * 2) {
-               m_ProgressBar.setForeground(m_COLOR_KEY_HIGHLIGHT);
+         m_ProgressPanel.setProgress(elapsed);
+         if (elapsed > m_ProgressPanel.getMaximum()) {
+            if (elapsed < m_ProgressPanel.getMaximum() * 2) {
+               m_ProgressPanel.setHighlight();
             } else {
                m_ProgressTimer.stop();
-               m_ProgressBar.setValue(0);
+               m_ProgressPanel.setProgress(0);
                repaint();
             }
          }
@@ -315,18 +315,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   private JProgressBar createProgressBar() {
-      JProgressBar pb = new JProgressBar(JProgressBar.VERTICAL, 0, 0);
-      pb.setBackground(m_COLOR_BACKGROUND);
-      pb.setBorderPainted(false);
-      return pb;
-   }
-   
-   /////////////////////////////////////////////////////////////////////////////
    private void zeroProgress() {
       m_ProgressStart = System.currentTimeMillis();
-      m_ProgressBar.setValue(0);
-      m_ProgressBar.setForeground(m_COLOR_KEY);
+      m_ProgressPanel.setProgress(0);
+      m_ProgressPanel.setLowlight();
       repaint();
    }
 
@@ -490,8 +482,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    private JPanel m_ThumbPanel;
    private JPanel m_ChordPanel;
    private JPanel m_TwiddlerPanel;
-   private JProgressBar m_ProgressBar;
-   private JProgressBar m_MeanProgressBar;
+   private ProgressPanel m_ProgressPanel;
    private Timer m_ProgressTimer;
    private long m_ProgressStart;
    private Button[] m_Thumb;

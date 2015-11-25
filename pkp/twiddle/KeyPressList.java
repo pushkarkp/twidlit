@@ -36,7 +36,7 @@ public class KeyPressList extends java.lang.Object {
 		for (int i = 0; i < str.length(); ++i) {
 			KeyPress kp = null;
          char c = str.charAt(i);
-         if (c != KeyPress.sm_BeforeName) {
+         if (c != '<') {
 //System.out.printf("parseTextAndTags1[%d] |%c| (%d) tagMod 0x%x\n", i, c, (int)c, tagMod.toInt());
             if (c == '\\' && i < str.length() - 1) {
                c = Io.parseEscaped(str.charAt(i + 1));
@@ -45,8 +45,8 @@ public class KeyPressList extends java.lang.Object {
 				kp = KeyPress.parseText(c, tagMod);
 			} else {
             String rest = str.substring(i + 1);
-            int end = rest.indexOf(KeyPress.sm_AfterName);
-            if (end < 0 || rest.substring(0, end).indexOf(KeyPress.sm_BeforeName) >= 0) {
+            int end = rest.indexOf('>');
+            if (end < 0 || rest.substring(0, end).indexOf('<') >= 0) {
 //System.out.printf("parseTextAndTags2[%d] |%c| (%d) tagMod 0x%x\n", i, c, (int)c, tagMod.toInt());
 					kp = KeyPress.parseText(c, tagMod);
             } else {
@@ -86,15 +86,16 @@ public class KeyPressList extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean equals(KeyPressList rhs) {
+//System.out.printf("%d == %d%n", size(), rhs.size());
       int size = size();
       if (size != rhs.size()) {
          return false;
       }
-//System.out.printf("kpl equals %s =kpl= %s%n", toString(), rhs.toString());
+//System.out.printf("%s =kpl= %s%n", toString(KeyPress.Format.ESCAPED), rhs.toString(KeyPress.Format.ESCAPED));
       for (int i = 0; i < size; ++i) {
          if (!get(i).equals(rhs.get(i))) {
             return false;
-         }            
+         }
       }
       return true;
    }
@@ -114,11 +115,11 @@ public class KeyPressList extends java.lang.Object {
 System.out.printf("findLongestPrefix: button mods: %s (%s)%n", get(0).getModifiers(), Modifiers.toString(mods));
          for (int i = 0; i < mods.length; ++i) {
             KeyPressList kpl = getPrefixMinusModifiers(mods[i]);
-System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toInt(), kpl.toString()); 
+System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toInt(), kpl.toString());
             asg = map.findLongestPrefix(kpl);
             if (asg != null) {
-//System.out.println("findLongestPrefix: asg " + asg); 
-//System.out.printf("findLongestPrefix: mod 0x%x%n", mods[i].toInt()); 
+//System.out.println("findLongestPrefix: asg " + asg);
+//System.out.printf("findLongestPrefix: mod 0x%x%n", mods[i].toInt());
                return new Assignment(asg, mods[i]);
             }
          }
@@ -128,7 +129,7 @@ System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toI
 
    ////////////////////////////////////////////////////////////////////////////
    private KeyPressList getPrefixMinusModifiers(Modifiers mod) {
-//System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size()); 
+//System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size());
       KeyPressList kpl = new KeyPressList();
       for (int i = 0; i < size(); ++i) {
          if (mod.isSubsetOf(get(i).getModifiers())) {
@@ -157,14 +158,14 @@ System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toI
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(KeyPress.Format format) {
-//System.out.printf("kpl.toString(%s) %d%n", format, m_List.size());      
+//System.out.printf("kpl.toString(%s) %d%n", format, m_List.size());
       if (m_List.size() == 0) {
          return "empty";
       }
       String str = "";
       String sep = "";
       for (KeyPress kp: m_List) {
-//System.out.println("kp " + kp.toString(KeyPress.Format.HEX));      
+//System.out.println("kp " + kp.toString(KeyPress.Format.HEX));
 			if (format == KeyPress.Format.HEX) {
             str += sep + kp.toString(KeyPress.Format.HEX);
 			   sep = " ";
@@ -204,10 +205,16 @@ System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toI
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public KeyPressList set(int i, KeyPress kp) {
+      m_List.set(i, kp);
+      return this;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean isValid() { return size() > 0 && get(size() - 1).isValid(); }
    public int size() { return m_List.size(); }
    public KeyPress get(int i) { return m_List.get(i); }
-   public void add(KeyPress kp) { m_List.add(kp); }
+   public KeyPressList add(KeyPress kp) { m_List.add(kp); return this; }
 
    // Private /////////////////////////////////////////////////////////////////
 
@@ -221,7 +228,7 @@ System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toI
            str = str.substring(end + 1)) {
          KeyPress kp = null;
          Character ch = str.charAt(0);
-         if (ch == KeyPress.sm_BeforeName && (end = str.indexOf(KeyPress.sm_AfterName)) != -1) {
+         if (ch == '<' && (end = str.indexOf('>')) != -1) {
             kp = KeyPress.parseTag(str.substring(1, end), mod);
             if (kp.isModifiers()) {
                mod = kp.getModifiers();

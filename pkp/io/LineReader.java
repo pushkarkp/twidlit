@@ -13,6 +13,7 @@ import pkp.string.StringSource;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
+// uses Io.trimComment() to strip comments but does not strip spaces from line.
 public class LineReader implements StringSource {
 
    ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ public class LineReader implements StringSource {
          try {
             line = m_In.readLine();
          } catch (IOException e) {
-            Log.err(getClass().getName() + " failed to read \"" + m_Url.getPath() + "\".");
+            Log.err(getClass().getName() + String.format(" failed to read line %d of \"%s\".", m_LineNumber + 1, m_Url.getPath()));
          }
          if (line == null) {
             return null;

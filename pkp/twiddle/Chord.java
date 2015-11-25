@@ -6,6 +6,8 @@
  
 package pkp.twiddle;
 
+import pkp.io.Io;
+
 ////////////////////////////////////////////////////////////////////////////////
 public class Chord {
 
@@ -49,11 +51,7 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public static int fromString(String str) {
-      int i = 0;
-      while (i < str.length() && str.charAt(i) == ' ') {
-         ++i;
-      }
-      str = str.substring(i);
+      str = str.substring(Io.findFirstNotOf(str, Io.sm_WS));
       if (str.length() < 4 || (str.length() > 4 && str.charAt(4) != ' ')) {
          return 0;
       }

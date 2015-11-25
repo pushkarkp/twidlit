@@ -124,6 +124,11 @@ class Modifiers {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   String toString(String k) {
+		return toLeadTagString() + k + toTailTagString();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    boolean isEmpty() { return m_Value == 0; }
    boolean isCtrl() { return (m_Value & sm_iBOTH_CTRL) != 0; }
    boolean isShift() { return (m_Value & sm_iBOTH_SHIFT) != 0; }
@@ -161,10 +166,10 @@ class Modifiers {
       for (int i = sm_iLEFT_CTRL; i <= sm_MAX_BIT; i <<= 1) {
          if ((m_Value & i) != 0) {
             String strTag = 
-               KeyPress.sm_BeforeName 
+               '<' 
              + prefix 
              + sm_KeyCodeToName.getString(i << 8, "undefined") 
-             + KeyPress.sm_AfterName;
+             + '>';
             if (lead) {
                str += strTag;
             } else {

@@ -18,14 +18,14 @@ public interface Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public enum IntSettings {
-      MAJOR_VERSION("Major Version"),
-      MINOR_VERSION("Minor Version"),
-      MOUSE_EXIT_DELAY("Mouse mode exit delay"),
-      MS_BETWEEN_TWIDDLES("Faster mouse threshold"),
-      START_SPEED("Starting mouse speed"),
-      FAST_SPEED("Fast mouse speed"),
-      MOUSE_ACCELERATION("Mouse acceleration"),
-      MS_REPEAT_DELAY("Key repeat delay");
+      MAJOR_VERSION("Major Version", 4),
+      MINOR_VERSION("Minor Version", 16),
+      MOUSE_EXIT_DELAY("Mouse mode exit delay", 1500),
+      MS_BETWEEN_TWIDDLES("Faster mouse threshold", 383),
+      START_SPEED("Starting mouse speed", 3),
+      FAST_SPEED("Fast mouse speed", 6),
+      MOUSE_ACCELERATION("Mouse acceleration", 10),
+      MS_REPEAT_DELAY("Key repeat delay", 1000);
 
       public String toString() {
          return m_Name + " " + m_Value;
@@ -35,17 +35,23 @@ public interface Settings {
          return m_Value;
       }
 
+      public boolean isDefault() {
+         return m_Value == m_Default;
+      }
+
       public void setValue(int value) {
          m_Value = value;
       }
 
       public final String m_Name;
 
-      private IntSettings(String name) {
+      private IntSettings(String name, int def) {
          m_Name = name;
-         m_Value = 0;
+         m_Value = def;
+         m_Default = def;
       }
 
       private int m_Value;
+      private int m_Default;
    }
 }

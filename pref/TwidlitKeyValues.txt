@@ -19,11 +19,11 @@
 0x0109 \x06
 0x010a \x07
 0x010b \x08 # backspace duplicated
-0x010c \x09 # tab duplicated
-0x010d \x0a # return duplicated
+0x010c \x09 # \t tab duplicated
+0x010d \x0a # \n line feed duplicated
 0x010e \x0b
 0x010f \x0c
-0x0110 \x0d
+0x0110 \x0d # \r carriage return duplicated
 0x0111 \x0e
 0x0112 \x0f
 0x0113 \x10

@@ -77,11 +77,14 @@ public class Twiddle extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(String in) {
-      String str = in.trim();
-      int split = Io.findFirstOf(str, Io.sm_WS);
-      if (split != -1) {
+      m_Chord = new Chord(in);
+      if (m_Chord.isValid()) {
+         m_ThumbKeys = new ThumbKeys(0);
+      } else {
+         String str = in.trim();
+         int split = Io.findFirstOf(str, Io.sm_WS);
          m_ThumbKeys = new ThumbKeys(str.substring(0, split));
-         m_Chord = new Chord(str.substring(split).trim());
+         m_Chord = new Chord(str.substring(split));
       }
    }
 

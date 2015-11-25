@@ -48,6 +48,11 @@ public class Persist {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static void unset(String name) {
+      sm_Persist.unset(name);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static String get(String name) {
       return sm_Persist.get(name);
    }
@@ -89,7 +94,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void set(String name, boolean value) {
-      Io.parseInt(name, Boolean.toString(value));
+      sm_Persist.set(name, Boolean.toString(value));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -116,7 +121,7 @@ public class Persist {
          return null;
       }
       File f = new File(fileName);
-      while (!f.exists() && !"".equals(f.getPath())) {
+      while (!f.exists() && f.getParent() != null) {
          f = new File(f.getParent());
       }
       if (!f.exists()) {

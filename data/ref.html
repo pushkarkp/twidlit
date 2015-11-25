@@ -16,6 +16,7 @@
 <dt><a href='#hlp'>Help</a></b>
 <dt><a href='#stw'>Save text</a>
 </dl>
+<dt><a href='#chord'>Chords</a>
 <dt><a href='#cfg'>Chord files</a>
 <dt><a href='#4finger'>4finger syntax</a>
 <dt><a href='#pref'>Preferences</a>
@@ -132,6 +133,31 @@ Editing is not supported.
 You can use the <em>Save As...</em> button to save the contents. 
 If it contains chord mappings the dialog allows you to save it as <tt>cfg.txt</tt> or <tt>cfg</tt>. 
 
+<a name='chord'>
+<h1>Chords</h1>
+Here are a few chord statistics: 
+<table style="width:100%">
+  <tr>
+    <td>One button chords</td>
+    <td>12</td> 
+  </tr>
+  <tr>
+    <td>Two buttons chords</td>
+    <td>54</td>
+  </tr>
+  <tr>
+    <td>Three buttons chords</td>
+    <td>108</td> 
+  </tr>
+  <tr>
+    <td>Four buttons chords</td>
+    <td>81</td> 
+  </tr>
+  <tr>
+    <td>Total chords</td>
+    <td>255</td> 
+  </tr>
+</table>
 <a name='cfg'>
 <h1>Chord files</h1>
 Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
@@ -180,12 +206,8 @@ A large value (eg 255) makes chords appear in a fixed order.
 <dd>Whether to open a dialog to confirm you want to clear the character frequency counts.
 <dt><tt>key.wait.msec 80</tt><br>
 <dd>The milliseconds Twidlit waits for a further keystroke to arrive from the Twiddler before converting the accumulated keys into a chord.
-<dt><tt>name.delimiter.start &lt</tt><br>
-<dd>The character used to indicate the start of a key name, 
-for example in <a href='#txt'><tt>TwidlitKeyNames.txt</tt></a>.
-<dt><tt>name.delimiter.end &gt</tt><br>
-<dd>The character used to indicate the end of a key name, 
-for example in <a href='#txt'><tt>TwidlitKeyNames.txt</tt></a>.
+<dt><tt>new.line windows</tt><br>
+<dd>The new line style used in text files. 
 <dt><tt>twiddler.background.color black</tt><br>
 <dd>The background color of the Twiddler window.
 <dt><tt>twiddler.button.color lightGray</tt><br>

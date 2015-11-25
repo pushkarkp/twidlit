@@ -14,6 +14,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import java.util.ArrayList;
 import pkp.twiddle.Assignment;
 import pkp.twiddle.Chord;
@@ -34,6 +35,12 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    /////////////////////////////////////////////////////////////////////////////
    Twidlit() {
       super();
+      UIManager UI = new UIManager();
+      Color bg = Pref.getColor("background.color");
+      UI.put("OptionPane.background", bg);
+      UI.put("Panel.background", bg);
+      UI.put("Button.background", bg);
+      UI.put("CheckBox.background", bg);
       Log.setWindow(this);
       Log.setQuitter(this);
       setIconImage(Pref.getIcon().getImage());
@@ -42,9 +49,10 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       setFocusTraversalKeysEnabled(false);
       addWindowListener(this);
       addKeyListener(this);
-      setTitle("Twidlit");
+      setTitle(getClass().getSimpleName());
+      setPersistName(getClass().getSimpleName());
       setResizable(true);
-
+      
       m_ChordTimes = new ChordTimes();
       m_MenuBar = new TwidlitMenu(this);
       setJMenuBar(m_MenuBar);
@@ -161,7 +169,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
 //System.out.println("keyPressed " + KeyPress.toString(e));
       KeyPress kp = KeyPress.parseEvent(e);
       // ignore invisible keys such as bare shift or control
-      if (kp.getKeyCode() == 0) {
+      if (kp.isModifiers()) {
          return;
       }
 //System.out.printf("keyPressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
@@ -264,8 +272,12 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    private void nextTwiddle(Twiddle prev) {
       Twiddle tw = new Twiddle(m_ChordSource.get(), 0);
       m_Assignment = new Assignment(tw, tw.getKeyPressList(m_KeyMap));
-      m_MenuBar.getTwiddlerWindow().setMean(m_ChordTimes.getMeanMean(0));
-      m_MenuBar.getTwiddlerWindow().show(m_Assignment.getTwiddle(0), prev);
+      tw = m_Assignment.getTwiddle(0);
+      int ch = tw.getChord().toInt();
+      int tk = tw.getThumbKeys().toInt();
+      m_MenuBar.getTwiddlerWindow().setMeanMean(m_ChordTimes.getMeanMean(tk));
+      m_MenuBar.getTwiddlerWindow().setMean(m_ChordTimes.getMean(ch, tk));
+      m_MenuBar.getTwiddlerWindow().show(tw, prev);
   }
 
    ////////////////////////////////////////////////////////////////////////////

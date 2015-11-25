@@ -10,25 +10,19 @@ import javax.swing.JFrame;
 import pkp.util.Persist;
 
 ///////////////////////////////////////////////////////////////////////////////
+// Persistence key is the title unless PersistentName is set.
 public class PersistentFrame extends JFrame {
-
-   ////////////////////////////////////////////////////////////////////////////
-   @Override
-   public void setTitle(String title) {
-      super.setTitle(title);
-      m_PersistName = title;
-   }
 
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public void setVisible(boolean set) {
       if (set) {
          String persistName = getPersistName();
-//System.out.printf("%s %d%n", persistName, Persist.getInt(m_PersistName + ".x", 0));
-         Rectangle r = new Rectangle(Persist.getInt(m_PersistName + ".x", 0),
-                                     Persist.getInt(m_PersistName + ".y", 0),
-                                     Persist.getInt(m_PersistName + ".w", 500),
-                                     Persist.getInt(m_PersistName + ".h", 300));
+//System.out.printf("%s %d%n", persistName, Persist.getInt(persistName + ".x", 0));
+         Rectangle r = new Rectangle(Persist.getInt(persistName + ".x", 0),
+                                     Persist.getInt(persistName + ".y", 0),
+                                     Persist.getInt(persistName + ".w", 500),
+                                     Persist.getInt(persistName + ".h", 300));
          setBounds(r);
       }
       super.setVisible(set);
@@ -63,7 +57,7 @@ public class PersistentFrame extends JFrame {
          if ("".equals(getTitle())) {
             return getClass().getSimpleName();
          }
-         m_PersistName = getTitle();
+         return getTitle();
       }
       return m_PersistName;
    }
