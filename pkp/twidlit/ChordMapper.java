@@ -153,7 +153,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
          map(m_MappedFile, m_ChordsFile, m_CharsFile);
          SaveTextWindow stw = new SaveTextWindow(
             "Chord Mappings",
-            Assignment.toString(m_Assignments, KeyPress.Format.ESCAPED),
+            Assignment.toString(m_Assignments, KeyPress.Format.TEXT_),
             "cfg.txt");
 //         setDirectory(dir);
          stw.setPersistName("chord.list");
