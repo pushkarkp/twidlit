@@ -10,8 +10,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
-import pkp.lookup.SharedIndexableInts;
 import pkp.io.Io;
+import pkp.lookup.SharedIndexableInts;
 import pkp.util.Pref;
 import pkp.util.Log;
 
@@ -52,7 +52,7 @@ class CharCounts implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return String.format("%8s", Io.toEscaped((char)i));
+      return Io.toEscaped((char)i);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ class CharCounts implements SharedIndexableInts {
       /////////////////////////////////////////////////////////////////////////
       @Override // SharedIndexableInts
       public String getLabel(int i) {
-         return String.format("%8s", Io.toEscaped((char)(i / sm_CHARS)) + Io.toEscaped((char)(i % sm_CHARS)));
+         return Io.toEscaped((char)(i / sm_CHARS)) + Io.toEscaped((char)(i % sm_CHARS));
       }
    }
    

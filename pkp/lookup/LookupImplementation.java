@@ -146,9 +146,11 @@ class LookupImplementation implements LookupTable, LookupSet {
 //System.out.printf("getAll: found %x\n", found);
             return new int[] {2, found};
          }
+//System.out.println("getAll: return null 1");
          return null;
       }
       if (found == sm_NO_VALUE) {
+//System.out.println("getAll: return null 2");
          return null;
       }
       int start = -found;
@@ -163,6 +165,7 @@ class LookupImplementation implements LookupTable, LookupSet {
          }
       }
       if (j == 0) {
+//System.out.println("getAll: return null 3");
          return null;
       }
       all[0] = j + 1;

@@ -28,11 +28,16 @@ class NGrams implements SharedIndexableInts {
       m_CurrentIndex = new ArrayList<Integer>();
       m_Current = new ArrayList<NGram>();
       m_NGRAMS = read(url);
+      m_MaxLength = 0;
+      for (int i = 0; i < m_NGRAMS.size(); ++i) {
+         m_MaxLength = Math.max(m_MaxLength, Io.toEscaped(m_NGRAMS.get(i)).length());
+      }
       m_Counts = new ArrayList<Integer>(m_NGRAMS.size());
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          m_Counts.add(0);
       }
       LookupSetBuilder lsbr = new LookupSetBuilder(0x20, 0x7f);
+      lsbr.setDuplicates(Duplicates.IGNORE);
       LookupTableBuilder ltbs = new LookupTableBuilder(0x20, 0x7f);
       ltbs.setDuplicates(Duplicates.STORE);
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
@@ -58,7 +63,8 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return (new String(new char[8 - m_NGRAMS.get(i).length()]).replace('\0', ' ')) + m_NGRAMS.get(i);
+      String label = Io.toEscaped(m_NGRAMS.get(i));
+      return (new String(new char[m_MaxLength - label.length()]).replace('\0', ' ')) + label;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -76,13 +82,16 @@ class NGrams implements SharedIndexableInts {
          }
          return;
       }
-//System.out.printf("[size %d%n", m_CurrentIndex.size());
+// latest character, how many ngrams in process
+//System.out.printf("[0x%x]%c[size %d%n", (int)c, c, m_CurrentIndex.size());
       for (int i = m_Current.size() - 1; i >= 0; --i) {
          if (!m_Current.get(i).nextChar(c)) {
+// mismatch - remove it
 //System.out.println("->" + m_Current.get(i).getChars() + "<");
             m_Current.remove(i);
             m_CurrentIndex.remove(i);
          } else if (m_Current.get(i).matched()) {
+// match complete
 //System.out.printf("!>%c< i %d >%s<%n", c, i, m_Current.get(i).getChars());
             m_Counts.set(m_CurrentIndex.get(i), m_Counts.get(m_CurrentIndex.get(i)) + 1);
             m_Current.remove(i);
@@ -90,13 +99,17 @@ class NGrams implements SharedIndexableInts {
          }
       }
       int[] indexes = m_START.getAll((int)c, LookupTable.sm_NO_VALUE);
+      if (indexes == null) {
+//System.out.printf(">%c<", c);
+      } else {
 //System.out.printf("?>%c< indexes[0] %d ", c, indexes[0]);
-      for (int i = 1; i < indexes[0]; ++i) {
+         for (int i = 1; i < indexes[0]; ++i) {
 //System.out.printf("i %d ix %d ", i, indexes[i]);
-         if (indexes[i] > 0) {
-            m_Current.add(new NGram(m_NGRAMS.get(indexes[i] - 1)));
+            if (indexes[i] > 0) {
+               m_Current.add(new NGram(m_NGRAMS.get(indexes[i] - 1)));
 //System.out.printf("+>%s< ", m_NGRAMS.get(indexes[i] - 1));
-            m_CurrentIndex.add(indexes[i] - 1);
+               m_CurrentIndex.add(indexes[i] - 1);
+            }
          }
       }
 //System.out.println();
@@ -104,12 +117,8 @@ class NGrams implements SharedIndexableInts {
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   int maxLength() {
-      int maxLength = 0;
-      for (int i = 0; i < m_NGRAMS.size(); ++i) {
-         maxLength = Math.max(maxLength, m_NGRAMS.get(i).length());
-      }
-      return maxLength;
+   int getMaxLength() {
+      return m_MaxLength;
    }
    
    // Private /////////////////////////////////////////////////////////////////
@@ -127,7 +136,7 @@ class NGrams implements SharedIndexableInts {
          if (!NGram.isValid(ng)) {
             Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {
-//System.out.println("<" + ng + ">");
+//System.out.println(">" + ng + "<");
             nGrams.add(ng);
          }
       }
@@ -142,6 +151,7 @@ class NGrams implements SharedIndexableInts {
    private ArrayList<NGram> m_Current;
    private ArrayList<Integer> m_CurrentIndex;
    private ArrayList<Integer> m_Counts;
+   private int m_MaxLength;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
@@ -155,7 +165,7 @@ class NGrams implements SharedIndexableInts {
          Log.err("Failed to create URL from \"" + argv[0] + "\".");
       }
       NGrams nGrams = new NGrams(url);
-      System.out.printf("maxLength %d%n", nGrams.maxLength());
+      System.out.printf("maxLength %d%n", nGrams.getMaxLength());
       try {
          url = (new File(argv[1])).toURI().toURL();
       } catch (MalformedURLException e) {

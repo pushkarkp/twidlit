@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
+import pkp.io.Io;
 import pkp.twiddle.KeyPress;
 import pkp.lookup.SharedIndex;
 import pkp.lookup.SharedIndexableInts;
@@ -32,7 +33,6 @@ public class Counts {
       m_LowestCount = lowest;
       m_HighestCount = highest;
       m_ShowBigrams = false;
-      m_ShowNGrams = false;
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -44,7 +44,6 @@ public class Counts {
       m_LowestCount = other.m_LowestCount;
       m_HighestCount = other.m_HighestCount;
       m_ShowBigrams = other.m_ShowBigrams;
-      m_ShowNGrams = other.m_ShowNGrams;
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -54,18 +53,23 @@ public class Counts {
       }
       m_ShowBigrams = set;
       m_CharCounts = null;
-      m_NGrams = null;
+      if (m_NGrams != null) {
+         m_NGrams = new NGrams(m_Url);
+      }
       return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean setShowNGrams(boolean set) {
-      if (set == m_ShowNGrams) { 
+      if (set == (m_NGrams != null)) { 
          return false;
       }
-      m_ShowNGrams = set;
       m_CharCounts = null;
-      m_NGrams = null;
+      if (set) {
+         m_NGrams = new NGrams(m_Url);
+      } else {
+         m_NGrams = null;
+      }
       return true;
    }
 
@@ -108,6 +112,8 @@ public class Counts {
          m_Index = createIndex();
       }
       pw.step();
+      int labelSize = getLabelSize();
+      String pad = (new String(new char[labelSize])).replace('\0', ' ');
       final int DP = 4;
       String countFormat = String.format("%%%dd", m_Index.getMaxDigits());
 		int pcDigits = m_Index.calcPercents();
@@ -119,15 +125,17 @@ public class Counts {
          }
          for (int j = 0; j < 3; ++j) {
             switch (j) {
-               case 0:
-                  str += m_Index.getLabel(i);
+               case 0: {
+                  String label = m_Index.getLabel(i);
+                  str += pad.substring(0, pad.length() - label.length()) + label;
                   break;
+               }
                case 1:
                   str += String.format(countFormat, m_Index.getValue(i));
                   break;
                case 2: {
-                  double pc = m_Index.getPercent(i);
                   int space = pcDigits + 1 + DP;
+                  double pc = m_Index.getPercent(i);
                   if (pc >= 10.0) {
                      --space;
                      if (pc >= 100.0) {
@@ -153,41 +161,26 @@ public class Counts {
          m_Index = createIndex();
       }
       pw.step();
-      int labelSize = m_ShowBigrams ? 7 : 3;
-      if (m_ShowNGrams) { 
-         labelSize = Math.max(labelSize, m_NGrams.maxLength());
-      }
+      int labelSize = getLabelSize();
+      String pad = (new String(new char[labelSize])).replace('\0', ' ');
       final int WIDTH = 1 + sm_PAGE_WIDTH - labelSize;
       double scale = WIDTH / (m_Index.getMax() + 0.5);
       String str = "";
       final int STEP = Math.max(1, m_Index.getSize() / (getProgressCount() - 1));
-//System.out.printf("labelSize %d WIDTH %d scale %g step %d%n", labelSize, WIDTH, scale, step);
-//System.out.printf("m_Index.getSize() %d STEP %d%n", m_Index.getSize(), STEP);
 		for (int i = 0; i < m_Index.getSize(); ++i) {
          if (i % STEP == STEP - 1) {
-//System.out.printf("%d ", i);
             pw.step();
          }
 			int dots = (int)(m_Index.getValue(i) * scale);
 			if (dots > 0) {
-				int last = dots;
-				if (last > WIDTH - 1) {
-					last = WIDTH - 1;
-				}
-				str += m_Index.getLabel(i);
-				for (int j = 0; j < last; ++j) {
-					str += '=';
-				}
-				if (dots == WIDTH) {
-					str += '=';
-				} else if (dots > WIDTH) {
-					str += '>';
-				}
-				str += '\n';
+				int last = Math.min(dots, WIDTH - 1);
+            String label = m_Index.getLabel(i);
+            str += pad.substring(0, pad.length() - label.length()) + label;
+            str += (new String(new char[last])).replace('\0', '=');
+				str += (dots == WIDTH) ? "=\n"
+                 : (dots > WIDTH) ? ">\n" : "\n";
 			}
 		}
-//System.out.println();
-//pkp.io.Io.read("");
       return str;
    }
    
@@ -212,9 +205,6 @@ public class Counts {
       }
       if (m_CharCounts == null) {
          m_CharCounts = new CharCounts(m_ShowBigrams);
-      }
-      if (m_NGrams == null && m_ShowNGrams) {
-         m_NGrams = new NGrams(m_Url);
       }
       boolean ignoredSome = false;
       boolean[] ignored = new boolean[128];
@@ -255,6 +245,16 @@ public class Counts {
       return SharedIndex.create(sic, m_HighestCount, m_LowestCount);
    }
    
+   
+   ////////////////////////////////////////////////////////////////////////////
+   private int getLabelSize() {
+      int labelSize = m_ShowBigrams ? 4 : 2;
+      if (m_NGrams == null) {
+         return labelSize;
+      }
+      return Math.max(labelSize, m_NGrams.getMaxLength());
+   }
+
    // Data ////////////////////////////////////////////////////////////////////
    private static int sm_PAGE_WIDTH = 78;
    private CharCounts m_CharCounts;
@@ -264,5 +264,4 @@ public class Counts {
    private int m_LowestCount;
    private int m_HighestCount;
    private boolean m_ShowBigrams;
-   private boolean m_ShowNGrams;
 }
