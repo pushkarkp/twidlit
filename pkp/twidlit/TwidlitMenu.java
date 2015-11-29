@@ -9,7 +9,6 @@ package pkp.twidlit;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.net.URL;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import java.util.ArrayList;
@@ -56,13 +55,13 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       m_CountsMenu = new JMenu(sm_COUNTS_MENU_TEXT);
       add(m_CountsMenu);
       m_CountsBigrams = addCheckItem(m_CountsMenu, sm_COUNTS_BIGRAMS_TEXT).isSelected();
-      JCheckBoxMenuItem nGrams = addCheckItem(m_CountsMenu, sm_COUNTS_NGRAMS_TEXT);
-      m_NGramsUrl = Persist.getDirJarUrl("pref.dir", "TwidlitNGrams.txt");
-      if (m_NGramsUrl == null) {
-         nGrams.setEnabled(false); 
-         nGrams.setState(false);
+      m_CountsNGrams = addCheckItem(m_CountsMenu, sm_COUNTS_NGRAMS_TEXT);
+      m_NGramsFile = Persist.getFile(sm_NGRAMS_FILE_PERSIST);
+      m_CountsNGrams.setEnabled(m_NGramsFile != null);
+      if (m_NGramsFile == null) {
+         m_CountsNGrams.setState(false);
       }
-      m_CountsNGrams = nGrams.isSelected();
+      add(m_CountsMenu, sm_COUNTS_NGRAMS_FILE_TEXT);
       m_CountsMenu.addSeparator();
       add(m_CountsMenu, sm_COUNTS_FILE_TEXT);
       add(m_CountsMenu, sm_COUNTS_FILES_TEXT);
@@ -144,6 +143,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       Persist.set(sm_PREF_DIR_PERSIST, Io.getRelativePath(m_PrefDir));
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_CFG_FILE_PERSIST, m_CfgFName);
+      if (m_NGramsFile != null) {
+         Persist.set(sm_NGRAMS_FILE_PERSIST, Io.getRelativePath(m_NGramsFile.getPath()));
+      }
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
       Persist.set(sm_TUTOR_SPEED_PERSIST, Integer.toString(m_ChordWait));
@@ -182,9 +184,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          }
          return;
       case sm_COUNTS_NGRAMS_TEXT:
-         m_CountsNGrams = item.isSelected();
          if (m_CharCounts != null
-          && m_CharCounts.setShowNGrams(m_CountsNGrams)) {
+          && m_CharCounts.setShowNGrams(item.isSelected()
+                                        ? m_NGramsFile : null)) {
             enableCountsMenuItems(false);
          }
          return;
@@ -227,6 +229,21 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          m_FileChooser.setDialogTitle("Set Preferences Folder");
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_FileChooser = null;
+         return;
+      case sm_COUNTS_NGRAMS_FILE_TEXT:
+         m_FileChooser = makeFileChooser(new CountsFileActionListener(sm_COUNTS_NGRAM_FILE_TEXT), null);
+         m_FileChooser.setDialogTitle("Select an NGrams File");
+         if (m_NGramsFile != null) {
+            m_FileChooser.setSelectedFile(m_NGramsFile);
+         }
+         m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("ngrams"));
+         m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
+         m_FileChooser.showDialog(m_Twidlit, "OK");
+         m_FileChooser = null;
+         m_CountsNGrams.setEnabled(m_NGramsFile != null);
+         if (m_NGramsFile == null) {
+            m_CountsNGrams.setState(false);
+         }
          return;
       case sm_COUNTS_FILE_TEXT:
       case sm_COUNTS_FILES_TEXT:
@@ -561,16 +578,16 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       public void actionPerformed(ActionEvent e) {
          if (e.getActionCommand() == "ApproveSelection") {
             File f = m_FileChooser.getSelectedFile();
-            if (!f.exists()) {
-               Log.warn("\"" + f.getPath() + "\" does not exist.");
+            if (m_Action.equals(sm_COUNTS_NGRAM_FILE_TEXT)) {
+               m_NGramsFile = f;
                return;
             }
             if (m_CharCounts == null) {
-               m_CharCounts = new Counts(m_NGramsUrl,
+               m_CharCounts = new Counts(m_CountsNGrams.isSelected()
+                                         ? m_NGramsFile : null,
                                          m_CountsMinimum,
                                          m_CountsMaximum);
                m_CharCounts.setShowBigrams(m_CountsBigrams);               
-               m_CharCounts.setShowNGrams(m_CountsNGrams);               
             }
             if (m_Action.equals(sm_COUNTS_FILE_TEXT)) {
                if (f.isDirectory()) {
@@ -668,7 +685,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          switch (m_ShowWhat) {
          case sm_COUNTS_TABLE_TEXT:
             tw = new MenuSaveTextWindow(
-               "Table of Character Counts", 
+               "Character Counts", 
                m_Counts.table(pw),
                "counts", 
                m_OutDir);
@@ -702,10 +719,12 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    static final String sm_FILE_PREF_TEXT = "Preferences...";
    static final String sm_FILE_QUIT_TEXT = "Quit";
    static final String sm_COUNTS_MENU_TEXT = "Counts";
+   static final String sm_COUNTS_NGRAMS_FILE_TEXT = "Ngrams File...";
    static final String sm_COUNTS_FILE_TEXT = "Count File...";
    static final String sm_COUNTS_FILES_TEXT = "Count Files...";
    static final String sm_COUNTS_BIGRAMS_TEXT = "Include Bigrams";
    static final String sm_COUNTS_NGRAMS_TEXT = "Include Ngrams";
+   static final String sm_COUNTS_NGRAM_FILE_TEXT = "NGrams File...";
    static final String sm_COUNTS_RANGE_TEXT = "Set Range Displayed...";
    static final String sm_COUNTS_TABLE_TEXT = "Table Counts";
    static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
@@ -731,6 +750,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    static final String sm_PREF_DIR_PERSIST = "pref.dir";
    static final String sm_CFG_DIR_PERSIST = "cfg.dir";
    static final String sm_CFG_FILE_PERSIST = "cfg.file";
+   static final String sm_NGRAMS_FILE_PERSIST = "ngrams.file";
    static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
    static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
    static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
@@ -762,11 +782,11 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private Counts m_CharCounts;
    private String m_CountsInDir;
    private String m_CountsOutDir;
-   private URL m_NGramsUrl;
    private int m_CountsMinimum; 
    private int m_CountsMaximum; 
    private boolean m_CountsBigrams; 
-   private boolean m_CountsNGrams; 
+   private JCheckBoxMenuItem m_CountsNGrams; 
+   private File m_NGramsFile;
    private TwiddlerWindow m_TwiddlerWindow;
    private ButtonGroup m_HandButtons;
    private int m_ChordWait;

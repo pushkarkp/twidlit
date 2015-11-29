@@ -1,4 +1,4 @@
-DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html pref/chords.cfg.txt pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitNGrams.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
+DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html pref/chords.cfg.txt pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
 JAR_DATA=${DATA}
 IO=pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
 STRING=pkp/string/StringSource.class pkp/string/StringInt.class pkp/string/StringsInts.class pkp/string/StringsIntsBuilder.class

@@ -8,7 +8,6 @@ package pkp.chars;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.net.URL;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,10 +24,14 @@ import pkp.util.Log;
 public class Counts {
    
    ////////////////////////////////////////////////////////////////////////////
-   public Counts(URL url, int lowest, int highest) {
-      m_Url = url;
+   public Counts(File f, int lowest, int highest) {
+      m_File = f;
+      if (m_File == null) {
+         m_NGrams = null;
+      } else {
+         m_NGrams = new NGrams(m_File);
+      }
       m_CharCounts = null;
-      m_NGrams = null;
       m_Index = null;
       m_LowestCount = lowest;
       m_HighestCount = highest;
@@ -37,7 +40,7 @@ public class Counts {
    
    ////////////////////////////////////////////////////////////////////////////
    public Counts(Counts other) {
-      m_Url = other.m_Url;
+      m_File = other.m_File;
       m_CharCounts = other.m_CharCounts;
       m_NGrams = other.m_NGrams;
       m_Index = other.m_Index;
@@ -54,21 +57,22 @@ public class Counts {
       m_ShowBigrams = set;
       m_CharCounts = null;
       if (m_NGrams != null) {
-         m_NGrams = new NGrams(m_Url);
+         m_NGrams = new NGrams(m_File);
       }
       return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean setShowNGrams(boolean set) {
-      if (set == (m_NGrams != null)) { 
+   public boolean setShowNGrams(File f) {
+      if (f == m_File) { 
          return false;
       }
       m_CharCounts = null;
-      if (set) {
-         m_NGrams = new NGrams(m_Url);
-      } else {
+      m_File = f;
+      if (m_File == null) {
          m_NGrams = null;
+      } else {
+         m_NGrams = new NGrams(m_File);
       }
       return true;
    }
@@ -259,7 +263,7 @@ public class Counts {
    private static int sm_PAGE_WIDTH = 78;
    private CharCounts m_CharCounts;
    private NGrams m_NGrams;
-   private URL m_Url;
+   private File m_File;
    private SharedIndex m_Index;
    private int m_LowestCount;
    private int m_HighestCount;

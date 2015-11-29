@@ -24,10 +24,10 @@ import pkp.util.Log;
 class NGrams implements SharedIndexableInts {
    
    ////////////////////////////////////////////////////////////////////////////
-   NGrams(URL url) {
+   NGrams(File f) {
       m_CurrentIndex = new ArrayList<Integer>();
       m_Current = new ArrayList<NGram>();
-      m_NGRAMS = read(url);
+      m_NGRAMS = read(f);
       m_MaxLength = 0;
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          m_MaxLength = Math.max(m_MaxLength, Io.toEscaped(m_NGRAMS.get(i)).length());
@@ -124,10 +124,16 @@ class NGrams implements SharedIndexableInts {
    // Private /////////////////////////////////////////////////////////////////
    
    ////////////////////////////////////////////////////////////////////////////
-   private static ArrayList<String> read(URL url) {
+   private static ArrayList<String> read(File f) {
       ArrayList<String> nGrams = new ArrayList<String>();
-      if (url == null) {
+      if (f == null) {
          return nGrams;
+      }
+      URL url = null;
+      try {
+         url = f.toURI().toURL();
+      } catch (MalformedURLException e) {
+         Log.err("Failed to create URL from \"" + f.getPath() + "\".");
       }
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
@@ -158,14 +164,9 @@ class NGrams implements SharedIndexableInts {
       Pref.init("TwidlitPreferences.txt", "pref", "pref");
       Pref.setIconPath("/data/icon.gif");
       Log.init(Io.createFile(".", "log.txt"), Log.ExitOnError);
-      URL url = null;
-      try {
-         url = (new File(argv[0])).toURI().toURL();
-      } catch (MalformedURLException e) {
-         Log.err("Failed to create URL from \"" + argv[0] + "\".");
-      }
-      NGrams nGrams = new NGrams(url);
+      NGrams nGrams = new NGrams(new File(argv[0]));
       System.out.printf("maxLength %d%n", nGrams.getMaxLength());
+      URL url = null;
       try {
          url = (new File(argv[1])).toURI().toURL();
       } catch (MalformedURLException e) {
