@@ -3,4 +3,4 @@ pref/TwidlitPreferences.txt
 *.jar
 *.class
 *~
-Twidlit
+./Twidlit
