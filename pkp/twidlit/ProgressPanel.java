@@ -51,12 +51,12 @@ class ProgressPanel extends JPanel {
       m_MeanMeanProgressBar = createProgressBar(JProgressBar.VERTICAL);
       m_MeanMeanProgressBar.setPreferredSize(V_BAR_SIZE);
       
-      m_ScalePanel1 = ScalePanel.createVertical(vertMax, m_COLOR_BACKGROUND, m_COLOR_BAR);
+      m_ScalePanel1 = ScalePanel.createVertical(vertMax, 1000, m_COLOR_BACKGROUND, m_COLOR_BAR);
       m_ScalePanel1.setPreferredSize(V_SCALE_SIZE);
-      m_ScalePanel2 = ScalePanel.createVertical(vertMax, m_COLOR_BACKGROUND, m_COLOR_BAR);
+      m_ScalePanel2 = ScalePanel.createVertical(vertMax, 1000, m_COLOR_BACKGROUND, m_COLOR_BAR);
       m_ScalePanel2.setPreferredSize(V_SCALE_SIZE);
       
-      m_ScalePanel3 = ScalePanel.createHorizontal(horzMax, m_COLOR_BACKGROUND, m_COLOR_BAR);
+      m_ScalePanel3 = ScalePanel.createHorizontal(horzMax, 1, m_COLOR_BACKGROUND, m_COLOR_BAR);
       m_ScalePanel3.setPreferredSize(H_SCALE_SIZE);
       setAlignmentX(Component.CENTER_ALIGNMENT);
       m_ScalePanel3.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -111,11 +111,10 @@ class ProgressPanel extends JPanel {
 
    /////////////////////////////////////////////////////////////////////////////
    public void setMaximum(int vert, int horz) {
-System.out.printf("setMaximum() vert %d%n", vert);
       m_ProgressBar.setMaximum(vert);
-      m_ScalePanel1.setMaximum(vert);// + 500) / 1000);
+      m_ScalePanel1.setMaximum(vert);
       m_MeanProgressBar.setMaximum(vert);
-      m_ScalePanel2.setMaximum(vert);// + 500) / 1000);
+      m_ScalePanel2.setMaximum(vert);
       m_MeanMeanProgressBar.setMaximum(vert);
       m_ScalePanel3.setMaximum(horz);
       m_SamplesProgressBar.setMaximum(horz);

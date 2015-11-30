@@ -14,13 +14,13 @@ import javax.swing.BoxLayout;
 public class ScalePanel extends JPanel {
 
    /////////////////////////////////////////////////////////////////////////////
-   public static ScalePanel createVertical(int max, Color c0, Color c1) {
-      return new ScalePanel(max, c0, c1, true);
+   public static ScalePanel createVertical(int size, int scale, Color c0, Color c1) {
+      return new ScalePanel(size, scale, c0, c1, true);
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   public static ScalePanel createHorizontal(int max, Color c0, Color c1) {
-      return new ScalePanel(max, c0, c1, false);
+   public static ScalePanel createHorizontal(int size, int scale, Color c0, Color c1) {
+      return new ScalePanel(size, scale, c0, c1, false);
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -33,22 +33,26 @@ public class ScalePanel extends JPanel {
    protected void paintComponent(Graphics g) {
       super.paintComponent(g);
       if (m_Vertical) {
-         double step = (double)getHeight() / m_Max;
-         double at = getHeight() - step;
-         int size = (int)step + 1;
-         for (int i = 0; i < m_Max; ++i) {
+         double step = getHeight() * (double)m_Scale / m_Max;
+         int barSize = (int)(step + 0.5);
+         // start at the bottom
+         double at = getHeight() - barSize;
+         // add 1 for any remainder
+         int end = (int)((double)m_Max / m_Scale) + 1;
+//System.out.printf("max %d scale %d getHeight() %d at %g step %g at %g barSize %d end %d%n", m_Max, m_Scale, getHeight(), at, step, at, barSize, end);
+         for (int i = 0; i < end; ++i) {
             g.setColor(m_Color[i & 1]);
-            g.fillRect(0, (int)at, getWidth(), size);
-//System.out.printf("step %g at %g size %d%n", step, at, size);
+            g.fillRect(0, (int)(at + 0.5), getWidth(), barSize);
             at -= step;            
          }
       } else {
+         double step = getWidth() * (double)m_Scale / m_Max;
+         int barSize = (int)(step + 0.5);
          double at = 0.0;
-         double step = (double)getWidth() / m_Max;
-         int size = (int)step + 1;
-         for (int i = 0; i < m_Max; ++i) {
+         int end = (int)((double)m_Max / m_Scale) + 1;
+         for (int i = 0; i < end; ++i) {
             g.setColor(m_Color[i & 1]);
-            g.fillRect((int)at, 0, size, getHeight());
+            g.fillRect((int)(at + 0.5), 0, barSize, getHeight());
             at += step;            
          }
       }
@@ -57,10 +61,11 @@ public class ScalePanel extends JPanel {
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
-   private ScalePanel(int max, Color c0, Color c1, boolean vert) {
+   private ScalePanel(int size, int scale, Color c0, Color c1, boolean vert) {
       super();
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-      setMaximum(max);
+      setMaximum(size);
+      m_Scale = scale;
       m_Color = new Color[]{c0, c1};
       m_Vertical = vert;
       setMaximumSize(m_Vertical
@@ -70,6 +75,7 @@ public class ScalePanel extends JPanel {
 
    // Data /////////////////////////////////////////////////////////////////////
    private int m_Max;
+   private int m_Scale;
    private Color[] m_Color;
    private boolean m_Vertical;
 }   
