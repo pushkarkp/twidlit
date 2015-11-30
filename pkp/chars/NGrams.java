@@ -21,6 +21,8 @@ import pkp.util.Pref;
 import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
+// Finds ngrams (read from a file) in text supplied char by char
+// to nextChar().
 class NGrams implements SharedIndexableInts {
    
    ////////////////////////////////////////////////////////////////////////////
@@ -36,6 +38,9 @@ class NGrams implements SharedIndexableInts {
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          m_Counts.add(0);
       }
+      // Create lookup tables of
+      // 1/ all characters in the ngrams (relevancy set) and
+      // 2/ all ngram initial characters (lookup ngram).
       LookupSetBuilder lsbr = new LookupSetBuilder(0x20, 0x7f);
       lsbr.setDuplicates(Duplicates.IGNORE);
       LookupTableBuilder ltbs = new LookupTableBuilder(0x20, 0x7f);
@@ -51,7 +56,6 @@ class NGrams implements SharedIndexableInts {
       }
       m_RELEVANT = lsbr.build();
       m_START = ltbs.build();
-//System.out.println(m_START);
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -63,8 +67,7 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      String label = Io.toEscaped(m_NGRAMS.get(i));
-      return (new String(new char[m_MaxLength - label.length()]).replace('\0', ' ')) + label;
+      return Io.toEscaped(m_NGRAMS.get(i));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -76,13 +79,14 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    public void nextChar(char c) {
       if (!m_RELEVANT.is(c)) {
+         // irrelevant new char invalidates any current ngrams
          if (m_Current.size() > 0) {
             m_Current.clear();
             m_CurrentIndex.clear();
          }
          return;
       }
-// latest character, how many ngrams in process
+// latest character is relevant, how many ngrams in process
 //System.out.printf("[0x%x]%c[size %d%n", (int)c, c, m_CurrentIndex.size());
       for (int i = m_Current.size() - 1; i >= 0; --i) {
          if (!m_Current.get(i).nextChar(c)) {

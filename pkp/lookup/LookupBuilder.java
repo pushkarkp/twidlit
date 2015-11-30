@@ -12,6 +12,7 @@ import pkp.util.Log;
 public class LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
+   // By default flag duplicate entry as an error.
    public enum Duplicates {
       ERROR,
       IGNORE,
@@ -28,6 +29,7 @@ public class LookupBuilder {
          m_Lookup.add(new ArrayList<Integer>());
       }
       m_ScanSize = 0;
+      // By default flag duplicate entry as an error.
       m_Duplicates = Duplicates.ERROR;
       m_Msg = "";
    }
