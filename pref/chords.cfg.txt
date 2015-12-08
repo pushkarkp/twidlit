@@ -121,7 +121,7 @@
 0    ,,|- = :
 0    -,|- = "
 0    ',|- = ~
-0    ,-|- = <
+0    ,-|- = \<
 0    --|- = >
 0    '-|- = ?
 0    ,'|- = <Shift><F1></Shift>
@@ -253,13 +253,3 @@
 0    ,''' = <Alt>&</Alt>
 0    -''' = <Alt>*</Alt>
 0    '''' = <Alt>(</Alt>
-MajorVersion 4
-MinorVersion 16
-MouseModeExitDelay 1500
-FasterMouseThreshold 383
-StartingMouseSpeed 3
-FastMouseSpeed 6
-MouseAcceleration 10
-KeyRepeatDelay 1000
-EnableKeyRepeat true
-EnableMassStorage false

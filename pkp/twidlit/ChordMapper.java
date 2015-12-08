@@ -153,13 +153,11 @@ class ChordMapper extends ControlDialog implements ActionListener {
          map(m_MappedFile, m_ChordsFile, m_CharsFile);
          SaveTextWindow stw = new SaveTextWindow(
             "Chord Mappings",
-            Assignment.toString(m_Assignments, KeyPress.Format.TEXT_),
+            Assignment.toString(m_Assignments, KeyPress.Format.FILE),
             "cfg.txt");
-//         setDirectory(dir);
          stw.setPersistName("chord.list");
          Font font = stw.getFont();
          stw.setFont(new Font("monospaced", font.getStyle(), font.getSize()));
-//         stw.setSaver(new CfgSaver(command));
          stw.setExtension("cfg.txt");
          stw.setVisible(true);
          if (m_DuplicateChars) {
@@ -392,11 +390,12 @@ class ChordMapper extends ControlDialog implements ActionListener {
       if (length == -1) {
          length = line.length() - initial;
       }
-      KeyPressList kpl = getKeyPressList(line.substring(initial, initial + length));//Io.parseEscaped(line.substring(initial, initial + length)));
+      KeyPressList kpl = KeyPressList.parseTextAndTags(line.substring(initial, initial + length));
+      kpl = handleEnter(kpl);
       if (!kpl.isValid()) {
          return "";
       }
-//System.out.printf("%d %s %s%n", m_Assignments.size(), m_Assignments.get(1).getKeyPressList().toString(KeyPress.Format.ESCAPED), kpl.toString(KeyPress.Format.ESCAPED));
+//System.out.printf("%d %s %s%n", m_Assignments.size(), m_Assignments.get(1).getKeyPressList().toString(KeyPress.Format.ESC), kpl.toString(KeyPress.Format.ESC));
       String action = m_CheckBoxSkipDup.isSelected() ? "Skipped" : "Found";
       for (int i = 0; i < m_Assignments.size(); ++i) {
          if (kpl.equals(m_Assignments.get(i).getKeyPressList())) {
@@ -413,8 +412,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private KeyPressList getKeyPressList(String chars) {
-      KeyPressList kpl = KeyPressList.parseTextAndTags(chars);
+   private KeyPressList handleEnter(KeyPressList kpl) {
       // not windows eol or empty
       if (m_NL == null || !kpl.isValid()) {
          return kpl;

@@ -8,24 +8,35 @@ package pkp.string;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.net.URL;
-import pkp.util.Pref;
 import pkp.io.SpacedPairReader;
 import pkp.io.Io;
+import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class StringsIntsBuilder extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public StringsIntsBuilder(URL url, boolean singleWord) {
+      this(url, singleWord, Io.sm_parseInt);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public StringsIntsBuilder(URL url, boolean singleWord, Io.StringToInt si) {
       this();
       SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
       spr.setSingleToken(singleWord);
       String value;
       while ((value = spr.getNextFirst()) != null) {
-         add(spr.getNextSecond(), Io.parseInt(value));
+         int i = si.cvt(value);
+         if (i == Io.sm_PARSE_FAILED) {
+            Log.err(String.format("Failed to parse \"%s\" in line %d of \"%s\".",
+                                  value, spr.getLineNumber(), url.getPath()));
+         }
+         add(spr.getNextSecond(), i);
       }
       spr.close();
    }
+
 
    ////////////////////////////////////////////////////////////////////////////
    public int size() { return m_Strings.size(); }

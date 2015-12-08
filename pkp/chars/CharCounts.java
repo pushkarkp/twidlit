@@ -52,7 +52,7 @@ class CharCounts implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return Io.toEscaped((char)i);
+      return Io.toEscapeChar((char)i);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ class CharCounts implements SharedIndexableInts {
       /////////////////////////////////////////////////////////////////////////
       @Override // SharedIndexableInts
       public String getLabel(int i) {
-         return Io.toEscaped((char)(i / sm_CHARS)) + Io.toEscaped((char)(i % sm_CHARS));
+         return Io.toEscapeChar((char)(i / sm_CHARS)) + Io.toEscapeChar((char)(i % sm_CHARS));
       }
    }
    

@@ -32,7 +32,7 @@ class NGrams implements SharedIndexableInts {
       m_NGRAMS = read(f);
       m_MaxLength = 0;
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
-         m_MaxLength = Math.max(m_MaxLength, Io.toEscaped(m_NGRAMS.get(i)).length());
+         m_MaxLength = Math.max(m_MaxLength, Io.toEscape(m_NGRAMS.get(i)).length());
       }
       m_Counts = new ArrayList<Integer>(m_NGRAMS.size());
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
@@ -67,7 +67,7 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public String getLabel(int i) {
-      return Io.toEscaped(m_NGRAMS.get(i));
+      return Io.toEscape(m_NGRAMS.get(i));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ class NGrams implements SharedIndexableInts {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
-         String ng = Io.parseQuote(line);
+         String ng = Io.parseEscape(line);
          if (!NGram.isValid(ng)) {
             Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {

@@ -30,28 +30,43 @@ public class KeyPressList extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPressList parseTextAndTags(String str) {
-//System.out.printf("parseTextAndTags |%s| [%c] 0x%x\n", str, str.charAt(0),  (int)str.charAt(0));
+//System.out.printf("parseTextAndTags() |%s| [%c] \\x%x%n", str, str.charAt(0),  (int)str.charAt(0));
       KeyPressList kpl = new KeyPressList();
       Modifiers tagMod = Modifiers.sm_EMPTY;
 		for (int i = 0; i < str.length(); ++i) {
 			KeyPress kp = null;
          char c = str.charAt(i);
          if (c != '<') {
-//System.out.printf("parseTextAndTags1[%d] |%c| (%d) tagMod 0x%x\n", i, c, (int)c, tagMod.toInt());
-            if (c == '\\' && i < str.length() - 1) {
-               c = Io.parseEscaped(str.charAt(i + 1));
-               ++i;
+//System.out.printf("parseTextAndTags1 [%d] |%c| (%d) tagMod 0x%x%n", i, c, (int)c, tagMod.toInt());
+            if (c != '\\' || i >= str.length() - 1) {
+               kp = KeyPress.parseText(c, tagMod);
+            } else {
+               char c1 = str.charAt(i + 1);
+               if (c1 != 'k') {
+                  i += (c1 == 'x') ? 3 : 1;
+                  int ch = Io.parseEscapeFirst(str);
+                  if (ch == -1) {
+                     // error at EOL, already warned
+                     break;
+                  }
+                  kp = KeyPress.parseText((char)ch, tagMod);
+               } else {
+                  i += 5;
+                  int k = Integer.parseInt(str.substring(i - 3, i + 1), 16);
+//System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(i - 3, i + 1), k);
+                  kp = new KeyPress(k, tagMod);
+               }
             }
-				kp = KeyPress.parseText(c, tagMod);
-			} else {
+         } else {
             String rest = str.substring(i + 1);
             int end = rest.indexOf('>');
+            // accept unescaped < if at EOL
             if (end < 0 || rest.substring(0, end).indexOf('<') >= 0) {
-//System.out.printf("parseTextAndTags2[%d] |%c| (%d) tagMod 0x%x\n", i, c, (int)c, tagMod.toInt());
-					kp = KeyPress.parseText(c, tagMod);
+//System.out.printf("parseTextAndTags3 [%d] |%c| (%d) tagMod 0x%x%n", i, c, (int)c, tagMod.toInt());
+               kp = KeyPress.parseText(c, tagMod);
             } else {
-//System.out.printf("parseTextAndTags3[%d] |%s| tagMod 0x%x\n", i, rest.substring(0, end), tagMod.toInt());
-					kp = KeyPress.parseTag(rest.substring(0, end), tagMod);
+//System.out.printf("parseTextAndTags4 [%d] |%s| tagMod \\x%x%n", i, rest.substring(0, end), tagMod.toInt());
+               kp = KeyPress.parseTag(rest.substring(0, end), tagMod);
                if (kp.isModifiers()) {
                   tagMod = kp.getModifiers();
                }
@@ -63,13 +78,13 @@ public class KeyPressList extends java.lang.Object {
 				}
 			}
 			if (!kp.isValid()) {
-				Log.log(String.format("Failed to find keypress for \"%c\" (%d) in \"%s\"", c, (int)c, str));
-				return new KeyPressList();
-			}
-//System.out.printf("parseTextAndTags add: keycode 0x%x mod 0x%x\n", kp.getKeyCode(), kp.getModifiers().toInt());
-		   kpl.append(kp, str);
+            Log.log(String.format("Failed to find keypress for \"%c\" (%d) in \"%s\"", c, (int)c, str));
+            return new KeyPressList();
+         }
+//System.out.printf("parseTextAndTags5 add: keycode 0x%x mod 0x%x%n", kp.getKeyCode(), kp.getModifiers().toInt());
+         kpl.append(kp, str);
       }
-//System.out.println(kpl);
+//System.out.println("parseTextAndTags6 " + kpl);
       return kpl;
    }
 
@@ -91,7 +106,7 @@ public class KeyPressList extends java.lang.Object {
       if (size != rhs.size()) {
          return false;
       }
-//System.out.printf("%s =kpl= %s%n", toString(KeyPress.Format.ESCAPED), rhs.toString(KeyPress.Format.ESCAPED));
+//System.out.printf("%s =kpl= %s%n", toString(KeyPress.Format.ESC), rhs.toString(KeyPress.Format.ESC));
       for (int i = 0; i < size; ++i) {
          if (!get(i).equals(rhs.get(i))) {
             return false;
@@ -158,30 +173,17 @@ System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toI
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(KeyPress.Format format) {
-//System.out.printf("kpl.toString(%s) %d%n", format, m_List.size());
-      if (m_List.size() == 0) {
+      if (size() == 0) {
          return "empty";
       }
       String str = "";
-      String sep = "";
       for (KeyPress kp: m_List) {
-//System.out.println("kp " + kp.toString(KeyPress.Format.HEX));
-			if (format == KeyPress.Format.HEX) {
-            str += sep + kp.toString(KeyPress.Format.HEX);
-			   sep = " ";
-			} else {
-            str += kp.toString(format);
-			}
+         str += kp.toString(format);
       }
       return str;
    }
-/*
-      if (!m_Modifiers.equals(prevModifiers)) {
-         str = prevModifiers.minus(m_Modifiers).toTailTagString()
-             + m_Modifiers.minus(prevModifiers).toLeadTagString();
-      }
-*/
-  ////////////////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean startsWith(KeyPressList kpl) {
       if (size() < kpl.size()) {
          return false;

@@ -11,10 +11,10 @@
 # keyboard it comes from is irrelevant. 
 # Key code and modifier names are in TwidlitKeyNames.txt. 
 #
-5 0x3d # <Ctrl><Alt><Delete></Alt></Ctrl>
-1 0x29 # <Ctrl><Escape></Ctrl> Eaten by Windows
-4 0x29 # <Alt><Escape></Alt> Eaten by Windows
-4 0x2b # <Alt><Tab></Alt> Eaten by Windows
-4 0x3d # <Alt><F4></Alt> Closes window
-4 0x2c # <Alt><Space></Alt> Eaten by Windows
-0 0x43 # F10 Eaten by Windows
+\k053d # <Ctrl><Alt><Delete></Alt></Ctrl>
+\k0129 # <Ctrl><Escape></Ctrl> Eaten by Windows
+\k0429 # <Alt><Escape></Alt> Eaten by Windows
+\k042b # <Alt><Tab></Alt> Eaten by Windows
+\k043d # <Alt><F4></Alt> Closes window
+\k042c # <Alt><Space></Alt> Eaten by Windows
+\k0043 # F10 Eaten by Windows

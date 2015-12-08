@@ -20,6 +20,7 @@ public class Io {
    public static final boolean sm_MUST_EXIST = true;
    public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
    public static final String sm_WS = "   ";
+   public static final String sm_HEX_DIGIT = "0123456789abcdefABCDEF";
 
    ////////////////////////////////////////////////////////////////////////////
    public static int read(String prompt) {
@@ -276,6 +277,14 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static final Io.StringToInt sm_parseInt = 
+      new Io.StringToInt() {
+         public int cvt(String str) {
+            return Io.toInt(str);
+         }
+      };
+
+   ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(String value) {
       int i = toInt(value);
       return (i >= 0) ? i : sm_PARSE_FAILED;
@@ -284,7 +293,7 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(int max, String value) {
       int i = Io.toInt(value);
-      return (i >= 0 && i <= max) ? i : Io.sm_PARSE_FAILED;
+      return (i >= 0 && i <= max) ? i : sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -362,16 +371,16 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String toEscaped(String str) {
+   public static String toEscape(String str) {
       String out = "";
       for (int i = 0; i < str.length(); ++i) {
-         out += toEscaped(str.charAt(i));
+         out += toEscapeChar(str.charAt(i));
       }
       return out;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String toEscaped(char c) {
+   public static String toEscapeChar(char c) {
       switch (c) {
       case 7: return "\\a";
       case '\b': return "\\b";
@@ -385,13 +394,13 @@ public class Io {
       case '#': return "\\#";
       case '<': return "\\<";
       case 11: return "\\v";
-      case 0: return "\\0";
-      default: return "" + c;
       }
+      return (c < 32) ? String.format("\\x%02x", (int)c) : "" + c;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static char parseEscaped(char c) {
+   // returns the value of a char that was preceded by \.
+   static char escapedToChar(char c) {
       switch (c) {
       case 'a': return 7;
       case 'b': return '\b';
@@ -408,56 +417,52 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   // returns an interpretation of the string representing one escaped character
-   public static int parseEscapedChar(String str) {
-      String c = parseEscaped(str);
-      if (c.length() != 1) {
-         Log.err(String.format("%s->%s (%d)", str, c, c.length()));
+   // returns an interpretation of the first escaped character in the string
+   public static int parseEscapeFirst(String str) {
+      CharIntPair cip = parseEscape1By1(str);
+      if (cip == null) {
          return -1;
       }
-      return c.charAt(0) & 0xFF;
+      return cip.m_Char;
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   // returns an interpretation of the string representing one escaped character
+   public static int parseEscape1(String str) {
+      CharIntPair cip = parseEscape1By1(str);
+      if (cip == null) {
+         return -1;
+      }
+      if (cip.m_Int != str.length()) {
+         char c = cip.m_Char;
+         Log.err(String.format("%s->%s (\\x%02x)", str, c, (int)c));
+         return -1;
+      }
+      return cip.m_Char;
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
    // returns an interpretation of the string of escaped characters
-   public static String parseEscaped(String str) {
-      if ("".equals(str)) {
-         return "";
-      }
+   // includes the form \xnn where nn is a 2 digit hex value.
+   public static String parseEscape(String str) {
       char[] buf = new char[str.length()];
-      int skipped = 0;
       int i = 0;
-      for (; i < str.length(); ++i) {
-         char c = str.charAt(i);
-         if (c == '\\' && i < str.length() - 1) {
-            ++i;
-            ++skipped;
-            if ((str.charAt(i) == 'x' || str.charAt(i) == 'X')
-             && i < str.length() - 2) {
-               skipped += 2;
-               i += 2;
-               c = (char)Integer.parseInt(str.substring(i - 1, i + 1), 16);
-//System.out.printf("%s %d%n", str.substring(i - 1, i + 1), (int)c);
-            } else {
-               c = parseEscaped(str.charAt(i));
-            }
+      int j = 0;
+      CharIntPair cip = null;
+      for (;;) {
+         cip = parseEscape1By1(str.substring(j));
+         if (cip == null) {
+            break;
          }
-         buf[i - skipped] = c;
+         buf[i++] = cip.m_Char;
+         j += cip.m_Int;
       }
-      return new String(buf, 0, i - skipped);
+      return new String(buf, 0, i);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static boolean isPrintable(int ch) {
       return 32 < ch && ch < 127;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static String parseQuote(String str) {
-      if (str.length() > 1 && isQuote(str.charAt(0)) && isQuote(str.charAt(str.length() - 1))) {
-         str = str.substring(1, str.length() - 1);
-      }
-      return parseEscaped(str);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -482,6 +487,42 @@ public class Io {
          }
       }
       return out;
+   }
+
+   // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static class CharIntPair {
+      CharIntPair(char c, int i) {
+         m_Char = c;
+         m_Int = i;
+      }
+      char m_Char;
+      int m_Int;
+   }   
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static CharIntPair parseEscape1By1(String str) {
+      if ("".equals(str)) {
+         return null;
+      }
+      char c = str.charAt(0);
+      if (c != '\\') {
+         return new CharIntPair(c, 1);
+      }
+      if (str.length() == 1) {
+         Log.warn("Unexpected '\\' at end of line");
+         return null;
+      }
+      char c1 = str.charAt(1);
+      if (c1 != 'x') {
+         return new CharIntPair(escapedToChar(c1), 2);
+      }
+      if (str.length() < 4) {
+         Log.warn("Too few digits after '\\x' at end of line");
+         return null;
+      }
+      return new CharIntPair((char)Integer.parseInt(str.substring(2, 4), 16), 4);
    }
 
    // Data ////////////////////////////////////////////////////////////////////

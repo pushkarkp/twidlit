@@ -8,7 +8,7 @@
 <dd><dl>
 <dt><a href='#file'>File</a>
 <dt><a href='#counts'>Counts</a>
-<dt><a href='#tutot'>Tutor</a>
+<dt><a href='#tutor'>Tutor</a>
 </dl>
 <dt><a href='#windows'>Windows</a>
 <dd><dl>
@@ -18,6 +18,7 @@
 </dl>
 <dt><a href='#chord'>Chords</a>
 <dt><a href='#cfg'>Chord files</a>
+<dt><a href='#format'><tt>Txt</tt> formats</a>
 <dt><a href='#4finger'>4finger syntax</a>
 <dt><a href='#pref'>Preferences</a>
 <dd><dl>
@@ -137,27 +138,27 @@ If it contains chord mappings the dialog allows you to save it as <tt>cfg.txt</t
 <h1>Chords</h1>
 Here are a few chord statistics: 
 <table style="width:100%">
-  <tr>
-    <td>One button chords</td>
-    <td>12</td> 
-  </tr>
-  <tr>
-    <td>Two buttons chords</td>
-    <td>54</td>
-  </tr>
-  <tr>
-    <td>Three buttons chords</td>
-    <td>108</td> 
-  </tr>
-  <tr>
-    <td>Four buttons chords</td>
-    <td>81</td> 
-  </tr>
-  <tr>
-    <td>Total chords</td>
-    <td>255</td> 
-  </tr>
+  <tr><td>One button chords</td><td>12</td></tr>
+  <tr><td>Two buttons chords</td><td>54</td></tr>
+  <tr><td>Three buttons chords</td><td>108</td></tr>
+  <tr><td>Four buttons chords</td><td>81</td></tr>
+  <tr><td>Total chords</td><td>255</td></tr>
 </table>
+And some character statistics: 
+<table style="width:100%">
+  <tr><td>Alphabet</td><td>26</td></tr>
+  <tr><td>Digits</td><td>10</td></tr>
+  <tr><td>Punctuation</td><td>32</td></tr>
+  <tr><td>White space</td><td>3</td></tr>
+  <tr><td>Total printable</td><td>71</td></tr>
+And some key statistics: 
+<table style="width:100%">
+  <tr><td>Function keys</td><td>12</td></tr>
+  <tr><td>Cursor keys</td><td>8</td></tr>
+  <tr><td>Others (Esc, Del, Backspace)</td><td>3</td></tr>
+  <tr><td>Total unprintable</td><td>23</td></tr>
+</table>
+
 <a name='cfg'>
 <h1>Chord files</h1>
 Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
@@ -169,6 +170,47 @@ so I keep my config files as text and only save them as binary when loading the 
 <br><br>
 The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
 No other extension can be used so you do not need to type the extension on the file name, it will be added if not present. 
+
+<a name='format'>
+<h1><tt>Txt</tt> formats</h1>
+Twidlit represents characters (e.g. lower case f) and keystrokes (e.g. Shift and F1 held down together). 
+<br><br>us
+The following are the options for writing to text files. 
+Only STD, TAG and HEX are suitable for <tt>cfg.txt</tt> files because they encode both characters and non-character keystrokes (e.g. <tt>&lt;F1></tt>). 
+Twidlit reads them all except TXT. 
+<dl>
+<dt><b>STD</b>
+<dd>Text is represented as escaped characters, 
+White space and non-character keystrokes are tagged. 
+For example, <tt>\# This&lt;Tab>is&lt;Space>it&lt;PageDown></tt>.
+<dt><b>TAG</b>
+<dd>Everything is tagged, for example, 
+<tt>&lt;Ctrl>&lt;PageUp> &lt;/Ctrl>&lt;Shift>&lt;KeyT>&lt;/Shift></tt>.
+<dt><b>ESC</b>
+<dd>Text is represented as escaped characters. 
+All characters represent themselves except for:
+<table style="width:100%">
+  <tr><td>Back space (0x8)</td><td><b>\b</b></td></tr>
+  <tr><td>Tab (0x9)</td><td><b>\t</b></td></tr>
+  <tr><td>New line (0xa)</td><td><b>\n</b></td></tr>
+  <tr><td>Carriage return (0xd)</td><td><b>\r</b></td></tr>
+  <tr><td>Escape (0x1b)</td><td><b>\e</b></td></tr>
+  <tr><td>Space (0x20)</td><td><b>\s</b></td></tr>
+  <tr><td>Back slash (otherwise the start of an escape sequence)</td><td><b>\\</b></td></tr>
+  <tr><td>Hash (otherwise the start of a comment)</td><td><b>\#</b></td></tr>
+  <tr><td>Less than (otherwise the start of a tag)</td><td><b>\&lt;</b></td></tr>
+  <tr><td>Character as hexadecimal (<em>nn</em> is two hex digits)</td><td><b>\x<em>nn</em></b></td></tr>
+</table>
+For example <tt>This\tis\sit</tt>.
+<dt><b>HEX</b>
+<dd>Keystrokes are represented by hexadecimal keycode values.
+<table style="width:100%">
+  <tr><td>Keystroke as hexadecimal (<em>nnnn</em> is four hex digits)</td><td><b>\k<em>nnnn</em></b></td></tr>
+</table>
+For example <tt>\k002c\k022f\k0028</tt>.
+<dt><b>TXT</b>
+<dd>Characters represent themselves, for example, <tt>This is text</tt>.
+</dl>
 
 <a name='4finger'>
 <h1>4finger syntax</h1>
@@ -208,6 +250,9 @@ A large value (eg 255) makes chords appear in a fixed order.
 <dd>The milliseconds Twidlit waits for a further keystroke to arrive from the Twiddler before converting the accumulated keys into a chord.
 <dt><tt>new.line windows</tt><br>
 <dd>The new line style used in text files. 
+<dt><tt>txt.format hex</tt><br>
+<dd>The <a href="#format">format</a> used to represent characters in text files. 
+The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>. 
 <dt><tt>twiddler.background.color black</tt><br>
 <dd>The background color of the Twiddler window.
 <dt><tt>twiddler.button.color lightGray</tt><br>

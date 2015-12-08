@@ -31,85 +31,71 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public enum Format {
-      TEXT("Text"),
-      TEXT_("Text with named white space"),
+      FILE("For files (user set)"),
+      STD("Escaped text with named white space"),
       TAG("Tags"),
-      ESCAPED("Escaped"),
-      HEX("Hexadecimal");
+      ESC("Escaped"),
+      HEX("Hexadecimal"),
+      TXT("Text");
 
       public String toString() {
-         return m_Name;
+         return m_Description;
       }
-      public final String m_Name;
 
-      private Format(String name) {
-         m_Name = name;
+      private Format(String description) {
+         m_Description = description;
       }
-      private int m_Value;
+      private final String m_Description;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    // Load the conversion tables.
    public static void init() {
       sm_Warned = false;
-      final Io.StringToInt charToInt = new Io.StringToInt() {
-                                          public int cvt(String str) {
-                                             return Io.parseEscapedChar(str);
-                                          }
-                                       };
-      final Io.StringToInt parsePos = new Io.StringToInt() {
-                                          public int cvt(String str) {
-                                             return Io.toPosInt(str);
-                                          }
-                                       };
+      String str = Pref.get("file.format", Format.STD.name());
+      sm_Format = Format.valueOf(str.toUpperCase());
+      final Io.StringToInt escKey = new Io.StringToInt() {
+                                       public int cvt(String str) {
+                                          return escKeyToInt(str);
+                                       }
+                                    };
+      final Io.StringToInt escChar = new Io.StringToInt() {
+                                       public int cvt(String str) {
+                                          return Io.parseEscape1(str);
+                                       }
+                                    };
       final Io.StringToInt parsePos0xFFFF = new Io.StringToInt() {
                                           public int cvt(String str) {
-                                             return (Io.toPosInt(0xFFFF, str));
+                                             return Io.toPosInt(0xFFFF, str);
                                            }
-                                       };
-      final Io.StringToInt parsePos0xFF = new Io.StringToInt() {
-                                          public int cvt(String str) {
-                                             return (Io.toPosInt(0xFF, str));
-                                          }
-                                       };
-      final Io.StringToInt parsePos0xF = new Io.StringToInt() {
-                                          public int cvt(String str) {
-                                             return (Io.toPosInt(0xF, str));
-                                          }
                                        };
       sm_KeyValueToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"),
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
          Duplicates.OVERWRITE,
          1, 0x7F,
-         parsePos0xFFFF, charToInt);
-//System.out.println("sm_KeyValueToCode:\n" + sm_KeyValueToCode.toString());
+         escKey, escChar);
       sm_KeyEventToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
          LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
          Duplicates.ERROR,
          0x10, 0x7F,
-         parsePos0xFFFF, parsePos0xFFFF);
-//System.out.println("sm_KeyEventToCode:%n" + sm_KeyEventToCode.toString());
-      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true)).build();
+         escKey, parsePos0xFFFF);
+      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true, escKey)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"),
          Io.sm_MUST_EXIST,
-         0, 0x20, parsePos0xFF);
-//System.out.println("sm_Unprintable:\n" + sm_Unprintable.toString());
+         0, 0x20, escChar);
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
          Io.sm_MUST_EXIST,
-         0x54, 0x70, parsePos0xFF);
-//System.out.println("sm_Duplicate:\n" + sm_Duplicate.toString());
-      sm_Lost = LookupSetBuilder.read2(
+         0x54, 0x70, escKey);
+      sm_Lost = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
-         LookupSetBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
-         0x1, 0x0,
-         parsePos0xF, parsePos0xFF);
-//System.out.println("sm_Lost:\n" + sm_Lost.toString());
+         Io.sm_MUST_EXIST,
+         0x1, 0x0, escKey);
       int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
       sm_KeyCodeToValue = new HashMap<Integer, Character>(0x80);
       for (int i = 0; kcv[i] > 0; i += 2) {
@@ -138,6 +124,7 @@ public class KeyPress {
 			return;
 		}
 //System.out.printf("KeyPress k 0x%x m 0x%x%n", keyCode, modifiers.toInt());
+      // don't allow modifiers in keycode
       m_KeyCode = keyCode & sm_KEYS;
       m_Modifiers = modifiers;
       // catch unnamed keys early
@@ -145,6 +132,25 @@ public class KeyPress {
 			m_KeyCode = 0;
 			m_Modifiers = Modifiers.sm_EMPTY;
       }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress parseEscape(String str) {
+      return new KeyPress(escKeyToInt(str));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int escKeyToInt(String str) {
+      if (!"\\k".equals(str.substring(0, 2))) {
+         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found \"" + str + '"');
+      }
+      if (str.length() < 6) {
+         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found too short \"" + str + '"');
+      }
+      if (Io.findFirstNotOfUpTo(str.substring(2), Io.sm_HEX_DIGIT, 4) < 4) {
+         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found non-hex digit in \"" + str + '"');
+      }
+      return Integer.parseInt(str.substring(2), 16);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -236,13 +242,17 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString() { return toString(Format.TEXT_); }
+   public String toString() { return toString(Format.FILE); }
    public String toTagString() { return toString(Format.TAG); }
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(Format format) {
+		if (format == Format.FILE) {
+         format = sm_Format;
+		}
+//System.out.println(format.name());
 		if (format == Format.HEX) {
-         return String.format("k 0x%x m 0x%x: 0x%x", m_KeyCode, m_Modifiers.toInt(), (m_Modifiers.toKeyCode() | (sm_KEYS & m_KeyCode)));
+         return String.format("\\k%04x", toInt());
 		}
 	   if (format == Format.TAG) {
          return m_Modifiers.toString(keyCodeToTagString(m_KeyCode));
@@ -275,27 +285,33 @@ public class KeyPress {
             // no value, try name
             String str = toTag(modifiers);
             if (str != null) {
+//System.out.println("toTag1 " + str);
                return str;
             }
             if (!sm_Warned) {
                sm_Warned = true;
-               Log.warn(String.format("One or more mapped key codes have no name or value (see log for details)."));
+               Log.err(String.format("One or more mapped key codes have no name or value (see log for details)."));
             }
-            Log.log(String.format("Key 0x%x has no name or value", m_KeyCode));
+            Log.log(String.format("Key \\x%x has no name or value", m_KeyCode));
             return "no name or value";
          }
       }
-      if (format == Format.ESCAPED) {
-         return modifiers.toString(Io.toEscaped(keyValue));
-      }
       if (format == Format.TAG
-       || (format == Format.TEXT_ 
+       || (format == Format.STD
        &&  (keyValue == 32 || keyValue == 10 || keyValue == 9))
        || sm_Unprintable.is(keyValue)) {
          String str = toTag(modifiers);
          if (str != null) {
+//System.out.println("toTag2 " + str);
             return str;
          }
+      }
+      if (format == Format.STD
+       || format == Format.ESC) {
+         return modifiers.toString(Io.toEscapeChar(keyValue));
+      }
+      if (format != Format.TXT) {
+         Log.err("Unexpected format specifier " + format);
       }
       return modifiers.toString("" + keyValue);
    }
@@ -351,13 +367,13 @@ public class KeyPress {
       String keyCode;
       int key = 0;
       for (; (keyCode = spr.getNextFirst()) != null; key += 2) {
-         kv[key] = Io.toInt(keyCode);
+         kv[key] = escKeyToInt(keyCode);
          if (kv[key] <= 0) {
             Log.err(String.format("Expected a positive integer key code while parsing \"%s\" on line %d of \"%s\".",
                                   keyCode, spr.getLineNumber(), url.getPath()));
          }
          String value = spr.getNextSecond();
-         kv[key + 1] = Io.parseEscapedChar(value);
+         kv[key + 1] = Io.parseEscape1(value);
          if (kv[key + 1] < 0) {
             Log.err(String.format("Failed to parse \"%s\" on line %d of \"%s\".",
                                   value, spr.getLineNumber(), url.getPath()));
@@ -383,6 +399,7 @@ public class KeyPress {
    
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_KEYS = 0xFF;
+   private static Format sm_Format;
    private static LookupTable sm_KeyEventToCode;
    private static HashMap<Integer, Character> sm_KeyCodeToValue;
    private static StringsInts sm_KeyCodeToName;
