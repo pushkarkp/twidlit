@@ -763,7 +763,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       "TwidlitKeyValues.txt",
       "TwidlitKeyEvents.txt",
       "TwidlitLost.txt",
-      "TwidlitNGrams.txt",
       "TwidlitPreferences.txt",
       "TwidlitUnprintables.txt"
    };
