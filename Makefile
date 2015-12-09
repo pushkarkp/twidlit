@@ -6,9 +6,10 @@ LOOKUP=pkp/lookup/LookupBuilder.class pkp/lookup/LookupImplementation.class pkp/
 UI=pkp/ui/ControlDialog.class pkp/ui/ControlWindow.class pkp/ui/ExtensionFileFilter.class pkp/ui/HtmlWindow.class pkp/ui/IntegerTextField.class pkp/ui/LabelComponentBox.class pkp/ui/PersistentDialog.class pkp/ui/PersistentFrame.class pkp/ui/PersistentMenuBar.class pkp/ui/ProgressWindow.class pkp/ui/SaveTextWindow.class pkp/ui/ScalePanel.class pkp/ui/SliderBuilder.class pkp/ui/TextWindow.class
 UTIL=pkp/util/Log.class pkp/util/Persist.class pkp/util/Persistent.class pkp/util/PersistentProperties.class pkp/util/Pref.class 
 CHARS=pkp/chars/CharCounts.class pkp/chars/Counts.class pkp/chars/NGram.class pkp/chars/NGrams.class
+TIMES=pkp/times/ChordTimes.class pkp/times/SortedChordTimes.class
 TWIDDLE=pkp/twiddle/Assignment.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
 TWIDDLER=pkp/twiddler/Cfg.class pkp/twiddler/Settings.class pkp/twiddler/SettingsWindow.class 
-TWIDLIT=pkp/twidlit/ChordMapper.class pkp/twidlit/ChordSource.class pkp/twidlit/ChordTimes.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/SortedChordTimes.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
+TWIDLIT=pkp/twidlit/ChordMapper.class pkp/twidlit/ChordSource.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/TwiddlerWaitSetter.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 CLASSES= ${TEST} ${IO} ${STRING} ${LOOKUP} ${UI} ${UTIL} ${CHARS} ${TWIDDLE} ${TWIDDLER} ${TWIDLIT}
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null
@@ -22,10 +23,11 @@ lookup: ${LOOKUP}
 ui: ${UI}
 util: ${UTIL}
 chars: ${CHARS}
+times: ${TIMES}
 twiddle: ${TWIDDLE}
 twiddler: ${TWIDDLER}
 twidlit: ${TWIDLIT}
-classes: io string lookup ui util chars twiddle twiddler twidlit
+classes: io string lookup ui util chars times twiddle twiddler twidlit
 clean:
 	@cd data; ${QUIET_CLEAN_AND_BACK}
 	@cd pref; ${QUIET_CLEAN_AND_BACK}
@@ -36,6 +38,7 @@ clean:
 	@cd pkp/ui; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/util; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/chars; ${QUIET_CLEAN_AND_BACK}
+	@cd pkp/times; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twiddle; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twiddler; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twidlit; ${QUIET_CLEAN_AND_BACK}

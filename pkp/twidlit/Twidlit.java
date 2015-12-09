@@ -23,6 +23,7 @@ import pkp.twiddle.KeyMap;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
+import pkp.times.ChordTimes;
 import pkp.ui.PersistentFrame;
 import pkp.util.Persist;
 import pkp.util.Pref;
@@ -113,8 +114,8 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   SortedChordTimes getChordTimes() {
-      return new SortedChordTimes(m_ChordTimes);
+   ChordTimes getChordTimes() {
+      return m_ChordTimes;
    }
    
    /////////////////////////////////////////////////////////////////////////////

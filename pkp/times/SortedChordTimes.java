@@ -2,7 +2,7 @@
  * SortedChordTimes.java
  */
 
-package pkp.twidlit;
+package pkp.times;
 
 import pkp.twiddle.Chord;
 import pkp.lookup.SharedIndexableInts;
@@ -10,10 +10,10 @@ import pkp.lookup.SharedIndex;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Chord 0 is not counted so we subtract 1 and use Chord.sm_VALUES counts.
-class SortedChordTimes implements SharedIndexableInts {
+public class SortedChordTimes implements SharedIndexableInts {
    
    /////////////////////////////////////////////////////////////////////////////
-   SortedChordTimes(ChordTimes times) {
+   public SortedChordTimes(ChordTimes times) {
       m_Times = new int[Chord.sm_VALUES];
       m_Labels = new String[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
@@ -47,17 +47,17 @@ class SortedChordTimes implements SharedIndexableInts {
    }
 
    ///////////////////////////////////////////////////////////////////////////////
-   String getSortedLabel(int i) {
-      return m_Index.getLabel(i);
-   }
-   
-   ///////////////////////////////////////////////////////////////////////////////
-   String listChordsByTime() {
+   public String listChordsByTime() {
       String str = "";
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          str += m_Index.getLabel(i) + "\n";
       }
       return str;
+   }
+   
+   ///////////////////////////////////////////////////////////////////////////////
+   String getSortedLabel(int i) {
+      return m_Index.getLabel(i);
    }
    
    ///////////////////////////////////////////////////////////////////////////////

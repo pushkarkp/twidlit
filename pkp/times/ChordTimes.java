@@ -4,7 +4,7 @@
  * ChordTimes.java
  */
 
-package pkp.twidlit;
+package pkp.times;
 
 import java.util.Random;
 import java.io.File;
@@ -21,16 +21,16 @@ import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Chord 0 is not counted so we subtract 1 and use Chord.sm_VALUES counts.
-class ChordTimes implements Persistent {
+public class ChordTimes implements Persistent {
    
    /////////////////////////////////////////////////////////////////////////////
    // with and without thumbkeys
    static final int sm_CHORD_TYPES = 2;
    // number off attempts we keep track of
-   static final int sm_SPAN = 8;
+   public static final int sm_SPAN = 8;
 
    /////////////////////////////////////////////////////////////////////////////
-   ChordTimes() {
+   public ChordTimes() {
       m_RightHand = false;
       load();
    }
@@ -46,7 +46,7 @@ class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   void setRightHand(boolean isRightHand) {
+   public void setRightHand(boolean isRightHand) {
 //System.out.println("setRightHand " + isRightHand);
       if (isRightHand == m_RightHand) {
          return;
@@ -57,7 +57,7 @@ class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   void clear() {
+   public void clear() {
       File f = Io.createFile(Persist.getFolderName(), getFileName());
       if (f.exists() && !f.isDirectory()) {
          f.delete();
@@ -75,7 +75,7 @@ class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   boolean add(int chord, int thumbKeys, int timeMs) {
+   public boolean add(int chord, int thumbKeys, int timeMs) {
       if (timeMs > Short.MAX_VALUE) {
          return false;
       }
@@ -102,7 +102,7 @@ class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   int getMean(int chord, int thumbKeys) {
+   public int getMean(int chord, int thumbKeys) {
       short[] sort = getIq(chord, thumbKeys);
       if (sort == null) {
          return Integer.MAX_VALUE;

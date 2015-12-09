@@ -18,6 +18,7 @@ import pkp.twiddle.Twiddle;
 import pkp.twiddler.Cfg;
 import pkp.twiddler.SettingsWindow;
 import pkp.chars.Counts;
+import pkp.times.SortedChordTimes;
 import pkp.ui.PersistentMenuBar;
 import pkp.ui.HtmlWindow;
 import pkp.ui.SaveTextWindow;
@@ -380,7 +381,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          tw = new MenuSaveTextWindow(
             "Chords By Time",
             "#   Mean Range (Times)\n" + 
-            m_Twidlit.getChordTimes().listChordsByTime(),
+            (new SortedChordTimes(m_Twidlit.getChordTimes())).listChordsByTime(),
             m_CfgDir);
          break;
        default:
