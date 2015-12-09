@@ -105,7 +105,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener/*, Lesson
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public void setWaitFactor(double factor) {
+   void setWaitFactor(double factor) {
       clearMark();
       m_MarkMsec = (int)(factor * Pref.getInt("twiddler.mark.msec", sm_DEFAULT_MARK_MSEC));
       m_Mark = m_MarkMsec > 0;
