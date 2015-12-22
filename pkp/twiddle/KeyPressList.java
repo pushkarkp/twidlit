@@ -119,7 +119,7 @@ public class KeyPressList extends java.lang.Object {
    public Assignment findLongestPrefix(KeyMap map) {
 //System.out.println("findLongestPrefix: \"" + toString() + "\"");
       if (!isValid()) {
-         Log.warn("KeyPressList is empty");
+         Log.err("KeyPressList is empty");
          return null;
       }
       // lookup as-is first
@@ -127,10 +127,10 @@ public class KeyPressList extends java.lang.Object {
       if (asg == null && !get(0).getModifiers().isEmpty()) {
          // try stripping off modifiers
          final Modifiers mods[] = Modifiers.getCombinations(get(0).getModifiers());
-System.out.printf("findLongestPrefix: button mods: %s (%s)%n", get(0).getModifiers(), Modifiers.toString(mods));
+//System.out.printf("findLongestPrefix: button mods: %s (%s)%n", get(0).getModifiers(), Modifiers.toString(mods));
          for (int i = 0; i < mods.length; ++i) {
             KeyPressList kpl = getPrefixMinusModifiers(mods[i]);
-System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toInt(), kpl.toString());
+//System.out.printf("findLongestPrefix: button mods[i] 0x%x kpl %s%n", mods[i].toInt(), kpl.toString());
             asg = map.findLongestPrefix(kpl);
             if (asg != null) {
 //System.out.println("findLongestPrefix: asg " + asg);
