@@ -31,6 +31,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public enum Format {
+      DISPLAY("For display (user set)"),
       FILE("For files (user set)"),
       STD("Escaped text with named white space"),
       TAG("Tags"),
@@ -53,7 +54,9 @@ public class KeyPress {
    public static void init() {
       sm_Warned = false;
       String str = Pref.get("file.format", Format.STD.name());
-      sm_Format = Format.valueOf(str.toUpperCase());
+      sm_FileFormat = Format.valueOf(str.toUpperCase());
+      str = Pref.get("display.format", Format.STD.name());
+      sm_DisplayFormat = Format.valueOf(str.toUpperCase());
       final Io.StringToInt escKey = new Io.StringToInt() {
                                        public int cvt(String str) {
                                           return escKeyToInt(str);
@@ -247,8 +250,11 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(Format format) {
+		if (format == Format.DISPLAY) {
+         format = sm_DisplayFormat;
+		}
 		if (format == Format.FILE) {
-         format = sm_Format;
+         format = sm_FileFormat;
 		}
 //System.out.println(format.name());
 		if (format == Format.HEX) {
@@ -399,7 +405,8 @@ public class KeyPress {
    
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_KEYS = 0xFF;
-   private static Format sm_Format;
+   private static Format sm_DisplayFormat;
+   private static Format sm_FileFormat;
    private static LookupTable sm_KeyEventToCode;
    private static HashMap<Integer, Character> sm_KeyCodeToValue;
    private static StringsInts sm_KeyCodeToName;
