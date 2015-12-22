@@ -1,10 +1,10 @@
 /**
  * Copyright 2015 Pushkar Piggott
  *
- * TwiddlerWaitSetter.java
+ * IntegerSetter.java
  */
 
-package pkp.twidlit;
+package pkp.ui;
 
 import java.awt.Window;
 import java.awt.event.ActionListener;
@@ -15,37 +15,34 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import pkp.ui.ControlDialog;
-import pkp.ui.LabelComponentBox;
-import pkp.ui.IntegerTextField;
 import pkp.util.Pref;
 import pkp.util.Log;
 
 //////////////////////////////////////////////////////////////////////
-class TwiddlerWaitSetter implements ActionListener {
+public class IntegerSetter implements ActionListener {
 
    ///////////////////////////////////////////////////////////////////
-   TwiddlerWaitSetter(Window owner, int wait) {
+   public IntegerSetter(Window owner, String title, String caption, int init, int min, int max, int step) {
+//System.out.printf("init %d min %d %d max %d step %d%n", init, min, max, step);
       m_Ok = false;
-      m_Dialog = new ControlDialog(owner, "Twiddling speed");
+      m_Dialog = new ControlDialog(owner, title);
       m_Dialog.setModal(true);
       m_Dialog.setResizable(false);
-      m_Wait = new SpinnerNumberModel(wait, 1, 30000, 100);
-      m_Dialog.getBox().add(new LabelComponentBox("Milliseconds to wait for chords:", 
-                                                   new JSpinner(m_Wait)));
+      m_Value = new SpinnerNumberModel(init, min, max, step);
+      m_Dialog.getBox().add(new LabelComponentBox(caption, new JSpinner(m_Value)));
       m_Dialog.addButton(createButton("Cancel"));
       m_Dialog.addButton(createButton("OK"));
       m_Dialog.setVisible(true);
    }
    
    ///////////////////////////////////////////////////////////////////
-   boolean isOk() {
+   public boolean isOk() {
       return m_Ok;
    }
    
    ///////////////////////////////////////////////////////////////////
-   int getWait() {
-      return m_Wait.getNumber().intValue();
+   public int getValue() {
+      return m_Value.getNumber().intValue();
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -66,7 +63,7 @@ class TwiddlerWaitSetter implements ActionListener {
    }
    
    // Data /////////////////////////////////////////////////////////////////////
-   private SpinnerNumberModel m_Wait;
+   private SpinnerNumberModel m_Value;
    private ControlDialog m_Dialog;
    private boolean m_Ok;
 }

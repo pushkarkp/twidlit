@@ -19,7 +19,6 @@
 <dt><a href='#chord'>Chords</a>
 <dt><a href='#cfg'>Chord files</a>
 <dt><a href='#format'><tt>Txt</tt> formats</a>
-<dt><a href='#4finger'>4finger syntax</a>
 <dt><a href='#pref'>Preferences</a>
 <dd><dl>
 <dt><a href='#pref.txt'><tt>TwidlitPreferences.txt</tt></a>
@@ -212,16 +211,6 @@ For example <tt>\k002c\k022f\k0028</tt>.
 <dd>Characters represent themselves, for example, <tt>This is text</tt>.
 </dl>
 
-<a name='4finger'>
-<h1>4finger syntax</h1>
-Four-character tags represent chords, starting with the index finger. 
-For example <b><tt>|-,'</tt></b> 
-<p>
-<b><tt>|</tt></b> (pipe) is an inactive finger,<br>
-<b><tt>-</tt></b> (hyphen) is the middle button,<br> 
-<b><tt>,</tt></b> (comma) is the button below and<br> 
-<b><tt>'</tt></b> (apostrophe) is the button above.<br>
-
 <a name='pref'>
 <h1>Preferences</h1>
 Much of the way Twidlit looks and works can be tuned by editing the preference text files. 
@@ -246,6 +235,9 @@ A large value (eg 255) makes chords appear in a fixed order.
 <dd>When character frequency counting, any more are ignored after this many of the same one in a row.
 <dt><tt>count.clear.confirm true</tt><br>
 <dd>Whether to open a dialog to confirm you want to clear the character frequency counts.
+<dt><tt>display.format std</tt><br>
+<dd>The <a href="#format">format</a> used to represent characters and keystrokes in the display. 
+The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>. 
 <dt><tt>file.format std</tt><br>
 <dd>The <a href="#format">format</a> used to represent characters and keystrokes in text files. 
 The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>. 
@@ -253,6 +245,12 @@ The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>.
 <dd>The milliseconds Twidlit waits for a further keystroke to arrive from the Twiddler before converting the accumulated keys into a chord.
 <dt><tt>new.line windows</tt><br>
 <dd>The new line style used in text files. 
+<dt><tt>text.color lightGrey</tt><br>
+<dd>The color of text in the text window. 
+<dt><tt>text.highlight.color black</tt><br>
+<dd>The color of highlighted text in the text window. 
+<dt><tt>text.size 32</tt><br>
+<dd>The size of text in the text window. 
 <dt><tt>twiddler.background.color black</tt><br>
 <dd>The background color of the Twiddler window.
 <dt><tt>twiddler.button.color lightGray</tt><br>

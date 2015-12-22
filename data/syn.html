@@ -1,0 +1,98 @@
+<html>
+<!-- Copyright 2015 Pushkar Piggott -->
+<a name='top'>
+<center><h1>Syntax</h1></center>
+<h2>Sections</h2>
+<dl>
+<dt><a href='#chord'>Chords</a>
+<dt><a href='#cfg'>Chord files</a>
+<dt><a href='#format'><tt>Txt</tt> formats</a>
+<dt><a href='#4finger'>4finger syntax</a>
+<dt><a href='#pref'>Preferences</a>
+<dd><dl>
+</dl>
+
+<a name='chord'>
+<h1>Chords</h1>
+Chords are represented by a thumb-key sequence and a finger sequence. 
+The thumb-key sequence consists of <tt>0</tt> or the initials of the thumb-keys pressed, 
+for example, <tt>CS</tt>.
+The finger sequence has a character for each or the four fingers. 
+It starts with the index finger, so turn your Twiddler so that your index finger is to the left. 
+<p>
+<b><tt>|</tt></b> (pipe) is an inactive finger,<br>
+<b><tt>-</tt></b> (hyphen) is the middle button,<br> 
+<b><tt>,</tt></b> (comma) is the button below and<br> 
+<b><tt>'</tt></b> (apostrophe) is the button above.<br>
+For example <b><tt>|-,'</tt></b> 
+
+<a name='cfg'>
+<h1>Chord files</h1>
+Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
+The Twiddler can only read <tt>cfg</tt>s, and you and I can only read <tt>cfg.txt</tt>s. 
+Happily Twidlit can read and write both.
+<br><br>
+I get confused trying to manage binary files that have to be given the same name (<tt>twiddler.cfg</tt>) when in use, 
+so I keep my config files as text and only save them as binary when loading the Twiddler. 
+<br><br>
+The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
+No other extension can be used so you do not need to type the extension on the file name, it will be added if not present. 
+
+<a name='format'>
+<h1><tt>Txt</tt> formats</h1>
+Twidlit represents characters (e.g. lower case f) and keystrokes (e.g. Shift and F1 held down together). 
+<br><br>us
+The following are the options for writing to text files. 
+Only STD, TAG and HEX are suitable for <tt>cfg.txt</tt> files because they encode both characters and non-character keystrokes (e.g. <tt>&lt;F1></tt>). 
+Twidlit reads them all except TXT. 
+<dl>
+<dt><b>STD</b>
+<dd>Text is represented as escaped characters, 
+White space and non-character keystrokes are tagged. 
+For example, <tt>\# This&lt;Tab>is&lt;Space>it&lt;PageDown></tt>.
+<dt><b>TAG</b>
+<dd>Everything is tagged, for example, 
+<tt>&lt;Ctrl>&lt;PageUp> &lt;/Ctrl>&lt;Shift>&lt;KeyT>&lt;/Shift></tt>.
+<dt><b>ESC</b>
+<dd>Text is represented as escaped characters. 
+All characters represent themselves except for:
+<table style="width:100%">
+  <tr><td>Back space (0x8)</td><td><b>\b</b></td></tr>
+  <tr><td>Tab (0x9)</td><td><b>\t</b></td></tr>
+  <tr><td>New line (0xa)</td><td><b>\n</b></td></tr>
+  <tr><td>Carriage return (0xd)</td><td><b>\r</b></td></tr>
+  <tr><td>Escape (0x1b)</td><td><b>\e</b></td></tr>
+  <tr><td>Space (0x20)</td><td><b>\s</b></td></tr>
+  <tr><td>Back slash (otherwise the start of an escape sequence)</td><td><b>\\</b></td></tr>
+  <tr><td>Hash (otherwise the start of a comment)</td><td><b>\#</b></td></tr>
+  <tr><td>Less than (otherwise the start of a tag)</td><td><b>\&lt;</b></td></tr>
+  <tr><td>Character as hexadecimal (<em>nn</em> is two hex digits)</td><td><b>\x<em>nn</em></b></td></tr>
+</table>
+For example <tt>This\tis\sit</tt>.
+<dt><b>HEX</b>
+<dd>Keystrokes are represented by hexadecimal keycode values.
+<table style="width:100%">
+  <tr><td>Keystroke as hexadecimal (<em>nnnn</em> is four hex digits)</td><td><b>\k<em>nnnn</em></b></td></tr>
+</table>
+For example <tt>\k002c\k022f\k0028</tt>.
+<dt><b>TXT</b>
+<dd>Characters represent themselves, for example, <tt>This is text</tt>.
+</dl>
+
+<a name='key.txt'>
+<h2><tt>TwidlitKeyValues.txt</tt>, <tt>TwidlitKeyNames.txt</tt> and <tt>TwidlitKeyEvents.txt</tt></h2>
+Twidlit is set up to use the US keyboard mapping. 
+If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
+<a name='unprint.txt'>
+<h2><tt>TwidlitUnprintables.txt</tt></h2>
+Some ASCII values are unprintable (<em>backspace</em>, for example). 
+When every keystroke needs to be visible the values in this file are treated specially.
+<a name='dup.txt'>
+<h2><tt>TwidlitDuplicates.txt</tt></h2>
+Some keys are duplicates (<em>Numpad4</em>, for example). 
+You can configure your twiddler to generate them but they never appear in text.
+<a name='lost.txt'>
+<h2><tt>TwidlitLost.txt</tt></h2>
+Some keystrokes never reach an application (<em>&lt;Alt&gt;&lt;Tab&gt;&lt/Alt&gt;</em>, for example). 
+They vary with OS.
+</html>

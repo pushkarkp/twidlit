@@ -30,8 +30,8 @@ public class ChordTimes implements Persistent {
    public static final int sm_SPAN = 8;
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordTimes() {
-      m_RightHand = false;
+   public ChordTimes(boolean isRightHand) {
+      m_RightHand = isRightHand;
       load();
    }
 
@@ -43,17 +43,6 @@ public class ChordTimes implements Persistent {
    /////////////////////////////////////////////////////////////////////////////
    public boolean isRightHand() {
       return m_RightHand;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   public void setRightHand(boolean isRightHand) {
-//System.out.println("setRightHand " + isRightHand);
-      if (isRightHand == m_RightHand) {
-         return;
-      }
-      persist("");
-      m_RightHand = isRightHand;
-      load();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -230,8 +219,8 @@ public class ChordTimes implements Persistent {
          // no time
          return null;
       }
+      short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count + 1);
       int end = count;
-      short[] sort = java.util.Arrays.copyOf(m_Times[thumb][chord - 1], count);
       if (count > 2) {
          getMinMax(sort, end);
          end -= 2;
@@ -240,8 +229,8 @@ public class ChordTimes implements Persistent {
             end -= 1;
          }
       }
+//System.out.printf("getIq() count %d end %d%n", count, end);
       sort[end] = -1;
-//System.out.printf("getIq() (%d) %d %d %d %d %d %d %d %d%n", count, sort[0], sort[1], sort[2], sort[3], sort[4], sort[5], sort[6], sort[7]);
       return sort;
    }
 
@@ -332,7 +321,7 @@ public class ChordTimes implements Persistent {
       NONE, SAVED, NEW;
    }
    
-   private boolean m_RightHand;
+   private final boolean m_RightHand;
    private DataStatus m_DataStatus;
    private short[][][] m_Times;
    private byte[][] m_Counts;
@@ -343,7 +332,7 @@ public class ChordTimes implements Persistent {
    public static void main(String[] args) {
       final int LIMIT = 100;
       Persist.init("TwidlitPersist.properties", ".", "pref");
-      ChordTimes times = new ChordTimes();
+      ChordTimes times = new ChordTimes(true);
       Random rand = new Random();
       int count = Integer.parseInt(args[0]);
       for (int i = 0; i < count; ++i) {

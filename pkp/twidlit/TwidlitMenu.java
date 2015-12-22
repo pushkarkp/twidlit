@@ -24,6 +24,7 @@ import pkp.ui.HtmlWindow;
 import pkp.ui.SaveTextWindow;
 import pkp.ui.ProgressWindow;
 import pkp.ui.ExtensionFileFilter;
+import pkp.ui.IntegerSetter;
 import pkp.io.Io;
 import pkp.util.*;
 
@@ -83,15 +84,13 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
       addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
       tutorMenu.addSeparator();
+      TwiddlerWindow tw = new TwiddlerWindow(addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), m_Twidlit);
+      m_Twidlit.setTwiddlerWindow(tw);
       ButtonModel bm = m_HandButtons.getSelection();
-      boolean right = bm != null && Hand.create(bm.getActionCommand()).isRight();
-      m_Twidlit.setRightHand(right);
-      m_TwiddlerWindow = new TwiddlerWindow(addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), m_Twidlit);
-      m_TwiddlerWindow.setRightHand(right);
-      m_ChordWait = Persist.getInt(sm_TUTOR_SPEED_PERSIST, TwiddlerWindow.getInitialWait());
-      m_TwiddlerWindow.setWaitFactor((double)m_ChordWait / m_TwiddlerWindow.getInitialWait());
-      addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT, m_TwiddlerWindow.isHighlight());
-      addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT, m_TwiddlerWindow.isMark());
+      m_Twidlit.setRightHand(bm != null && Hand.create(bm.getActionCommand()).isRight());
+      addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT);
+      addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT);
+      add(tutorMenu, sm_TUTOR_DELAY_TEXT);
       add(tutorMenu, sm_TUTOR_SPEED_TEXT);
       tutorMenu.addSeparator();
       addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
@@ -103,6 +102,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       add(helpMenu, sm_HELP_INTRO_TEXT);
       add(helpMenu, sm_HELP_ACTIVITIES_TEXT);
       add(helpMenu, sm_HELP_REF_TEXT);
+      add(helpMenu, sm_HELP_SYNTAX_TEXT);
       helpMenu.addSeparator();
       add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
       helpMenu.addSeparator();
@@ -110,16 +110,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       
       enableCountsMenuItems(false);
       setStateFromCheckItems();
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   TwiddlerWindow getTwiddlerWindow() {
-      return m_TwiddlerWindow;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void close() {
-      persist("");
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -149,7 +139,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       }
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
-      Persist.set(sm_TUTOR_SPEED_PERSIST, Integer.toString(m_ChordWait));
       super.persist("");
    }
 
@@ -195,13 +184,13 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          m_Twidlit.setTimed(item.getState());
          return;
       case sm_TUTOR_VISIBLE_TWIDDLER_TEXT:
-         m_TwiddlerWindow.setVisible(item.getState());
+         m_Twidlit.getTwiddlerWindow().setVisible(item.getState());
          return;
       case sm_TUTOR_HIGHLIGHT_CHORD_TEXT:
-         m_TwiddlerWindow.setHighlight(item.getState());
+         m_Twidlit.getTwiddlerWindow().setHighlight(item.getState());
          return;
       case sm_TUTOR_MARK_PRESSED_TEXT:
-         m_TwiddlerWindow.setMark(item.getState());
+         m_Twidlit.getTwiddlerWindow().setMark(item.getState());
          return;
       }
    }
@@ -305,13 +294,28 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          }
          return;
       }
-      case sm_TUTOR_SPEED_TEXT:
-         TwiddlerWaitSetter ws = new TwiddlerWaitSetter(m_Twidlit, m_ChordWait);
-         if (ws.isOk()) {
-            m_ChordWait = ws.getWait();
-            m_TwiddlerWindow.setWaitFactor((double)m_ChordWait / m_TwiddlerWindow.getInitialWait());
+      case sm_TUTOR_DELAY_TEXT: {
+         IntegerSetter is = new IntegerSetter(
+            m_Twidlit, "Chord Delay",
+            "Delay before displaying the chord (milliseconds):",
+            m_Twidlit.getTwiddlerWindow().getDelay(), 
+            0, 30000, 100);
+         if (is.isOk()) {
+            m_Twidlit.getTwiddlerWindow().setDelay(is.getValue());
          }
          return;
+      }
+      case sm_TUTOR_SPEED_TEXT: {
+         IntegerSetter is = new IntegerSetter(
+            m_Twidlit, "Twiddling Speed",
+            "Maximum wait for a chord (milliseconds):",
+            m_Twidlit.getTwiddlerWindow().getSpeed(),
+            1, 30000, 100);
+         if (is.isOk()) {
+            m_Twidlit.getTwiddlerWindow().setSpeed(is.getValue());
+         }
+         return;
+      }
       case sm_HELP_INTRO_TEXT: {
          m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/intro.html");
          return;
@@ -324,6 +328,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/ref.html");
          return;
       }
+      case sm_HELP_SYNTAX_TEXT: {
+         m_HelpWindow = showHtml(m_HelpWindow, sm_HELP_MENU_TEXT, "/data/syn.html");
+         return;
+      }
       case sm_HELP_SHOW_LOG_TEXT:
          Log.get().setVisible(true);
          return;
@@ -334,7 +342,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       default:
          if (Hand.isHand(command)) {
             Hand hand = Hand.create(command);
-            m_TwiddlerWindow.setRightHand(hand.isRight());
+            m_Twidlit.getTwiddlerWindow().setRightHand(hand.isRight());
             m_Twidlit.setRightHand(hand.isRight());
             m_Twidlit.extendTitle(hand.getSmallName());
             return;
@@ -679,8 +687,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       /////////////////////////////////////////////////////////////////////////////
       public void run() {
          ProgressWindow pw = new ProgressWindow(
-                                    "Count Progress", "", 
-                                    0, (int)(Counts.getProgressCount()));
+            "Count Progress", "", 
+            0, (int)(Counts.getProgressCount()));
          pw.setVisible(true);
          MenuSaveTextWindow tw = null;
          switch (m_ShowWhat) {
@@ -711,54 +719,55 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    }
 
    // Final //////////////////////////////////////////////////////////
-   static final String sm_FILE_MENU_TEXT = "File";
-   static final String sm_FILE_OPEN_TEXT = "Open...";
-   static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
-   static final String sm_FILE_LIST_CHORDS_TEXT = "List Chords";
-   static final String sm_FILE_MAP_CHORDS_TEXT = "Map Chords...";
-   static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
-   static final String sm_FILE_PREF_TEXT = "Preferences...";
-   static final String sm_FILE_QUIT_TEXT = "Quit";
-   static final String sm_COUNTS_MENU_TEXT = "Counts";
-   static final String sm_COUNTS_NGRAMS_FILE_TEXT = "Ngrams File...";
-   static final String sm_COUNTS_FILE_TEXT = "Count File...";
-   static final String sm_COUNTS_FILES_TEXT = "Count Files...";
-   static final String sm_COUNTS_BIGRAMS_TEXT = "Include Bigrams";
-   static final String sm_COUNTS_NGRAMS_TEXT = "Include Ngrams";
-   static final String sm_COUNTS_NGRAM_FILE_TEXT = "NGrams File...";
-   static final String sm_COUNTS_RANGE_TEXT = "Set Range Displayed...";
-   static final String sm_COUNTS_TABLE_TEXT = "Table Counts";
-   static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
-   static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
-   static final String sm_TUTOR_MENU_TEXT = "Tutor";
-   static final String sm_TUTOR_SPEED_TEXT = "Speed...";
-   static final String sm_TUTOR_SHOW_MENU_TEXT = "Show";
-   static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
-   static final String sm_TUTOR_HIGHLIGHT_CHORD_TEXT = "Highlight Expected Chord";
-   static final String sm_TUTOR_MARK_PRESSED_TEXT = "Mark Chord Pressed";
-   static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
-   static final String sm_TUTOR_TIMED_TEXT = "Timed";
-   static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
-   static final String sm_HELP_MENU_TEXT = "Help";
-   static final String sm_HELP_INTRO_TEXT = "Introduction";
-   static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
-   static final String sm_HELP_REF_TEXT = "Reference";
-   static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
-   static final String sm_HELP_ABOUT_TEXT = "About";
+   private static final String sm_FILE_MENU_TEXT = "File";
+   private static final String sm_FILE_OPEN_TEXT = "Open...";
+   private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
+   private static final String sm_FILE_LIST_CHORDS_TEXT = "List Chords";
+   private static final String sm_FILE_MAP_CHORDS_TEXT = "Map Chords...";
+   private static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
+   private static final String sm_FILE_PREF_TEXT = "Preferences...";
+   private static final String sm_FILE_QUIT_TEXT = "Quit";
+   private static final String sm_COUNTS_MENU_TEXT = "Counts";
+   private static final String sm_COUNTS_NGRAMS_FILE_TEXT = "Ngrams File...";
+   private static final String sm_COUNTS_FILE_TEXT = "Count File...";
+   private static final String sm_COUNTS_FILES_TEXT = "Count Files...";
+   private static final String sm_COUNTS_BIGRAMS_TEXT = "Include Bigrams";
+   private static final String sm_COUNTS_NGRAMS_TEXT = "Include Ngrams";
+   private static final String sm_COUNTS_NGRAM_FILE_TEXT = "NGrams File...";
+   private static final String sm_COUNTS_RANGE_TEXT = "Set Range Displayed...";
+   private static final String sm_COUNTS_TABLE_TEXT = "Table Counts";
+   private static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
+   private static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
+   private static final String sm_TUTOR_MENU_TEXT = "Tutor";
+   private static final String sm_TUTOR_DELAY_TEXT = "Delay...";
+   private static final String sm_TUTOR_SPEED_TEXT = "Speed...";
+   private static final String sm_TUTOR_SHOW_MENU_TEXT = "Show";
+   private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
+   private static final String sm_TUTOR_HIGHLIGHT_CHORD_TEXT = "Highlight Expected Chord";
+   private static final String sm_TUTOR_MARK_PRESSED_TEXT = "Mark Chord Pressed";
+   private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
+   private static final String sm_TUTOR_TIMED_TEXT = "Timed";
+   private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
+   private static final String sm_HELP_MENU_TEXT = "Help";
+   private static final String sm_HELP_INTRO_TEXT = "Introduction";
+   private static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
+   private static final String sm_HELP_REF_TEXT = "Reference";
+   private static final String sm_HELP_SYNTAX_TEXT = "Syntax";
+   private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
+   private static final String sm_HELP_ABOUT_TEXT = "About";
 
-   static final String sm_CFG = "cfg";
-   static final String sm_CFG_TXT = "cfg.txt";
-   static final String sm_PREF_DIR_PERSIST = "pref.dir";
-   static final String sm_CFG_DIR_PERSIST = "cfg.dir";
-   static final String sm_CFG_FILE_PERSIST = "cfg.file";
-   static final String sm_NGRAMS_FILE_PERSIST = "ngrams.file";
-   static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
-   static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
-   static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
-   static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
-   static final String sm_TUTOR_SPEED_PERSIST = "twiddle.speed";
+   private static final String sm_CFG = "cfg";
+   private static final String sm_CFG_TXT = "cfg.txt";
+   private static final String sm_PREF_DIR_PERSIST = "pref.dir";
+   private static final String sm_CFG_DIR_PERSIST = "cfg.dir";
+   private static final String sm_CFG_FILE_PERSIST = "cfg.file";
+   private static final String sm_NGRAMS_FILE_PERSIST = "ngrams.file";
+   private static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
+   private static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
+   private static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
+   private static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
    
-   static final String[] sm_PREF_FILES = new String[] {
+   private static final String[] sm_PREF_FILES = new String[] {
       "TwidlitDuplicates.txt",
       "TwidlitKeyNames.txt",
       "TwidlitKeyValues.txt",
@@ -787,9 +796,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private boolean m_CountsBigrams; 
    private JCheckBoxMenuItem m_CountsNGrams; 
    private File m_NGramsFile;
-   private TwiddlerWindow m_TwiddlerWindow;
    private ButtonGroup m_HandButtons;
-   private int m_ChordWait;
    private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;
 }
