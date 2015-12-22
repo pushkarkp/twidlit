@@ -42,6 +42,15 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
       }
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // Component
+   public void setVisible(boolean set) {
+      if (!set) {
+         persist("");
+      }
+      super.setVisible(set);
+   }
+
    ///////////////////////////////////////////////////////////////////
    @Override // Persistent
    public void persist(String tag) {
