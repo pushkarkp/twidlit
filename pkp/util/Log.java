@@ -16,7 +16,6 @@ import java.net.MalformedURLException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import pkp.ui.TextWindow;
-import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class Log implements ActionListener {
@@ -41,8 +40,21 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void init(File f, boolean exitOnError) {
-      sm_Log = new Log(f);
       sm_ExitOnError = exitOnError;
+      sm_Log = new Log();
+      sm_Log.setFile(f);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void init(boolean exitOnError) {
+      init(null, exitOnError);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   // Can set file later, after other services (such as persistent preferences)
+   // that are used in opening files, and log errors, become available.
+   public static void setFile(File f) {
+      sm_Log.setFile1(f);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -83,7 +95,6 @@ public class Log implements ActionListener {
 		if (sm_Log != null) {
 			sm_Log.log1(Level.ERROR, msg);
 		}
-      System.err.println("Error: " + msg);
 		if (!sm_ExitOnError) {
 			return;
 		}
@@ -129,7 +140,12 @@ public class Log implements ActionListener {
    // Protected ///////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   protected Log(File f) {
+   protected Log() {
+      m_File = null;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   protected void setFile1(File f) {
       m_File = f;
       openFile();
       write(sm_DATE_TIME_FORMAT.format(new Date()) + ": started.");
@@ -189,6 +205,9 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public void openFile() {
+      if (m_File == null) {
+         return;
+      }
       try {
          m_Out = new BufferedWriter(new FileWriter(m_File.getPath(), true));
       } catch (IOException e) {
@@ -198,6 +217,9 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    protected void closeFile() {
+      if (m_File == null) {
+         return;
+      }
       flush();
       try {
          m_Out.close();
@@ -208,6 +230,9 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    protected void write(String text) {
+      if (m_File == null) {
+         return;
+      }
       try {
          m_Out.write(text);
          m_Out.newLine();
@@ -219,6 +244,9 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    private void flush() {
+      if (m_File == null) {
+         return;
+      }
       try {
          m_Out.flush();
       } catch (IOException e) {
