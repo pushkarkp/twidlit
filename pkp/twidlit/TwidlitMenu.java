@@ -104,7 +104,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       add(helpMenu, sm_HELP_REF_TEXT);
       add(helpMenu, sm_HELP_SYNTAX_TEXT);
       helpMenu.addSeparator();
-      add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
+      JMenuItem showLog = add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
+      showLog.setEnabled(Log.hasFile());
       helpMenu.addSeparator();
       add(helpMenu, sm_HELP_ABOUT_TEXT);
       

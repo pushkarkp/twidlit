@@ -58,6 +58,11 @@ public class Log implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean hasFile() {
+      return sm_Log.hasFile1();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static Log get() {
       return sm_Log;
    }
@@ -149,6 +154,11 @@ public class Log implements ActionListener {
       m_File = f;
       openFile();
       write(sm_DATE_TIME_FORMAT.format(new Date()) + ": started.");
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean hasFile1() {
+      return m_File != null;
    }
 
    ////////////////////////////////////////////////////////////////////////////
