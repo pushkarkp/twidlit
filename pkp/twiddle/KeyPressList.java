@@ -54,7 +54,7 @@ public class KeyPressList extends java.lang.Object {
                   i += 5;
                   int k = Integer.parseInt(str.substring(i - 3, i + 1), 16);
 //System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(i - 3, i + 1), k);
-                  kp = new KeyPress(k, tagMod);
+                  kp = new KeyPress(k, tagMod.plus(Modifiers.fromKeyCode(k)));
                }
             }
          } else {
@@ -106,7 +106,7 @@ public class KeyPressList extends java.lang.Object {
       if (size != rhs.size()) {
          return false;
       }
-//System.out.printf("%s =kpl= %s%n", toString(KeyPress.Format.ESC), rhs.toString(KeyPress.Format.ESC));
+//System.out.printf("%s =kpl= %s%n", toString(KeyPress.Format.HEX), rhs.toString(KeyPress.Format.HEX));
       for (int i = 0; i < size; ++i) {
          if (!get(i).equals(rhs.get(i))) {
             return false;
