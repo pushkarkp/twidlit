@@ -6,6 +6,7 @@
 
 package pkp.ui;
 
+import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -15,7 +16,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import pkp.util.Pref;
 import pkp.util.Log;
 
 //////////////////////////////////////////////////////////////////////
@@ -29,7 +29,9 @@ public class IntegerSetter implements ActionListener {
       m_Dialog.setModal(true);
       m_Dialog.setResizable(false);
       m_Value = new SpinnerNumberModel(init, min, max, step);
-      m_Dialog.getBox().add(new LabelComponentBox(caption, new JSpinner(m_Value)));
+      JSpinner spin = new JSpinner(m_Value);
+      spin.setBackground(Color.black);
+      m_Dialog.getBox().add(new LabelComponentBox(caption, spin));//new JSpinner(m_Value)));
       m_Dialog.addButton(createButton("Cancel"));
       m_Dialog.addButton(createButton("OK"));
       m_Dialog.setVisible(true);

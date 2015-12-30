@@ -14,7 +14,6 @@ import javax.swing.JButton;
 import pkp.ui.ControlDialog;
 import pkp.ui.LabelComponentBox;
 import pkp.ui.IntegerTextField;
-import pkp.util.Pref;
 import pkp.util.Log;
 
 //////////////////////////////////////////////////////////////////////

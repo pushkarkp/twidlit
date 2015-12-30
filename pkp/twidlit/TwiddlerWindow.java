@@ -342,11 +342,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       factor = (double)(m_SpeedMsec - m_HighlightStage.DELAY.getMsec()) / m_CYCLE;
       m_HighlightStage.HIGHLIGHT.setMsec((int)(factor * Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC) + 0.5));
       m_HighlightStage.HIDE.setMsec((int)(factor * Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC) + 0.5));
-System.out.printf("delay %d hlight %d hide %d m_SpeedMsec %d%n", 
-         m_HighlightStage.DELAY.getMsec(), 
-         m_HighlightStage.HIGHLIGHT.getMsec(),
-         m_HighlightStage.HIDE.getMsec(),
-         m_SpeedMsec);
+//System.out.printf("delay %d hlight %d hide %d m_SpeedMsec %d%n", 
+//         m_HighlightStage.DELAY.getMsec(), 
+//         m_HighlightStage.HIGHLIGHT.getMsec(),
+//         m_HighlightStage.HIDE.getMsec(),
+//         m_SpeedMsec);
       m_ProgressPanel.setMaximum(
            m_HighlightStage.DELAY.getMsec()
          + m_HighlightStage.HIGHLIGHT.getMsec() 

@@ -42,7 +42,14 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       UIManager.put("Panel.background", bg);
       UIManager.put("Button.background", bg);
       UIManager.put("CheckBox.background", bg);
+      //UIManager.put("ScrollPane.background", bg);
       UIManager.put("ScrollBar.background", bg);
+      // Spinner 
+      UIManager.put("FormattedTextField.background", bg);
+        // FileChooser list
+      UIManager.put("List.background", bg);
+      UIManager.put("TextField.background", bg);
+      UIManager.put("ComboBox.background", bg);
       Log.setWindow(this);
       Log.setQuitter(this);
       setIconImage(Pref.getIcon().getImage());
