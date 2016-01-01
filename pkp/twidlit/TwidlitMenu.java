@@ -90,6 +90,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       m_Twidlit.setRightHand(bm != null && Hand.create(bm.getActionCommand()).isRight());
       addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT);
       addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT);
+      m_SourceButtons = new ButtonGroup();
+      addRadioItem(tutorMenu, sm_TUTOR_CHORDS_TEXT, m_SourceButtons);
+      addRadioItem(tutorMenu, sm_TUTOR_KEYS_TEXT, m_SourceButtons);
       add(tutorMenu, sm_TUTOR_DELAY_TEXT);
       add(tutorMenu, sm_TUTOR_SPEED_TEXT);
       tutorMenu.addSeparator();
@@ -740,14 +743,15 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
    private static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
    private static final String sm_TUTOR_MENU_TEXT = "Tutor";
-   private static final String sm_TUTOR_DELAY_TEXT = "Delay...";
-   private static final String sm_TUTOR_SPEED_TEXT = "Speed...";
-   private static final String sm_TUTOR_SHOW_MENU_TEXT = "Show";
+   private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
+   private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
    private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
    private static final String sm_TUTOR_HIGHLIGHT_CHORD_TEXT = "Highlight Expected Chord";
    private static final String sm_TUTOR_MARK_PRESSED_TEXT = "Mark Chord Pressed";
-   private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
+   private static final String sm_TUTOR_DELAY_TEXT = "Delay...";
+   private static final String sm_TUTOR_SPEED_TEXT = "Speed...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
+   private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
    private static final String sm_HELP_MENU_TEXT = "Help";
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
@@ -798,6 +802,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private JCheckBoxMenuItem m_CountsNGrams; 
    private File m_NGramsFile;
    private ButtonGroup m_HandButtons;
+   private ButtonGroup m_SourceButtons;
    private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;
 }

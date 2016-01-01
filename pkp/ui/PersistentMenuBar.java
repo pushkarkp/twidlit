@@ -25,19 +25,27 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
 
    ////////////////////////////////////////////////////////////////////////////
    public static void persist(JMenu menu, String tag) {
+      int rb = 0;
+      boolean inRb = false;
       for (int j = 0; j < menu.getItemCount(); ++j) {
          if (menu.getItem(j) instanceof JRadioButtonMenuItem) {
+            if (!inRb) {
+               inRb = true;
+               ++rb;
+            }
             JRadioButtonMenuItem rbItem = (JRadioButtonMenuItem)menu.getItem(j);
             if (rbItem.isSelected()) {
-               Persist.set(menu.getText(), Persist.toTag(tag + rbItem.getActionCommand()));
+               Persist.set(tag + menu.getText() + "." + rb, Persist.toTag(rb + "." + rbItem.getActionCommand()));
             }
-         } else
-         if (menu.getItem(j) instanceof JCheckBoxMenuItem) {
-            JCheckBoxMenuItem cbItem = (JCheckBoxMenuItem)menu.getItem(j);
-            Persist.set(tag + menu.getText() + ' ' + cbItem.getText(), cbItem.getState() ? "true" : "false");
-         } else
-         if (menu.getItem(j) instanceof JMenu) {
-            persist((JMenu)menu.getItem(j), tag);
+         } else {
+            inRb = false;
+            if (menu.getItem(j) instanceof JCheckBoxMenuItem) {
+               JCheckBoxMenuItem cbItem = (JCheckBoxMenuItem)menu.getItem(j);
+               Persist.set(tag + menu.getText() + ' ' + cbItem.getText(), cbItem.getState() ? "true" : "false");
+            } else
+            if (menu.getItem(j) instanceof JMenu) {
+               persist((JMenu)menu.getItem(j), tag);
+            }
          }
       }
    }
@@ -83,9 +91,14 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
 
    ///////////////////////////////////////////////////////////////////
    protected JRadioButtonMenuItem addRadioItem(JMenu menu, String text, ButtonGroup buttonGroup) {
-      String persist = Persist.get(menu.getText());
-//System.out.println("addRadioItem:" + menu.getText() + ":" + persist);
-      boolean selected = persist != null && Persist.match(persist, text);
+      boolean selected = false;
+      for (int i = 1; !selected; ++i) {
+         String selection = Persist.get(menu.getText() + "." + i);
+         if (selection == null) {
+            break;
+         }
+         selected = Persist.match(selection, i + "." + text);
+      }
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(text, selected);
       menu.add(item);
       item.setActionCommand(text);

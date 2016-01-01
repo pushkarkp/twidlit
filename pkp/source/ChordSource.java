@@ -14,17 +14,21 @@ import pkp.twiddle.KeyPressList;
 ////////////////////////////////////////////////////////////////////////////////
 public class ChordSource implements KeyPressListSource {
 
-   ////////////////////////////////////////////////////////////////////////////
-   public static ChordSource create(KeyMap keyMap) {
-      return create(keyMap, null);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static ChordSource create(KeyMap keyMap, int[] counts) {
-      return new ChordSource(keyMap, RandomChords.create(keyMap, counts));
-   }
-
    /////////////////////////////////////////////////////////////////////////////
+   public ChordSource(KeyMap keyMap) {
+      this(keyMap, null);
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   public ChordSource(KeyMap keyMap, int[] counts) {
+      m_KeyMap = keyMap;
+      m_RandomChords = RandomChords.create(keyMap, counts);
+      m_Counts = counts;
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   @Override // KeyPressListSource
+   public KeyPressListSource clone() { return new ChordSource(m_KeyMap, m_Counts); }
    @Override // KeyPressListSource
    public String getName() { return "RandomChords:"; }
    @Override // KeyPressListSource
@@ -47,15 +51,8 @@ public class ChordSource implements KeyPressListSource {
       return null;
    }
 
-   // Private //////////////////////////////////////////////////////////////////
-
-   /////////////////////////////////////////////////////////////////////////////
-   private ChordSource(KeyMap keyMap, RandomChords cs) {
-      m_KeyMap = keyMap;
-      m_RandomChords = cs;
-   }
-   
    // Data /////////////////////////////////////////////////////////////////////
    private KeyMap m_KeyMap;
    private RandomChords m_RandomChords;
+   private int[] m_Counts;
 }

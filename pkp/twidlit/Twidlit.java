@@ -91,7 +91,7 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    KeyMap getKeyMap() {
       return m_KeyMap;
    }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    void setTwiddlerWindow(TwiddlerWindow tw) {
       m_TwiddlerWindow = tw;
@@ -106,28 +106,29 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    void setRightHand(boolean right) {
       setHandAndMap(true, right, null);
    }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    boolean isRightHand() {
       return m_ChordTimes.isRightHand();
    }
-   
+
    ///////////////////////////////////////////////////////////////////
    void extendTitle(String extension) {
       setTitle(getClass().getSimpleName() + " - " + extension);
    }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    void clearTimes() {
       m_ChordTimes.clear();
-      m_TextPanel.setTimes(null);
+      newTextPanel();
+      m_TextPanel.getFirstTwiddle();
    }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    ChordTimes getChordTimes() {
       return m_ChordTimes;
    }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    @Override // Log.Quitter
    public void quit() {
@@ -313,10 +314,15 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
          m_ChordTimes = new ChordTimes(rightHand);
       }
       if (m_KeyMap != null) {
-         m_TextPanel = new TextPanel(m_KeyMap, m_ChordTimes.getCounts());
-         setContentPane(m_TextPanel);
-         setVisible(true);
+         newTextPanel();
       }
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   private void newTextPanel() {
+      m_TextPanel = new TextPanel(m_KeyMap, m_ChordTimes.getCounts());
+      setContentPane(m_TextPanel);
+      setVisible(true);
    }
 
    // Data /////////////////////////////////////////////////////////////////////

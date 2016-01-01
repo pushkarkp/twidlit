@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Random;
+import pkp.source.KeyPressListSource;
 import pkp.source.ChordSource;
 import pkp.twiddle.Assignment;
 import pkp.twiddle.KeyMap;
@@ -38,7 +39,7 @@ public class TextPanel extends JPanel {
       setForeground(Pref.getColor("text.color"));
       setFont(new Font(Pref.get("text.font"), Font.BOLD, Pref.getInt("text.size")));
       m_KeyMap = km;
-      setTimes(timeCounts);
+      m_KplSource = new ChordSource(m_KeyMap, timeCounts);
 		m_Text = "";
 	   m_SPACE = (char)Pref.getInt("text.visible.space", 0x87);
       m_Random = new Random();
@@ -64,11 +65,6 @@ public class TextPanel extends JPanel {
    public void setKeyMap(KeyMap km) {
       m_KeyMap = km;
 		m_Text = "";
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public void setTimes(int[] timeCounts) {
-      m_ChordSource = ChordSource.create(m_KeyMap, timeCounts);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -110,8 +106,8 @@ public class TextPanel extends JPanel {
 
    ////////////////////////////////////////////////////////////////////////////
    public void hit() {
-      if (m_ChordSource != null) {
-         m_ChordSource.send(null);
+      if (m_KplSource != null) {
+         m_KplSource.send(null);
       }
    }
 
@@ -168,13 +164,13 @@ public class TextPanel extends JPanel {
    ////////////////////////////////////////////////////////////////////////////
    // returns characters representing a random twiddle
    private String getNextString() {
-      return m_ChordSource.getNext().toString(Format.DISPLAY);
+      return m_KplSource.getNext().toString(Format.DISPLAY);
    }
 
    // Data ////////////////////////////////////////////////////////////////////
    private final char m_SPACE;
    private KeyMap m_KeyMap;
-   private ChordSource m_ChordSource;
+   private KeyPressListSource m_KplSource;
    private Assignment m_Assignment;
    private Random m_Random;
    private boolean m_HideText;
