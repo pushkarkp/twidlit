@@ -108,24 +108,35 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-	// a legal empty kp (!isValid())
+   public static KeyPress noModifiers(int keyCode) {
+      return new KeyPress(keyCode, null);
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress fromKeyCode(int keyCode) {
+      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCode(keyCode));
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   // a legal empty kp (!isValid())
    public KeyPress() {
       m_KeyCode = 0;
       m_Modifiers = Modifiers.sm_EMPTY;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public KeyPress(int keyCode) {
-      this(keyCode, Modifiers.fromKeyCode(keyCode));
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public KeyPress(int keyCode, Modifiers modifiers) {
-		if (keyCode < 0) {
-			m_KeyCode = 0;
-			m_Modifiers = Modifiers.sm_EMPTY;
-			return;
-		}
+      if (keyCode < 0) {
+         m_KeyCode = 0;
+         m_Modifiers = Modifiers.sm_EMPTY;
+         return;
+      }
+      if (keyCode > sm_KEYS) {
+         Log.err(String.format("KeyCode (0x%x) includes modifiers", keyCode));
+         m_KeyCode = 0;
+         m_Modifiers = Modifiers.sm_EMPTY;
+         return;
+      }
 //System.out.printf("KeyPress k 0x%x m 0x%x%n", keyCode, modifiers.toInt());
       // don't allow modifiers in keycode
       m_KeyCode = keyCode & sm_KEYS;
@@ -139,7 +150,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseEscape(String str) {
-      return new KeyPress(escKeyToInt(str));
+      return noModifiers(escKeyToInt(str));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -190,7 +201,7 @@ public class KeyPress {
       } else {
          modifiers = modifiers.plus(mod);
       }
-      return new KeyPress(keyCode, modifiers);
+      return new KeyPress(keyCode & sm_KEYS, modifiers);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -198,11 +209,11 @@ public class KeyPress {
 //System.out.println("kp parseText '" + ch + "'");
       int keyCodeWithShift = sm_KeyValueToCode.get(ch);
 		if (keyCodeWithShift < 0) {
-			Log.log("\"" + ch + "\" has no code.");
-			return new KeyPress();
-		}
+         Log.log("\"" + ch + "\" has no code.");
+         return new KeyPress();
+      }
 //System.out.printf("parseText |%c| (%d) -> 0x%x (mod 0x%x)\n", ch, (int)ch, keyCodeWithShift, mod.toInt());
-      return new KeyPress(keyCodeWithShift,
+      return new KeyPress(keyCodeWithShift & sm_KEYS,
                           Modifiers.fromKeyCode(keyCodeWithShift).plus(mod));
    }
 

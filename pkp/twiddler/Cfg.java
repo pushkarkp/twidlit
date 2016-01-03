@@ -260,11 +260,11 @@ public class Cfg implements Settings {
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
          if (k >= 0) {
-            KeyPress kp = new KeyPress(k);
+            KeyPress kp = KeyPress.noModifiers(k);
             if (!kp.isValid()) {
                continue;
             }
-            KeyPressList kpl = new KeyPressList(new KeyPress(k));
+            KeyPressList kpl = new KeyPressList(KeyPress.noModifiers(k));
             m_Assignments.add(new Assignment(tw, kpl));
 //System.out.printf("1 %s (t 0x%x) %s (k 0x%x)\n", tw.toString(), t, kpl.toString(), k);
          } else {
@@ -306,7 +306,7 @@ public class Cfg implements Settings {
 //System.out.printf("4 s 0x%x: len %d\n", s, len);
          for (int i = 0; i < len; ++i) {
             short k = bb.getShort();
-            KeyPress kp = new KeyPress(k);
+            KeyPress kp = KeyPress.noModifiers(k);
 //System.out.printf("4 %d: %s (k 0x%x)\n", i, kp.toTagString(), k);
             kpl.add(kp);
          }
