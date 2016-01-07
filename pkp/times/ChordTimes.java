@@ -110,7 +110,7 @@ public class ChordTimes implements Persistent {
       if (sort == null) {
          return Integer.MAX_VALUE;
       }
-      int i = sm_SPAN - 3;
+      int i = Math.min(sm_SPAN - 3, sort.length - 1);
       while (sort[i] != -1) {
          --i;
       }
