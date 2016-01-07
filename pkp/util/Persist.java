@@ -116,7 +116,12 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static File getFile(String name) {
-      String fileName = get(name);
+      return getFile(name, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static File getFile(String name, String defaultValue) {
+      String fileName = get(name, defaultValue);
       if (fileName == null || fileName == "") {
          return null;
       }
