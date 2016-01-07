@@ -245,7 +245,7 @@ public class KeyPress {
          Log.log(String.format("Key event code %d has no key code.", ke.getKeyCode()));
          return new KeyPress();
       }
-     return new KeyPress(keyCode, Modifiers.fromKeyEvent(ke));
+     return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyEvent(ke));
    }
 
    ////////////////////////////////////////////////////////////////////////////
