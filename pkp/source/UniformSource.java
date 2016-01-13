@@ -18,10 +18,15 @@ import java.util.ArrayList;
 class UniformSource {
 
    /////////////////////////////////////////////////////////////////////////////
-   UniformSource(ArrayList<ArrayList<Integer>> items, int poolFraction) {
+   UniformSource(ArrayList<ArrayList<Integer>> items) {
+      this(items, 2);
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   UniformSource(ArrayList<ArrayList<Integer>> items, int pool) {
       m_Random = new Random();
       add(items);
-      m_POOL_SIZE = Math.min(m_Items.length, Math.max(1, m_Items.length / poolFraction));
+      m_POOL_SIZE = Math.max(pool, m_Items.length / 16);
       m_First = 0;
       m_Next = 0;
    }
@@ -69,6 +74,10 @@ class UniformSource {
       for (int j = 0; j < allItems.size(); ++j) {
          size += allItems.get(j).size();
       }
+      int times = 1;
+      while (size * times < m_POOL_SIZE) {
+         ++times;
+      }         
       m_Items = new int[size];
       int base = 0;
       for (int j = 0; j < allItems.size(); ++j) {
@@ -94,6 +103,7 @@ class UniformSource {
    /////////////////////////////////////////////////////////////////////////////
    private int get(int pool) {
       int ix = (m_Next + m_Random.nextInt(pool)) % m_Items.length;
+//System.out.printf("pool %d ix %d%n", pool, ix);
       int swap = m_Items[ix];
       m_Items[ix] = m_Items[m_Next];
       m_Items[m_Next] = swap;

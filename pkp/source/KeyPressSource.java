@@ -23,7 +23,6 @@ public class KeyPressSource implements KeyPressListSource {
    /////////////////////////////////////////////////////////////////////////////
    public KeyPressSource(File f) {
       m_File = f;
-      int pool = Math.max(1, Pref.getInt("source.random.pool.fraction", 16));
       ArrayList<ArrayList<Integer>> keys = new ArrayList<ArrayList<Integer>>();
       if (m_File == null || !m_File.exists()) {
          keys.add(getDefault());
@@ -32,7 +31,7 @@ public class KeyPressSource implements KeyPressListSource {
          keys.add(getKeys(lr));
          lr.close();
       }
-      m_UniformSource = new UniformSource(keys, pool);
+      m_UniformSource = new UniformSource(keys, 4);
    }
    
    ////////////////////////////////////////////////////////////////////////////

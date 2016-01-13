@@ -50,8 +50,7 @@ public class ChordSource implements KeyPressListSource {
          }
       }
 //System.out.println();
-      int pool = Math.max(1, Pref.getInt("source.random.pool.fraction", 16));
-      m_UniformSource = new UniformSource(chords, pool);
+      m_UniformSource = new UniformSource(chords);
    }
    
    /////////////////////////////////////////////////////////////////////////////
