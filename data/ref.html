@@ -41,9 +41,10 @@
 <dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping. 
 <dt><b>Reverse</b>
 <dd>Flips the buttons in each row
-<dt><b>List Chords</b>
+<a name='allchords'>
+<dt><b>All Chords Mapped</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with a one keystroke mapping. 
-This is the default mapping, and is ideal for chording practice and timing. 
+This is the default mapping, and is ideal for practice and chord timing. 
 <dt><b>Map Chords...</b>
 <dd>Opens a dialog that allows you to create a new <tt>cfg.txt</tt> file that maps chords to characters.
 <dt><b>Twiddler Settings...</b>
@@ -86,13 +87,24 @@ This is a simple text graph just to give a better indication of the relative mag
 <dd>Whether the Twiddler window highlights the expected chord.
 <dt><b>Mark Chord Pressed</b>
 <dd>Whether the Twiddler window marks the chord that has just been pressed. 
+<dt><b>Delay...</b>
+<dd>Opens a dialog that allows you to adjust the time the Twiddler window waits before displaying the chord to be pressed.
 <dt><b>Speed...</b>
-<dd>Opens a dialog that allows you to adjust the time the Twiddler window waits for a chord to be pressed.
+<dd>Opens a dialog that allows you to adjust the time Twidlit waits for a chord to be pressed.
+<dt><b>Chords</b>
+<dd>Sets testing to random chords. 
+The text pane will remain blank. 
+Twidlit tests all chords with equal probability, but can only show chords that are mapped. 
+<a name='keys'>
+<dt><b>Keystrokes</b>
+<dd>Sets testing to keystrokes read from a file. 
+Clicking on this menu item displays a file chooser to open a <a href='syn.html#keys'>file of keystrokes</a>. 
+If no file is chosen then upper and lower case alphabetic keys are used. 
+<dt><b>Timed</b>
+<dd>Whether your chording (for the current hand) is timed.
 <dt><b>List Chords By Time</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with (and sorted by) the median time taken to press it. 
 Initially these times are all zero.
-<dt><b>Timed</b>
-<dd>Whether your chording (for the current hand) is timed.
 <dt><b>Clear Times</b>
 <dd>Clears the chording times for the current hand.
 </dl>
@@ -225,10 +237,10 @@ Just delete any you don't edit.
 <dd>The color of the background of most windows.
 <dt><tt>border.color 0xc0c0a0</tt><br>
 <dd>The color of the border on the mapping dialog.
-<dt><tt>chord.pool.fraction 16</tt><br>
-<dd>The fraction (1/x) of available chords in the sliding window from which the next chord is randomly chosen. 
-A small value (eg 1) is undesirable as some chords will turn up more frequently than others. 
-A large value (eg 255) makes chords appear in a fixed order.
+<dt><tt>source.random.pool.fraction 16</tt><br>
+<dd>The fraction (1/x) of available sourced items (chords, keystrokes) in the sliding window from which the next is randomly chosen. 
+A small value (eg 1) is undesirable as some items will turn up more frequently than others. 
+A large value (eg 255) makes items appear in a fixed order.
 <dt><tt>control.separation.size 10</tt><br>
 <dd>The size of the separation between controls on the Twiddler Settings windows.
 <dt><tt>count.repeats.max 2</tt><br>

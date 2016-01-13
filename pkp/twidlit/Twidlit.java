@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import java.io.File;
 import java.util.ArrayList;
 import pkp.text.TextPanel;
 import pkp.twiddle.Assignment;
@@ -71,25 +72,13 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       m_TimeMs = 0;
       
       pack();
-      // calls setKeyMap(), setRightHand() and setTwiddlerWindow()
+      // calls setKeyMap(), setRightHand() and start()
       mb.start();
-      show(m_TextPanel.getFirstTwiddle(), null);
-      startUnrecordedTime();
    }
 
    /////////////////////////////////////////////////////////////////////////////
    String getHomeDir() {
       return m_HomeDir;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setKeyMap(KeyMap km) {
-      setHandAndMap(false, false, km);
-   }
-   
-   /////////////////////////////////////////////////////////////////////////////
-   KeyMap getKeyMap() {
-      return m_KeyMap;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -100,6 +89,16 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    /////////////////////////////////////////////////////////////////////////////
    TwiddlerWindow getTwiddlerWindow() {
       return m_TwiddlerWindow;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setKeyMap(KeyMap km) {
+      setHandAndMap(false, false, km);
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   KeyMap getKeyMap() {
+      return m_KeyMap;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -118,10 +117,23 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   void setChords() {
+      m_TextPanel.setChords(m_ChordTimes.getCounts());
+      start();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setKeystrokes(File f) {
+      m_TextPanel.setKeystrokes(f);
+      start();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    void clearTimes() {
       m_ChordTimes.clear();
-      newTextPanel();
-      m_TextPanel.getFirstTwiddle();
+      if (m_TextPanel.isChords()) {
+         setChords();
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -145,24 +157,15 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // WindowListener
-   public void windowActivated(WindowEvent e) {
-      requestFocusInWindow();
-   }
+   public void windowActivated(WindowEvent e) { requestFocusInWindow(); }
    @Override // WindowListener
-   public void windowDeactivated(WindowEvent e) {
-      requestFocusInWindow();
-   }
+   public void windowDeactivated(WindowEvent e) { requestFocusInWindow(); }
    @Override // WindowListener
-   public void windowDeiconified(WindowEvent e) {
-      requestFocusInWindow();
-   }
+   public void windowDeiconified(WindowEvent e) { requestFocusInWindow(); }
    @Override // WindowListener
-   public void windowIconified(WindowEvent e) {
-   }
+   public void windowIconified(WindowEvent e) {}
    @Override // WindowListener
-   public void windowOpened(WindowEvent e) {
-      requestFocusInWindow();
-   }
+   public void windowOpened(WindowEvent e) { requestFocusInWindow(); }
    @Override // WindowListener
    public void windowClosed(WindowEvent e) { quit(); }
    @Override // WindowListener
@@ -232,16 +235,16 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
          m_TwiddlerWindow.markMismatch(tw);
          continueTime();
       } else {
-         // only skip chord if not timing or successfully timed
-         if (!m_Timed
-          // only record times within 2* progress bar
-          || (m_TimeMs < 2 * m_TwiddlerWindow.getProgressMax()
-           && m_ChordTimes.add(tw.getChord().toInt(),
-                               tw.getThumbKeys().toInt(),
-                               m_TimeMs))) {
+         // only accept chord if not timing or successfully timed
+         m_TextPanel.next(
+            !m_Timed
+            // only record times within 2* progress bar
+            || (m_TimeMs < 2 * m_TwiddlerWindow.getProgressMax()
+             && m_ChordTimes.add(tw.getChord().toInt(),
+                                 tw.getThumbKeys().toInt(),
+                                 m_TimeMs))
+         );
 //System.out.printf("%s %s%n", tw.getChord(), m_ChordTimes.getTimes(tw.getChord().toInt(), 0));
-            m_TextPanel.hit();
-         }
          show(next, pressed.getTwiddle(0));
          startTime();
       }
@@ -260,6 +263,12 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
    }
 
    // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void start() {
+      show(m_TextPanel.getFirstTwiddle(), null);
+      startUnrecordedTime();
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    private void show(Twiddle next, Twiddle prev) {
@@ -290,41 +299,31 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
   }
 
    ////////////////////////////////////////////////////////////////////////////
-   private void setHandAndMap(boolean set, boolean setRight, KeyMap km) {
-      if (km != null) {
-         m_KeyMap = km;
-      }
-      boolean rightHand = false;
-      if (m_ChordTimes != null) {
-         // no need if already OK
-         if (!set || setRight == m_ChordTimes.isRightHand()) {
-            if (km == null) {
-               return;
-            }
-         } else {
-            rightHand = m_ChordTimes.isRightHand();
+   private void setHandAndMap(boolean setHand, boolean setRight, KeyMap km) {
+      setHand = setHand && (m_ChordTimes == null || setRight != m_ChordTimes.isRightHand());
+      if (setHand) {
+         m_TwiddlerWindow.setRightHand(setRight);
+         if (m_ChordTimes != null) {
             m_ChordTimes.persist("");
          }
+         m_ChordTimes = new ChordTimes(setRight);
+      } else if (km == null) {
+         return;
       }
-      if (set) {
-         rightHand = setRight;
-         m_TwiddlerWindow.setRightHand(rightHand);
+      if (km != null) {
+         m_KeyMap = km;
+         if (m_TextPanel == null) {
+            m_TextPanel = new TextPanel(m_KeyMap);
+            setContentPane(m_TextPanel);
+            return;
+         }
+         m_TextPanel.setKeyMap(m_KeyMap);
       }
-      if (m_ChordTimes == null || rightHand != m_ChordTimes.isRightHand()) {
-         m_ChordTimes = new ChordTimes(rightHand);
-      }
-      if (m_KeyMap != null) {
-         newTextPanel();
+      if (setHand && m_TextPanel != null && m_TextPanel.isChords()) {
+         setChords();
       }
    }
    
-   ////////////////////////////////////////////////////////////////////////////
-   private void newTextPanel() {
-      m_TextPanel = new TextPanel(m_KeyMap, m_ChordTimes.getCounts());
-      setContentPane(m_TextPanel);
-      setVisible(true);
-   }
-
    // Data /////////////////////////////////////////////////////////////////////
    private static String m_HomeDir;
    private TwiddlerWindow m_TwiddlerWindow;

@@ -1,47 +1,71 @@
 <html>
 <!-- Copyright 2015 Pushkar Piggott -->
 <a name='top'>
-<center><h1>Syntax</h1></center>
+<center><h1>Files and Syntax</h1></center>
 <h2>Sections</h2>
 <dl>
+<dt><a href='#cfg'>Chord mapping files</a>
+<dt><a href='#source'>Source files</a>
+<dt><a href='#keys'><tt>Keys</tt> files</a>
 <dt><a href='#chord'>Chords</a>
-<dt><a href='#cfg'>Chord files</a>
 <dt><a href='#format'><tt>Txt</tt> formats</a>
 <dt><a href='#4finger'>4finger syntax</a>
 <dt><a href='#pref'>Preferences</a>
-<dd><dl>
 </dl>
+
+<a name='cfg'>
+<h1>Chord mapping files (<tt>cfg</tt>)</h1>
+Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
+The Twiddler can only read <tt>cfg</tt>s, and you and I can only read <tt>cfg.txt</tt>s. 
+Happily, Twidlit can read and write both.
+<br><br>
+I get confused trying to manage binary files that have to be given the same name (<tt>twiddler.cfg</tt>) when in use, 
+so I keep all my chord files as text and only save them as binary when loading the Twiddler. 
+<br><br>
+The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
+
+<a name='keys'>
+<h2><tt>keys</tt> files</h2>
+The menu item <a href='ref.html#keys'><tt>Tutor > Keystrokes</tt></a> allows you to select a file of keystrokes to chord. 
+<a name='key.txt'>
+<h2><tt>TwidlitKeyValues.txt</tt>, <tt>TwidlitKeyNames.txt</tt> and <tt>TwidlitKeyEvents.txt</tt></h2>
+Twidlit is set up to use the US keyboard mapping. 
+If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
+<a name='unprint.txt'>
+<h2><tt>TwidlitUnprintables.txt</tt></h2>
+Some ASCII values are unprintable (<em>backspace</em>, for example). 
+When every keystroke needs to be visible the values in this file are treated specially.
+<a name='dup.txt'>
+<h2><tt>TwidlitDuplicates.txt</tt></h2>
+Some keys are duplicates (<em>Numpad4</em>, for example). 
+You can configure your twiddler to generate them but they never appear in text.
+<a name='lost.txt'>
+<h2><tt>TwidlitLost.txt</tt></h2>
+Some keystrokes never reach an application (<em>&lt;Alt&gt;&lt;Tab&gt;&lt/Alt&gt;</em>, for example). 
+They vary with OS.
 
 <a name='chord'>
 <h1>Chords</h1>
 Chords are represented by a thumb-key sequence and a finger sequence. 
 The thumb-key sequence consists of <tt>0</tt> or the initials of the thumb-keys pressed, 
 for example, <tt>CS</tt>.
-The finger sequence has a character for each or the four fingers. 
-It starts with the index finger, so turn your Twiddler so that your index finger is to the left. 
+<br><br>
+The finger sequence has a character for each of the four fingers. 
+It starts with the index finger, so rotate your wrist so that your index finger is to the left and imagine you are holding the Twiddler. 
 <p>
 <b><tt>|</tt></b> (pipe) is an inactive finger,<br>
 <b><tt>-</tt></b> (hyphen) is the middle button,<br> 
-<b><tt>,</tt></b> (comma) is the button below and<br> 
-<b><tt>'</tt></b> (apostrophe) is the button above.<br>
-For example <b><tt>|-,'</tt></b> 
-
-<a name='cfg'>
-<h1>Chord files</h1>
-Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
-The Twiddler can only read <tt>cfg</tt>s, and you and I can only read <tt>cfg.txt</tt>s. 
-Happily Twidlit can read and write both.
-<br><br>
-I get confused trying to manage binary files that have to be given the same name (<tt>twiddler.cfg</tt>) when in use, 
-so I keep my config files as text and only save them as binary when loading the Twiddler. 
-<br><br>
-The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
-No other extension can be used so you do not need to type the extension on the file name, it will be added if not present. 
+<b><tt>'</tt></b> (apostrophe) is the button above it and<br>
+<b><tt>,</tt></b> (comma) is the button below.<br> 
+<br>
+A whole chord might look like
+<br>
+<b><tt>S    '--|</tt></b>
 
 <a name='format'>
 <h1><tt>Txt</tt> formats</h1>
 Twidlit represents characters (e.g. lower case f) and keystrokes (e.g. Shift and F1 held down together). 
-<br><br>us
+<br><br>
 The following are the options for writing to text files. 
 Only STD, TAG and HEX are suitable for <tt>cfg.txt</tt> files because they encode both characters and non-character keystrokes (e.g. <tt>&lt;F1></tt>). 
 Twidlit reads them all except TXT. 
@@ -78,21 +102,4 @@ For example <tt>\k002c\k022f\k0028</tt>.
 <dt><b>TXT</b>
 <dd>Characters represent themselves, for example, <tt>This is text</tt>.
 </dl>
-
-<a name='key.txt'>
-<h2><tt>TwidlitKeyValues.txt</tt>, <tt>TwidlitKeyNames.txt</tt> and <tt>TwidlitKeyEvents.txt</tt></h2>
-Twidlit is set up to use the US keyboard mapping. 
-If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
-<a name='unprint.txt'>
-<h2><tt>TwidlitUnprintables.txt</tt></h2>
-Some ASCII values are unprintable (<em>backspace</em>, for example). 
-When every keystroke needs to be visible the values in this file are treated specially.
-<a name='dup.txt'>
-<h2><tt>TwidlitDuplicates.txt</tt></h2>
-Some keys are duplicates (<em>Numpad4</em>, for example). 
-You can configure your twiddler to generate them but they never appear in text.
-<a name='lost.txt'>
-<h2><tt>TwidlitLost.txt</tt></h2>
-Some keystrokes never reach an application (<em>&lt;Alt&gt;&lt;Tab&gt;&lt/Alt&gt;</em>, for example). 
-They vary with OS.
 </html>

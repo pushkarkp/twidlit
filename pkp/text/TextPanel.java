@@ -12,11 +12,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.FontMetrics;
 import javax.swing.JPanel;
-import java.util.ArrayList;
+import java.awt.FontMetrics;
+import java.io.File;
 import java.util.StringTokenizer;
-import java.util.Random;
 import pkp.source.KeyPressListSource;
 import pkp.source.ChordSource;
+import pkp.source.KeyPressSource;
 import pkp.twiddle.Assignment;
 import pkp.twiddle.KeyMap;
 import pkp.twiddle.KeyPressList;
@@ -31,19 +32,40 @@ import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
 // A panel that displays the text to be chorded.
-// Incorporates a chord source 
-public class TextPanel extends JPanel {
+// Incorporates a source for the text. 
+public class TextPanel 
+   extends JPanel 
+   implements KeyPressListSource.Message {
 
    ////////////////////////////////////////////////////////////////////////////
-   public TextPanel(KeyMap km, int[] timeCounts) {
+   public TextPanel(KeyMap km) {
       setForeground(Pref.getColor("text.color"));
       setFont(new Font(Pref.get("text.font"), Font.BOLD, Pref.getInt("text.size")));
       m_KeyMap = km;
-      m_KplSource = new ChordSource(m_KeyMap, timeCounts);
 		m_Text = "";
 	   m_SPACE = (char)Pref.getInt("text.visible.space", 0x87);
-      m_Random = new Random();
       m_Past = "";
+      m_KplSource = null;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public void setChords(int[] timeCounts) {
+      m_KplSource = new ChordSource(m_KeyMap, timeCounts);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public void setKeystrokes(File f) {
+      m_KplSource = new KeyPressSource(f);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean isChords() {
+      return m_KplSource != null && m_KplSource instanceof ChordSource;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean isKeystrokes() {
+      return m_KplSource != null && m_KplSource instanceof KeyPressSource;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -64,13 +86,14 @@ public class TextPanel extends JPanel {
    ////////////////////////////////////////////////////////////////////////////
    public void setKeyMap(KeyMap km) {
       m_KeyMap = km;
-		m_Text = "";
+      if (isChords()) {
+         m_KplSource = ((ChordSource)m_KplSource).newKeyMap(m_KeyMap);
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle getFirstTwiddle() {
-		m_Text += getNextString();
-//System.out.println("getFirstTwiddle m_Text " + m_Text);
+		m_Text = getNextString();
       Assignment asg = KeyPressList.parseTextAndTags(m_Text).findLongestPrefix(m_KeyMap);
       if (asg == null) {
 			return null;
@@ -105,9 +128,10 @@ public class TextPanel extends JPanel {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void hit() {
+   public void next(boolean accepted) {
       if (m_KplSource != null) {
-         m_KplSource.send(null);
+         m_KplSource.send(accepted ? this : null);
+//System.out.printf("m_Text.length() %d%n", m_Text.length());
       }
    }
 
@@ -120,6 +144,10 @@ public class TextPanel extends JPanel {
    @Override
    public void paintComponent(Graphics g) {
       super.paintComponent(g);
+      // don't show chords' source text
+      if (isChords()) {
+         return;
+      }
       if (m_Past.length() + m_Text.length() == 0 || !(g instanceof Graphics2D)) {
 			return;
 		}
@@ -164,7 +192,12 @@ public class TextPanel extends JPanel {
    ////////////////////////////////////////////////////////////////////////////
    // returns characters representing a random twiddle
    private String getNextString() {
-      return m_KplSource.getNext().toString(Format.DISPLAY);
+      KeyPressList kpl = m_KplSource.getNext();
+      if (kpl == null) {
+         Log.warn("Source has no keys");
+         return null;
+      }
+      return kpl.toString(Format.DISPLAY);
    }
 
    // Data ////////////////////////////////////////////////////////////////////
@@ -172,10 +205,10 @@ public class TextPanel extends JPanel {
    private KeyMap m_KeyMap;
    private KeyPressListSource m_KplSource;
    private Assignment m_Assignment;
-   private Random m_Random;
    private boolean m_HideText;
    private String m_Past;
    private int m_Start;
    private int m_Length;
    private String m_Text;
+   private boolean m_Hit;
 }

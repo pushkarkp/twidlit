@@ -18,70 +18,86 @@ import java.util.ArrayList;
 class UniformSource {
 
    /////////////////////////////////////////////////////////////////////////////
-   UniformSource(ArrayList<Integer> items, int poolFraction) {
-      this(items.size(), poolFraction);
-      add(items);
-   }
-   
-   /////////////////////////////////////////////////////////////////////////////
-   UniformSource(int size, int poolFraction) {
+   UniformSource(ArrayList<ArrayList<Integer>> items, int poolFraction) {
       m_Random = new Random();
-      m_Items = new int[size];
-      m_POOL_SIZE = Math.min(size, Math.max(1, size / poolFraction));
+      add(items);
+      m_POOL_SIZE = Math.min(m_Items.length, Math.max(1, m_Items.length / poolFraction));
+      m_First = 0;
       m_Next = 0;
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   // Returns a random chord from the pool.
+   // Returns a random chord from the pool using the predefined pool size.
    // It may be the same as the last one unless next has been called.
    int get() {
       return get(m_POOL_SIZE);
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   // Move the pool (sliding window) up one.
-   // The old m_Next-th will not be delivered til next time round.
-   void next() {
-      m_Next = (m_Next + 1) % m_Items.length;
+   void next(boolean accepted) {
+      if (accepted) {
+         // let it go
+         m_First = (m_First + 1) % m_Items.length;
+      } else {
+         // put it back in the pool 
+         int first = m_Items[m_First];
+         int j;
+         for (int i = m_First; i != m_Next; i = j) {
+            j = (i + 1) % m_Items.length;
+            m_Items[i] = m_Items[j];
+         }
+         m_Items[m_Next] = first;
+      }
+//System.out.printf("next() hit %b m_First [%d] 0x%x m_Next [%d] 0x%x%n", accepted, m_First, m_Items[m_First], m_Next, m_Items[m_Next]);
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
       String str = "";
       for (int i = 0; i < m_Items.length; ++i) {
-         str += m_Items[i] + " ";
+         str += m_Items[i];
+         str += (i == m_POOL_SIZE - 1) ? '|' : ' ';
       }
       return str;
    }
    
-   /////////////////////////////////////////////////////////////////////////////
-   void add(ArrayList<Integer> items) {
-//System.out.println("UniformSource.Add()" + this);
-      int base = m_Next;
-      for (int i = 0; i < items.size(); ++i) {
-         m_Items[base + i] = items.get(i);
-//System.out.print(new Chord(m_Items[base + i]) + " ");
-      }
-//System.out.println();
-      // shuffle them
-      for (int i = 0; i < items.size(); ++i) {
-         int ix = base + m_Random.nextInt(items.size());
-         int swap = m_Items[ix];
-         m_Items[ix] = m_Items[m_Next];
-         m_Items[m_Next] = swap;
-         ++m_Next;
-      }
-      m_Next %= m_Items.length;
-   }
-   
    // Private //////////////////////////////////////////////////////////////////
 
+   /////////////////////////////////////////////////////////////////////////////
+   private void add(ArrayList<ArrayList<Integer>> allItems) {
+      int size = 0;
+      for (int j = 0; j < allItems.size(); ++j) {
+         size += allItems.get(j).size();
+      }
+      m_Items = new int[size];
+      int base = 0;
+      for (int j = 0; j < allItems.size(); ++j) {
+//System.out.printf("%d: ", j);
+         ArrayList<Integer> items = allItems.get(j);
+         for (int i = 0; i < items.size(); ++i) {
+            m_Items[base + i] = items.get(i);
+//System.out.print(m_Items[base + i] + " ");
+         }
+//System.out.println();
+         // shuffle them
+         for (int i = 0; i < items.size(); ++i) {
+            int rand = m_Random.nextInt(items.size());
+            int swap = m_Items[base + rand];
+            m_Items[base + rand] = m_Items[base + i];
+            m_Items[base + i] = swap;
+         }
+         base += items.size();
+      }
+//System.out.println(this);
+   }
+   
    /////////////////////////////////////////////////////////////////////////////
    private int get(int pool) {
       int ix = (m_Next + m_Random.nextInt(pool)) % m_Items.length;
       int swap = m_Items[ix];
       m_Items[ix] = m_Items[m_Next];
       m_Items[m_Next] = swap;
+      m_Next = (m_Next + 1) % m_Items.length;
       return swap;
    }
    
@@ -89,5 +105,6 @@ class UniformSource {
    private Random m_Random;
    private int[] m_Items;
    private final int m_POOL_SIZE;
+   private int m_First;
    private int m_Next;
 }

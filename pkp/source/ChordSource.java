@@ -3,7 +3,8 @@
  *
  * ChordSource.java
  *
- * A wrapper on a RandomChords to return strings.
+ * A wrapper on a UniformSource to return KeyPressLists
+ * representing random chords.
  */
 
 package pkp.source;
@@ -15,6 +16,7 @@ import pkp.twiddle.KeyMap;
 import pkp.twiddle.KeyPressList;
 import pkp.times.ChordTimes;
 import pkp.util.Pref;
+import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
 public class ChordSource implements KeyPressListSource {
@@ -36,7 +38,7 @@ public class ChordSource implements KeyPressListSource {
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          // if thumbkey-less twiddle of chord is mapped
          Twiddle tw = new Twiddle(i + 1, 0);
-         if (null != keyMap.getKeyPressList(tw)) {
+         if (m_KeyMap.getKeyPressList(tw) != null) {
             if (counts == null) {
                // just add in order
                chords.get(i).add(i + 1);
@@ -48,11 +50,13 @@ public class ChordSource implements KeyPressListSource {
          }
       }
 //System.out.println();
-      int pool = Math.max(1, Pref.getInt("chord.pool.fraction", 16));
-      m_UniformSource = new UniformSource(Chord.sm_VALUES, pool);
-      for (int i = 0; i <= ChordTimes.sm_SPAN; ++i) {
-         m_UniformSource.add(chords.get(i));
-      }
+      int pool = Math.max(1, Pref.getInt("source.random.pool.fraction", 16));
+      m_UniformSource = new UniformSource(chords, pool);
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   public ChordSource newKeyMap(KeyMap keyMap) {
+      return new ChordSource(keyMap, m_Counts);
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -70,13 +74,21 @@ public class ChordSource implements KeyPressListSource {
    /////////////////////////////////////////////////////////////////////////////
    @Override // KeyPressListSource
    public KeyPressList getNext() {
-      return m_KeyMap.getKeyPressList(new Twiddle(m_UniformSource.get(), 0));
+      KeyPressList kpl;
+      do {
+         Twiddle tw = new Twiddle(m_UniformSource.get(), 0);
+         kpl = m_KeyMap.getKeyPressList(tw);
+         if (kpl == null) {
+            Log.log("No keys defined for " + tw);
+         }
+      } while (kpl == null);
+      return kpl;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    @Override // KeyPressListSource
    public KeyPressListSource.Message send(KeyPressListSource.Message m) {
-      m_UniformSource.next();
+      m_UniformSource.next(m != null);
       return null;
    }
 
