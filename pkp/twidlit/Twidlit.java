@@ -118,12 +118,14 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
 
    /////////////////////////////////////////////////////////////////////////////
    void setChords() {
+      m_TwiddlerWindow.useDelay(false);
       m_TextPanel.setChords(m_ChordTimes.getCounts());
       start();
    }
 
    /////////////////////////////////////////////////////////////////////////////
    void setKeystrokes(File f) {
+      m_TwiddlerWindow.useDelay(true);
       m_TextPanel.setKeystrokes(f);
       start();
    }

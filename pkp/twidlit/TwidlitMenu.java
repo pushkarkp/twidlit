@@ -91,7 +91,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       m_Twidlit.setRightHand(handSelected != null && Hand.create(handSelected.getActionCommand()).isRight());
       addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT);
       addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT);
-      add(tutorMenu, sm_TUTOR_DELAY_TEXT);
+      m_DelayItem = add(tutorMenu, sm_TUTOR_DELAY_TEXT);
       add(tutorMenu, sm_TUTOR_SPEED_TEXT);
       tutorMenu.addSeparator();
       m_SourceButtons = new ButtonGroup();
@@ -126,19 +126,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          m_Twidlit.extendTitle(f.getAbsolutePath());
       }
       setCfg(Cfg.readText(f));
-      ButtonModel sourceSelected = m_SourceButtons.getSelection();
-      if (sourceSelected == null) {
-         m_Twidlit.setChords();
-      } else {
-         switch (sourceSelected.getActionCommand()) {
-         case sm_TUTOR_CHORDS_TEXT:
-            m_Twidlit.setChords();
-            break;
-         case sm_TUTOR_KEYS_TEXT:
-            m_Twidlit.setKeystrokes(m_KeyPressFile);
-            break;
-         }
-      }
+      setSource();
       m_Twidlit.setVisible(true);
    }
    
@@ -221,6 +209,26 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    // Private ////////////////////////////////////////////////////////
 
+   ///////////////////////////////////////////////////////////////////
+   private void setSource() {
+      ButtonModel sourceSelected = m_SourceButtons.getSelection();
+      if (sourceSelected == null) {
+         m_DelayItem.setEnabled(false);
+         m_Twidlit.setChords();
+      } else {
+         switch (sourceSelected.getActionCommand()) {
+         case sm_TUTOR_CHORDS_TEXT:
+            m_DelayItem.setEnabled(false);
+            m_Twidlit.setChords();
+            break;
+         case sm_TUTOR_KEYS_TEXT:
+            m_DelayItem.setEnabled(true);
+            m_Twidlit.setKeystrokes(m_KeyPressFile);
+            break;
+         }
+      }
+   }
+   
    ///////////////////////////////////////////////////////////////////
    private void actionPerformed(String command) {
       switch (command) {
@@ -340,10 +348,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          }
          return;
       }
-      case sm_TUTOR_CHORDS_TEXT: {
-         m_Twidlit.setChords();
-         return;
-      }
       case sm_TUTOR_KEYS_TEXT: {
          SourceFileActionListener sfal = new SourceFileActionListener();
          m_FileChooser = makeFileChooser(sfal, null);
@@ -358,7 +362,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          if (sfal.getFile() != null) {
             m_KeyPressFile = sfal.getFile();
          }
-         m_Twidlit.setKeystrokes(m_KeyPressFile);
+         // no break
+      }
+      case sm_TUTOR_CHORDS_TEXT: {
+         setSource();
          return;
       }
       case sm_HELP_INTRO_TEXT: {
@@ -450,7 +457,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   public JFileChooser makeFileChooser(ActionListener al, String dir) {
+   private JFileChooser makeFileChooser(ActionListener al, String dir) {
       JFileChooser fc = new JFileChooser();
       fc.addActionListener(al);
       if (dir == null || "".equals(dir) || !Io.dirExists(dir)) {
@@ -462,7 +469,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   public JFileChooser makeCfgFileChooser(ActionListener al) {
+   private JFileChooser makeCfgFileChooser(ActionListener al) {
       JFileChooser fc = makeFileChooser(al, m_CfgDir);
       fc.setFileFilter(new ExtensionFileFilter(sm_CFG_TXT));
       fc.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
@@ -860,6 +867,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private JMenuItem m_CountsTableItem;
    private JMenuItem m_CountsGraphItem;
    private JMenuItem m_ClearCountsItem;
+   private JMenuItem m_DelayItem;
    private Counts m_CharCounts;
    private String m_CountsInDir;
    private String m_CountsOutDir;
