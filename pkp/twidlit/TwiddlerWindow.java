@@ -387,7 +387,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          @Override
          void start(TwiddlerWindow tw) {
             tw.setHighlightTimer(getMsec());
-System.out.printf("DELAY %d %n", getMsec());
+//System.out.printf("DELAY %d %n", getMsec());
          }
       },
       HIGHLIGHT(2000) {
@@ -395,7 +395,7 @@ System.out.printf("DELAY %d %n", getMsec());
          void start(TwiddlerWindow tw) {
             tw.timerHighlight();
             tw.setHighlightTimer(getMsec());
-System.out.printf("HIGHLIGHT %d %n", getMsec());
+//System.out.printf("HIGHLIGHT %d %n", getMsec());
          }
       },
       HIDE(4000) {
@@ -403,7 +403,7 @@ System.out.printf("HIGHLIGHT %d %n", getMsec());
          void start(TwiddlerWindow tw) {
             tw.timerClearHighlight();
             tw.setHighlightTimer(getMsec());
-System.out.printf("HIDE %d %n", getMsec());
+//System.out.printf("HIDE %d %n", getMsec());
          }
       };
       
