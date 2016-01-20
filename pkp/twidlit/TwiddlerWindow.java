@@ -51,10 +51,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_Delay = true;
       m_DelayMsec = Persist.getInt(sm_PERSIST_DELAY_MSEC, sm_DEFAULT_DELAY_MSEC);
       m_HighlightStage.DELAY.setMsec(m_DelayMsec);
-      m_CYCLE = m_HighlightStage.DELAY.getMsec()
-              + Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC)
-              + Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC);
-      m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC, m_CYCLE);
+      m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC,
+                       Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC)
+                     + Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC));
 
       m_ThumbPanel = createThumbPanel();
       m_ChordPanel = createChordPanel();
@@ -349,19 +348,23 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    
    /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
-      double factor = (double)m_SpeedMsec / m_CYCLE;
+      int delay = m_HighlightStage.DELAY.getMsec();
+      int hlight = Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC);
+      int rehlight = Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC);
+      int cycle = delay + hlight + rehlight;
+      double factor = (double)m_SpeedMsec / cycle;
       clearMark();
       m_MarkMsec = (int)(factor * Pref.getInt(sm_PREF_MARK_MSEC, sm_DEFAULT_MARK_MSEC));
       m_MarkTimer.setInitialDelay(m_MarkMsec);
 
-      factor = (double)(m_SpeedMsec - m_HighlightStage.DELAY.getMsec()) / m_CYCLE;
-      m_HighlightStage.HIGHLIGHT.setMsec((int)(factor * Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC) + 0.5));
-      m_HighlightStage.HIDE.setMsec((int)(factor * Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC) + 0.5));
-System.out.printf("delay %d hlight %d hide %d m_SpeedMsec %d%n", 
-         m_HighlightStage.DELAY.getMsec(), 
-         m_HighlightStage.HIGHLIGHT.getMsec(),
-         m_HighlightStage.HIDE.getMsec(),
-         m_SpeedMsec);
+      factor = (double)(m_SpeedMsec - delay) / (cycle - delay);
+      m_HighlightStage.HIGHLIGHT.setMsec((int)(factor * hlight + 0.5));
+      m_HighlightStage.HIDE.setMsec((int)(factor * rehlight + 0.5));
+//System.out.printf("cycle %d Pref.h %d Pref.r %d delay %d factor %g hlight %d hide %d m_SpeedMsec %d%n", 
+//         cycle, hlight, rehlight, delay, factor,
+//         m_HighlightStage.HIGHLIGHT.getMsec(),
+//         m_HighlightStage.HIDE.getMsec(),
+//         m_SpeedMsec);
       m_ProgressPanel.setMaximum(
            m_HighlightStage.DELAY.getMsec()
          + m_HighlightStage.HIGHLIGHT.getMsec() 
@@ -597,7 +600,6 @@ System.out.printf("HIDE %d %n", getMsec());
    private static final int sm_THIN = 4;
    private static final int sm_FAT = 16;
    
-   private final int m_CYCLE;
    private JCheckBoxMenuItem m_MenuItem;
    private JPanel m_ThumbPanel;
    private JPanel m_ChordPanel;
