@@ -303,11 +303,11 @@ public class Cfg implements Settings {
          if (bb.remaining() < len * 2) {
             Log.err("Cfg file is corrupt.");
          }
-//System.out.printf("4 s 0x%x: len %d\n", s, len);
+//System.out.printf("4 s 0x%x: len %d%n", s, len);
          for (int i = 0; i < len; ++i) {
             short k = bb.getShort();
-            KeyPress kp = KeyPress.noModifiers(k);
-//System.out.printf("4 %d: %s (k 0x%x)\n", i, kp.toTagString(), k);
+            KeyPress kp = KeyPress.fromKeyCode(k);
+//System.out.printf("4 %d: %s (k 0x%x)%n", i, kp.toTagString(), k);
             kpl.add(kp);
          }
          kpls.add(kpl);
