@@ -564,6 +564,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                setCfg(Cfg.readText(f));
                return;
             case sm_CFG:
+               m_Twidlit.extendTitle(f.getAbsolutePath());
                setCfg(Cfg.read(f));
                return;
             }
