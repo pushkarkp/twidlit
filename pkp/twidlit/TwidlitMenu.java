@@ -85,10 +85,11 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
       addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
       tutorMenu.addSeparator();
-      TwiddlerWindow tw = new TwiddlerWindow(addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), m_Twidlit);
+      TwiddlerWindow tw = new TwiddlerWindow(
+         isRightHand(), 
+         addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), 
+         m_Twidlit);
       m_Twidlit.setTwiddlerWindow(tw);
-      ButtonModel handSelected = m_HandButtons.getSelection();
-      m_Twidlit.setRightHand(handSelected != null && Hand.create(handSelected.getActionCommand()).isRight());
       addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT);
       addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT);
       m_DelayItem = add(tutorMenu, sm_TUTOR_DELAY_TEXT);
@@ -119,14 +120,21 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   // only start doing stuff after everything is set up and visible
+   // only start doing stuff after everything is set up.
    public void start() {
+      // use TwidlitInit to gather data so the source is not recreated over and over
+      m_TwidlitInit = m_Twidlit.getInit();
       File f = Io.createFile(m_CfgDir, m_CfgFName);
       if (f.exists()) {
          m_Twidlit.extendTitle(f.getAbsolutePath());
       }
+      m_TwidlitInit.setRightHand(isRightHand());
       setCfg(Cfg.readText(f));
       setSource();
+      // use the gathered settings to set up the source
+      m_Twidlit.initialize(m_TwidlitInit);
+      // revert to using Twidlit itself for settings
+      m_TwidlitInit = m_Twidlit;
       m_Twidlit.setVisible(true);
    }
    
@@ -210,20 +218,26 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    // Private ////////////////////////////////////////////////////////
 
    ///////////////////////////////////////////////////////////////////
+   private boolean isRightHand() {
+      ButtonModel handSelected = m_HandButtons.getSelection();
+      return handSelected != null && Hand.create(handSelected.getActionCommand()).isRight();
+   }
+
+   ///////////////////////////////////////////////////////////////////
    private void setSource() {
       ButtonModel sourceSelected = m_SourceButtons.getSelection();
       if (sourceSelected == null) {
          m_DelayItem.setEnabled(false);
-         m_Twidlit.setChords();
+         m_TwidlitInit.setChords();
       } else {
          switch (sourceSelected.getActionCommand()) {
          case sm_TUTOR_CHORDS_TEXT:
             m_DelayItem.setEnabled(false);
-            m_Twidlit.setChords();
+            m_TwidlitInit.setChords();
             break;
          case sm_TUTOR_KEYS_TEXT:
             m_DelayItem.setEnabled(true);
-            m_Twidlit.setKeystrokes(m_KeyPressFile);
+            m_TwidlitInit.setKeystrokes(m_KeyPressFile);
             break;
          }
       }
@@ -394,9 +408,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       default:
          if (Hand.isHand(command)) {
             Hand hand = Hand.create(command);
-            m_Twidlit.getTwiddlerWindow().setRightHand(hand.isRight());
-            m_Twidlit.setRightHand(hand.isRight());
-            m_Twidlit.extendTitle(hand.getSmallName());
+            if (hand.isRight() != m_Twidlit.isRightHand()) {
+               m_TwidlitInit.setRightHand(hand.isRight());
+               m_Twidlit.extendTitle(hand.getSmallName());
+            }
             return;
          }
       }
@@ -488,7 +503,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    ///////////////////////////////////////////////////////////////////
    private void setCfg(Cfg cfg) {
-      m_Twidlit.setKeyMap(new KeyMap(cfg.getAssignments()));
+      m_TwidlitInit.setKeyMap(new KeyMap(cfg.getAssignments()));
       boolean settingsVisible = m_SettingsWindow.isVisible();
       if (settingsVisible) {
          m_SettingsWindow.setVisible(false);
@@ -858,6 +873,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    };
 
    // Data ///////////////////////////////////////////////////////////
+   // At initialization time m_TwidlitInit is a separate object
+   // that collects the settings for the source.
+   private TwidlitInit m_TwidlitInit;
    private Twidlit m_Twidlit;
    private String m_PrefDir;
    private String m_CfgDir;

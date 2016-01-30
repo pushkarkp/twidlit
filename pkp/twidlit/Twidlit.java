@@ -33,8 +33,29 @@ import pkp.util.Log;
 import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
-class Twidlit extends PersistentFrame implements WindowListener, KeyListener, ActionListener, Log.Quitter {
+class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, KeyListener, ActionListener, Log.Quitter {
 
+   ////////////////////////////////////////////////////////////////////////////////
+   // Gathers initial settings so source can be created once only.
+   class Init implements TwidlitInit {
+      public void setKeyMap(KeyMap km) {
+         m_KeyMap = km;
+      }
+      public void setRightHand(boolean right) {
+         m_Right = right;
+      }
+      public void setChords() {
+         m_File = null;
+      }
+      public void setKeystrokes(File f) {
+         m_File = f;
+      }
+
+      private KeyMap m_KeyMap;
+      private boolean m_Right;
+      private File m_File;
+   }
+   
    /////////////////////////////////////////////////////////////////////////////
    Twidlit() {
       super();
@@ -72,8 +93,91 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       m_TimeMs = 0;
       
       pack();
-      // calls setKeyMap(), setRightHand() and start()
+      // uses Init and calls initilize()
       mb.start();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   TwidlitInit getInit() {
+      return new Init();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void initialize(TwidlitInit init) {
+      if (!(init instanceof Init)) {
+         Log.err("Bad TwidlitInit");
+         return;
+      }
+      if (m_ChordTimes != null
+       || m_KeyMap != null
+       || m_TextPanel != null) {
+         Log.err("Repeated initialization");
+         return;
+      }
+      Init in = (Init)init;
+      m_TwiddlerWindow.setRightHand(in.m_Right);
+      m_ChordTimes = new ChordTimes(in.m_File != null, in.m_Right);
+      m_KeyMap = in.m_KeyMap;
+      m_TextPanel = new TextPanel(m_KeyMap);
+      setContentPane(m_TextPanel);
+      if (in.m_File == null) {
+         setChords();
+      } else {
+         setKeystrokes(in.m_File);
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // TwidlitInit
+   public void setKeyMap(KeyMap km) {
+      if (km == null) {
+         return;
+      }
+      m_KeyMap = km;
+      m_TextPanel.setKeyMap(m_KeyMap);
+      start();
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   KeyMap getKeyMap() {
+      return m_KeyMap;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // TwidlitInit
+   public void setRightHand(boolean right) {
+      if (right != isRightHand()) {
+         m_TwiddlerWindow.setRightHand(right);
+         if (m_ChordTimes != null) {
+            m_ChordTimes.persist("");
+         }
+         m_ChordTimes = new ChordTimes(!m_TextPanel.isChords(), right);
+         if (m_TextPanel.isChords()) {
+            // new times need new chords
+            setChords();
+         }
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   boolean isRightHand() {
+      return m_ChordTimes.isRightHand();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // TwidlitInit
+   public void setChords() {
+      m_TwiddlerWindow.useDelay(false);
+      m_TextPanel.setChords(m_ChordTimes.getCounts());
+      start();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // TwidlitInit
+   public void setKeystrokes(File f) {
+      m_TwiddlerWindow.useDelay(true);
+      m_TextPanel.setKeystrokes(f);
+      start();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -91,43 +195,13 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       return m_TwiddlerWindow;
    }
 
-   /////////////////////////////////////////////////////////////////////////////
-   void setKeyMap(KeyMap km) {
-      setHandAndMap(false, false, km);
-   }
-   
-   /////////////////////////////////////////////////////////////////////////////
-   KeyMap getKeyMap() {
-      return m_KeyMap;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setRightHand(boolean right) {
-      setHandAndMap(true, right, null);
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   boolean isRightHand() {
-      return m_ChordTimes.isRightHand();
-   }
-
    ///////////////////////////////////////////////////////////////////
    void extendTitle(String extension) {
-      setTitle(getClass().getSimpleName() + " - " + extension);
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setChords() {
-      m_TwiddlerWindow.useDelay(false);
-      m_TextPanel.setChords(m_ChordTimes.getCounts());
-      start();
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setKeystrokes(File f) {
-      m_TwiddlerWindow.useDelay(true);
-      m_TextPanel.setKeystrokes(f);
-      start();
+      if (extension == null || "".equals(extension)) {
+         setTitle(getClass().getSimpleName());
+      } else {
+         setTitle(getClass().getSimpleName() + " - " + extension);
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -300,32 +374,6 @@ class Twidlit extends PersistentFrame implements WindowListener, KeyListener, Ac
       m_TimeMs = 0;
   }
 
-   ////////////////////////////////////////////////////////////////////////////
-   private void setHandAndMap(boolean setHand, boolean setRight, KeyMap km) {
-      setHand = setHand && (m_ChordTimes == null || setRight != m_ChordTimes.isRightHand());
-      if (setHand) {
-         m_TwiddlerWindow.setRightHand(setRight);
-         if (m_ChordTimes != null) {
-            m_ChordTimes.persist("");
-         }
-         m_ChordTimes = new ChordTimes(setRight);
-      } else if (km == null) {
-         return;
-      }
-      if (km != null) {
-         m_KeyMap = km;
-         if (m_TextPanel == null) {
-            m_TextPanel = new TextPanel(m_KeyMap);
-            setContentPane(m_TextPanel);
-            return;
-         }
-         m_TextPanel.setKeyMap(m_KeyMap);
-      }
-      if (setHand && m_TextPanel != null && m_TextPanel.isChords()) {
-         setChords();
-      }
-   }
-   
    // Data /////////////////////////////////////////////////////////////////////
    private static String m_HomeDir;
    private TwiddlerWindow m_TwiddlerWindow;

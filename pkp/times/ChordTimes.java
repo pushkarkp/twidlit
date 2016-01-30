@@ -28,8 +28,8 @@ public class ChordTimes implements Persistent {
    static final int sm_CHORD_TYPES = 2;
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordTimes(/*boolean isKeys, */boolean isRightHand) {
-      this(true, isRightHand, Pref.getInt("chord.times.span", 16));
+   public ChordTimes(boolean isKeys, boolean isRightHand) {
+      this(isKeys, isRightHand, Pref.getInt("chord.times.span", 16));
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
 
    /////////////////////////////////////////////////////////////////////////////
    private String getFileName() {
-      return /*(m_KEYS ? "keys" : "chords") + '.' + */(m_RIGHTHAND ? "right" : "left") + ".times";
+      return (m_KEYS ? "keys" : "chords") + '.' + (m_RIGHTHAND ? "right" : "left") + ".times";
    }
       
    // Data /////////////////////////////////////////////////////////////////////

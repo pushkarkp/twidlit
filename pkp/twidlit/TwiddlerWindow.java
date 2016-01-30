@@ -31,7 +31,7 @@ import pkp.util.Pref;
 class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent/*, Lesson.Configurable*/ {
 
   /////////////////////////////////////////////////////////////////////////////
-   TwiddlerWindow(JCheckBoxMenuItem menuItem, KeyListener keyListener) {
+   TwiddlerWindow(boolean right, JCheckBoxMenuItem menuItem, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
       setTitle("Twiddler");
@@ -60,8 +60,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_TwiddlerPanel = createTwiddlerPanel(m_ThumbPanel, m_ChordPanel);
       m_ProgressPanel = new ProgressPanel(6, 8, m_COLOR_BUTTON_HIGHLIGHT, m_COLOR_BUTTON, m_COLOR_BACKGROUND);
 
-      m_RightHand = true;
-      setRightHand(false);
+      m_RightHand = !right;
+      setRightHand(right);
       pack();
 
       m_MarkTimer = new Timer(1000, this);
@@ -89,7 +89,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    void setRightHand(boolean right) {
-//System.out.println("setRightHand " + (right?"right":"left"));
+//System.out.printf("setRightHand(%b)%n", right);
       if (m_RightHand == right) {
          return;
       }
@@ -194,11 +194,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    // show new and actually pressed
    void show(Twiddle tw, Twiddle pressed) {
       // actually pressed may differ from displayed
-      if (pressed != null) {
-         m_Twiddle = pressed;
-      }
-      if (m_Mark && m_MarkMsec > 0 && m_Twiddle != null) {
-         markNow(m_Twiddle, MarkType.MATCH);
+      if (m_Mark && m_MarkMsec > 0 && pressed != null) {
+         markNow(pressed, MarkType.MATCH);
       }
       m_Twiddle = tw;
       start();
@@ -626,7 +623,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       Pref.init("TwidlitPreferences.txt", Persist.get("pref.dir"), "pref");
       Pref.setIconPath("/data/icon.gif");
       JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Twidlit", true);
-      TwiddlerWindow win = new TwiddlerWindow(menuItem, null);
+      TwiddlerWindow win = new TwiddlerWindow(false, menuItem, null);
       win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       win.setVisible(true);
       Random r = new Random();
