@@ -38,9 +38,9 @@ public class ChordSource implements KeyPressListSource {
             }
          }
       }
-      // one array for each time pressed
+      // one array for each time pressed, including zero
       ArrayList<ArrayList<Integer>> chords = new ArrayList<ArrayList<Integer>>();
-      for (int i = 0; i < maxCount; ++i) {
+      for (int i = 0; i < maxCount + 1; ++i) {
          chords.add(new ArrayList<Integer>());
       }
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
