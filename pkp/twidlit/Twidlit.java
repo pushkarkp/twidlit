@@ -273,6 +273,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       // store time of arrival of first key press
       if (m_TimeMs == 0) {
          m_TimeMs = (int)(e.getWhen() - m_StartTimeMs);
+//System.out.printf("e.getWhen() %d m_StartTimeMs %d m_TimeMs %d limit %d%n", e.getWhen(), m_StartTimeMs, m_TimeMs, 2 * m_TwiddlerWindow.getProgressMax());
       }
       m_KeysPressed.add(kp);
    }
@@ -364,7 +365,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    ////////////////////////////////////////////////////////////////////////////
    // Start the timer in the past so the resulting time is not recorded.
    private void startUnrecordedTime() {
-      m_StartTimeMs = 2 * m_TwiddlerWindow.getProgressMax();
+      m_StartTimeMs = System.currentTimeMillis() - 2 * m_TwiddlerWindow.getProgressMax();
       m_TimeMs = 0;
   }
 
