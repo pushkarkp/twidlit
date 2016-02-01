@@ -368,7 +368,7 @@ public class ChordTimes implements Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    private String getFileName() {
-      return (m_KEYS ? "keys" : "chords") + '.' + (m_RIGHTHAND ? "right" : "left") + ".times";
+      return (m_KEYS ? "key" : "chord") + '.' + (m_RIGHTHAND ? "right" : "left") + ".times";
    }
       
    // Data /////////////////////////////////////////////////////////////////////
