@@ -72,6 +72,11 @@ public class ChordTimes implements Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    public boolean add(int chord, int thumbKeys, int timeMs) {
+//System.out.printf("add(chord %d thumbKeys %d time %d)%n", chord, thumbKeys, timeMs);
+      if (timeMs == 0) {
+         Log.warn("Adding zero chord time");
+         timeMs = 1;
+      }
       if (timeMs > Short.MAX_VALUE) {
          return false;
       }
@@ -84,6 +89,7 @@ public class ChordTimes implements Persistent {
       }
       byte count = m_Counts[thumb][chord - 1];
       int i = count & (m_SPAN - 1);
+//System.out.printf("timeMs %d m_Counts %d mean %d%n", timeMs, m_Counts[thumb][chord - 1], getMean(chord, thumb));
       m_Times[thumb][chord - 1][i] = (short)timeMs;
       ++i;
       int full = count & m_SPAN;
@@ -93,8 +99,7 @@ public class ChordTimes implements Persistent {
       }
       m_Counts[thumb][chord - 1] = (byte)(full | i);
       addMean(true, chord, thumb);
-//System.out.printf("add i %d full %d m_Counts[thumb][chord - 1] %d%n", i, full, m_Counts[thumb][chord - 1]);
-//System.out.printf("add() meanCount %d%n", m_MeanCount[thumb]);
+//System.out.println(list(m_Times[thumb][chord - 1]));
       return true;
    }
 
@@ -102,7 +107,7 @@ public class ChordTimes implements Persistent {
    public int getMean(int chord, int thumbKeys) {
       short[] sort = getIq(chord, thumbKeys);
       if (sort == null) {
-         return Integer.MAX_VALUE;
+         return 0;
       }
       int sum = 0;
       int i = 0;
@@ -116,7 +121,7 @@ public class ChordTimes implements Persistent {
    int getRange(int chord, int thumbKeys) {
       short[] sort = getIq(chord, thumbKeys);
       if (sort == null) {
-         return Integer.MAX_VALUE;
+         return 0;
       }
       int i = Math.min(m_SPAN - 3, sort.length - 1);
       while (sort[i] != -1) {
@@ -137,7 +142,7 @@ public class ChordTimes implements Persistent {
          return 0;
       }
       int meanMean = m_MeanSum[thumb] / m_MeanCount[thumb];
-System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb] %d meanmean %d%n", thumb, m_MeanSum[thumb], m_MeanCount[thumb], meanMean);
+//System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb] %d meanmean %d%n", thumb, m_MeanSum[thumb], m_MeanCount[thumb], meanMean);
       return meanMean;
    }
 
@@ -241,12 +246,15 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   // add the latest or remove the oldest mean
+   // false: remove (oldest) mean for a span of a chord.
+   // if it was empty then this is a new chord, so increment count.
+   // true: add (new) mean
    private void addMean(boolean add, int chord, int thumb) {
       int mean = getMean(chord, thumb);
-      if (mean == Integer.MAX_VALUE) {
+      if (mean == 0) {
          if (add) {
             Log.err("Added zero time");
+            return;
          }
          mean = 0;
          ++m_MeanCount[thumb];
@@ -272,7 +280,6 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
          }
       }
       sort[end] = -1;
-//System.out.printf("getIq() length %d end %d%n", sort.length, end);
 //System.out.println("getIq() " + list(sort));
       return sort;
    }
@@ -303,7 +310,6 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
 
    /////////////////////////////////////////////////////////////////////////////
    private void load() {
-//System.out.println("load " + getFileName());
       // up to m_SPAN times for each
       m_Times = new short[sm_CHORD_TYPES][Chord.sm_VALUES][m_SPAN];
       // the actual number of times held
@@ -319,6 +325,7 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
          m_DataStatus = DataStatus.NONE;
          return;
       }
+//System.out.println("load " + f.getPath());
       m_DataStatus = DataStatus.SAVED;
       byte[] data = new byte[(int)f.length()];
       FileInputStream fis = null;
@@ -339,8 +346,11 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
          for (int c = 0; c < Chord.sm_VALUES; ++c) {
             int count = bb.get();
             if (count > 0) {
+               // increment count
+               addMean(false, c + 1, thumb);
                m_Counts[thumb][c] = (byte)Math.min(count, m_SPAN);
                short[] times = m_Times[thumb][c];
+               // skip olders if span < count
                int start = Math.max(0, count - m_SPAN);
                for (int i = 0; i < start; ++i) {
                   bb.getShort();
@@ -349,6 +359,7 @@ System.out.printf("getMeanMean() thumb %d m_MeanSum[thumb] %d m_MeanCount[thumb]
                for (int i = 0; i < end; ++i) {
                   times[i] = bb.getShort();
                }
+               // add new mean
                addMean(true, c + 1, thumb);
             }
          }
