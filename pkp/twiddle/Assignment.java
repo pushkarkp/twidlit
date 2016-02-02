@@ -13,6 +13,9 @@ import pkp.util.Log;
 public class Assignment extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
+   public static Assignment sm_NO_ASSIGNMENT = new Assignment(new Twiddle(), new KeyPressList());
+
+   ////////////////////////////////////////////////////////////////////////////
    public static String toString(ArrayList<Assignment> asgs, KeyPress.Format format) {
       String str = "";
       for (Assignment asg: asgs) {

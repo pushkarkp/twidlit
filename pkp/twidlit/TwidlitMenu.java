@@ -18,6 +18,7 @@ import pkp.twiddle.Twiddle;
 import pkp.twiddler.Cfg;
 import pkp.twiddler.SettingsWindow;
 import pkp.chars.Counts;
+import pkp.times.ChordTimes;
 import pkp.times.SortedChordTimes;
 import pkp.ui.PersistentMenuBar;
 import pkp.ui.HtmlWindow;
@@ -257,7 +258,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          viewSaveText(command);
          return;
       case sm_FILE_MAP_CHORDS_TEXT:
-         new ChordMapper(m_Twidlit);
+         new ChordMapper(m_Twidlit, getChordTimes());
          return;
       case sm_FILE_PREF_TEXT:
          m_FileChooser = makeFileChooser(new PrefActionListener(), m_PrefDir);
@@ -456,7 +457,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          tw = new MenuSaveTextWindow(
             "Chords By Time",
             "#   Mean Range (Times)\n" + 
-            (new SortedChordTimes(m_Twidlit.getChordTimes())).listChordsByTime(),
+            getChordTimes().listChordsByTime(),
             m_CfgDir);
          break;
        default:
@@ -512,6 +513,15 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       if (settingsVisible) {
          m_SettingsWindow.setVisible(true);
       }
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   private SortedChordTimes getChordTimes() {
+      ChordTimes ct = m_Twidlit.getChordTimes();
+      if (ct.isKeys()) {
+         ct = new ChordTimes(false, isRightHand());
+      }
+      return new SortedChordTimes(ct);
    }
 
    ///////////////////////////////////////////////////////////////////

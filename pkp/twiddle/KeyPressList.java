@@ -8,6 +8,7 @@ package pkp.twiddle;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import pkp.util.StringWithOffset;
 import pkp.util.Pref;
 import pkp.util.Log;
 import pkp.io.Io;
@@ -38,25 +39,10 @@ public class KeyPressList extends java.lang.Object {
          char c = str.charAt(i);
          if (c != '<') {
 //System.out.printf("parseTextAndTags1 [%d] |%c| (%d) tagMod 0x%x%n", i, c, (int)c, tagMod.toInt());
-            if (c != '\\' || i >= str.length() - 1) {
-               kp = KeyPress.parseText(c, tagMod);
-            } else {
-               char c1 = str.charAt(i + 1);
-               if (c1 != 'k') {
-                  i += (c1 == 'x') ? 3 : 1;
-                  int ch = Io.parseEscapeFirst(str);
-                  if (ch == -1) {
-                     // error at EOL, already warned
-                     break;
-                  }
-                  kp = KeyPress.parseText((char)ch, tagMod);
-               } else {
-                  i += 5;
-                  int k = Integer.parseInt(str.substring(i - 3, i + 1), 16);
-//System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(i - 3, i + 1), k);
-                  kp = new KeyPress(k, tagMod.plus(Modifiers.fromKeyCode(k)));
-               }
-            }
+            StringWithOffset swo = new StringWithOffset(str, i);
+            kp = KeyPress.parse(swo, tagMod);
+            // for ++i will re-add 1
+            i = swo.getOffset() - 1;
          } else {
             String rest = str.substring(i + 1);
             int end = rest.indexOf('>');
@@ -140,20 +126,6 @@ public class KeyPressList extends java.lang.Object {
          }
       }
       return asg;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private KeyPressList getPrefixMinusModifiers(Modifiers mod) {
-//System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size());
-      KeyPressList kpl = new KeyPressList();
-      for (int i = 0; i < size(); ++i) {
-         if (mod.isSubsetOf(get(i).getModifiers())) {
-            kpl.add(new KeyPress(get(i).getKeyCode(), get(i).getModifiers().minus(mod)));
-         } else {
-           break;
-         }
-      }
-      return kpl;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -248,8 +220,17 @@ public class KeyPressList extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private void clear() {
-      m_List.clear();
+   private KeyPressList getPrefixMinusModifiers(Modifiers mod) {
+//System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size());
+      KeyPressList kpl = new KeyPressList();
+      for (int i = 0; i < size(); ++i) {
+         if (mod.isSubsetOf(get(i).getModifiers())) {
+            kpl.add(new KeyPress(get(i).getKeyCode(), get(i).getModifiers().minus(mod)));
+         } else {
+           break;
+         }
+      }
+      return kpl;
    }
 
    ////////////////////////////////////////////////////////////////////////////

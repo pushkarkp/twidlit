@@ -9,7 +9,7 @@ io: pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
 string: pkp/string/StringSource.class pkp/string/StringInt.class pkp/string/StringsInts.class pkp/string/StringsIntsBuilder.class
 lookup: pkp/lookup/LookupBuilder.class pkp/lookup/LookupImplementation.class pkp/lookup/LookupSet.class pkp/lookup/LookupSetBuilder.class pkp/lookup/LookupTable.class pkp/lookup/LookupTableBuilder.class pkp/lookup/SharedIndex.class
 ui: pkp/ui/ControlDialog.class pkp/ui/ControlWindow.class pkp/ui/ExtensionFileFilter.class pkp/ui/HtmlWindow.class pkp/ui/IntegerTextField.class pkp/ui/IntegerSetter.class pkp/ui/LabelComponentBox.class pkp/ui/PersistentDialog.class pkp/ui/PersistentFrame.class pkp/ui/PersistentMenuBar.class pkp/ui/ProgressWindow.class pkp/ui/SaveTextWindow.class pkp/ui/ScalePanel.class pkp/ui/SliderBuilder.class pkp/ui/TextWindow.class
-util: pkp/util/Log.class pkp/util/Persist.class pkp/util/Persistent.class pkp/util/PersistentProperties.class pkp/util/Pref.class 
+util: pkp/util/Log.class pkp/util/Persist.class pkp/util/Persistent.class pkp/util/PersistentProperties.class pkp/util/Pref.class pkp/util/StringWithOffset.class 
 chars: pkp/chars/CharCounts.class pkp/chars/Counts.class pkp/chars/NGram.class pkp/chars/NGrams.class
 source: pkp/source/ChordSource.class pkp/source/KeyPressListSource.class pkp/source/KeyPressSource.class pkp/source/UniformSource.class
 text: pkp/text/TextPanel.class

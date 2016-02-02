@@ -56,12 +56,12 @@ public class SortedChordTimes implements SharedIndexableInts {
    }
    
    ///////////////////////////////////////////////////////////////////////////////
-   String getSortedLabel(int i) {
+   public String getSortedLabel(int i) {
       return m_Index.getLabel(i);
    }
    
    ///////////////////////////////////////////////////////////////////////////////
-   int getSortedValue(int i) {
+   public int getSortedValue(int i) {
       return m_Index.getValue(i);
    }
    

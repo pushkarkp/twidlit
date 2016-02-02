@@ -20,6 +20,7 @@ import pkp.io.SpacedPairReader;
 import pkp.string.StringsInts;
 import pkp.string.StringsIntsBuilder;
 import pkp.util.Persist;
+import pkp.util.StringWithOffset;
 import pkp.util.Pref;
 import pkp.util.Log;
 
@@ -190,8 +191,11 @@ public class KeyPress {
 //System.out.printf("parseTag: keyCode 0x%x modifiers 0x%x tag %s mod 0x%x\n", keyCode, modifiers.toInt(), tag, mod.toInt());
       if (mod.isEmpty()) {
          if (closing) {
-				Log.err("Unrecognized closing modifier: \"" + tag + "\".");
-            keyCode = 0;
+				Log.warn("Unrecognized closing modifier: \"" + tag + "\".");
+            return new KeyPress();
+         } else if ((keyCode & sm_KEYS) == 0) {
+				Log.warn("Unrecognized tag: \"" + tag + "\".");
+            return new KeyPress();
          }
       } else if (closing) {
          modifiers = modifiers.minus(mod);
@@ -229,6 +233,35 @@ public class KeyPress {
          out += parseText(in.charAt(i)).toString(f);
       }
       return out;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress parse(StringWithOffset swo, Modifiers mod) {
+//System.out.printf("KeyPress parse(%s, %d, '%s')%n", swo.getString(), swo.getOffset(), mod);
+      String str = swo.getString();
+      int start = swo.getOffset();
+      char c0 = str.charAt(start);
+      if (c0 != '\\' || start >= str.length() - 1) {
+         swo.setOffset(start + 1);
+         return parseText(c0, mod);
+      } else {
+         char c1 = str.charAt(start + 1);
+         if (c1 != 'k') {
+            int ch = Io.parseEscapeFirst(str.substring(start));
+            if (ch == -1) {
+               // error at EOL, already warned
+               swo.end();
+               return new KeyPress();
+            }
+            swo.setOffset(start + ((c1 == 'x') ? 4 : 2));
+            return KeyPress.parseText((char)ch, mod);
+         } else {
+            int k = Integer.parseInt(str.substring(start + 2, start + 6), 16);
+//System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(start + 2, start + 6), k);
+            swo.setOffset(start + 6);
+            return new KeyPress(k, mod.plus(Modifiers.fromKeyCode(k)));
+         }
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
