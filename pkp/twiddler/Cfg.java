@@ -252,6 +252,7 @@ public class Cfg implements Settings {
          }
          short t = bb.getShort();
          short k = bb.getShort();
+//System.out.printf("t %d k %d%n", t, k);
          if (t == 0 && k == 0) {
             break;
          }
@@ -260,11 +261,12 @@ public class Cfg implements Settings {
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
          if (k >= 0) {
-            KeyPress kp = KeyPress.noModifiers(k);
+            KeyPress kp = KeyPress.fromKeyCode(k);
             if (!kp.isValid()) {
+               Log.warn(String.format("Found invalid key code %d", k));
                continue;
             }
-            KeyPressList kpl = new KeyPressList(KeyPress.noModifiers(k));
+            KeyPressList kpl = new KeyPressList(kp);
             m_Assignments.add(new Assignment(tw, kpl));
 //System.out.printf("1 %s (t 0x%x) %s (k 0x%x)\n", tw.toString(), t, kpl.toString(), k);
          } else {
