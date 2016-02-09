@@ -45,21 +45,19 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    public SaveTextWindow(String title, String str, String ext) {
       super(title, str);
       m_FileChooser = null;
-      m_ButtonText = "Save As...";
       m_Extension = new ArrayList<String>();
       m_Extension.add(ext);
       m_Dir = ".";
       m_Saver = null;
       m_ChoosenFileUser = null;
-      m_Button = new JButton();
+      m_Button = new JButton("Save As...");
       m_Button.addActionListener(this);
-      JPanel p = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-      p.add(m_Button);
-      getContentPane().add(p, BorderLayout.PAGE_END);
+      m_ButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+      getContentPane().add(m_ButtonPanel, BorderLayout.PAGE_END);
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void setButtonText(String txt) { m_ButtonText = txt; }
+   public void setButton(JButton b) { m_Button = b; }
    public void setDirectory(String dir) { m_Dir = dir; }
    public String getDirectory() { return m_Dir; }
    public void setSaver(Saver fs) { m_Saver = fs; } 
@@ -82,8 +80,10 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    ///////////////////////////////////////////////////////////////////
    @Override
    public void setVisible(boolean visible) { 
-      if (visible) {
-         m_Button.setText(m_ButtonText);
+      if (visible && m_Button != null) {
+         m_ButtonPanel.add(m_Button);
+         m_Command = m_Button.getText();
+         m_Button = null;
       }
       super.setVisible(visible);      
    }
@@ -91,7 +91,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    // ActionListener //////////////////////////////////////////////////////////
    @Override
    public void actionPerformed(ActionEvent e) {
-      if (e.getActionCommand() == m_ButtonText) {
+      if (e.getActionCommand() == m_Command) {
          if (m_FileChooser == null) {
             makeChooser();
          }
@@ -117,7 +117,8 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
             }
          }
       } else if (e.getActionCommand() != "CancelSelection") {
-         Log.err("SaveTextWindow: Unknown action \"" + e.getActionCommand() + '"');
+         // ignore other actions
+         //Log.err("SaveTextWindow: Unknown action \"" + e.getActionCommand() + '"');
       }
    }
 
@@ -147,8 +148,9 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
 
    // Data ////////////////////////////////////////////////////////////////////
    private JFileChooser m_FileChooser;
-   private String m_ButtonText;
+   private JPanel m_ButtonPanel;
    private JButton m_Button;
+   private String m_Command;
    private ArrayList<String> m_Extension;
    private String m_Dir;
    private Saver m_Saver;
