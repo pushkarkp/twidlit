@@ -39,10 +39,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
       JMenu fileMenu = new JMenu(sm_FILE_MENU_TEXT);
       add(fileMenu);
+      m_AllChordsItem = add(fileMenu, sm_FILE_ALL_CHORDS_TEXT);
       add(fileMenu, sm_FILE_OPEN_TEXT);
       add(fileMenu, sm_FILE_SAVE_AS_TEXT);
       fileMenu.addSeparator();
-      add(fileMenu, sm_FILE_ALL_CHORDS_MAPPED_TEXT);
       add(fileMenu, sm_FILE_MAP_CHORDS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_TWIDDLER_SETTINGS_TEXT);
@@ -53,7 +53,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       m_FileChooser = null;
       m_PrefDir = Persist.get(sm_PREF_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CfgDir = Persist.get(sm_CFG_DIR_PERSIST, m_Twidlit.getHomeDir());
-      m_CfgFName = Persist.get(sm_CFG_FILE_PERSIST, "twiddler.cfg");
+      m_CfgFName = Persist.get(sm_CFG_FILE_PERSIST, "");
       m_KeyPressFile = Persist.getFile(sm_KEY_SOURCE_FILE_PERSIST, "key.source.file");
       
       m_CountsMenu = new JMenu(sm_COUNTS_MENU_TEXT);
@@ -125,12 +125,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    public void start() {
       // use TwidlitInit to gather data so the source is not recreated over and over
       m_TwidlitInit = m_Twidlit.getInit();
-      File f = Io.createFile(m_CfgDir, m_CfgFName);
-      if (f.exists()) {
-         m_Twidlit.extendTitle(f.getAbsolutePath());
-      }
+      setCfg(Cfg.readText(Io.createFile(m_CfgDir, m_CfgFName)));
       m_TwidlitInit.setRightHand(isRightHand());
-      setCfg(Cfg.readText(f));
       setSource();
       // use the gathered settings to set up the source
       m_Twidlit.initialize(m_TwidlitInit);
@@ -247,13 +243,29 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    ///////////////////////////////////////////////////////////////////
    private void actionPerformed(String command) {
       switch (command) {
+      case sm_FILE_ALL_CHORDS_TEXT:
+         MenuSaveTextWindow tw = new MenuSaveTextWindow(
+            "All Chords Mapped",
+            (new Cfg(m_SettingsWindow, 
+                     Assignment.listAllByFingerCount())).toString(),
+            m_CfgDir);
+         tw.setPersistName(sm_CHORD_LIST_PERSIST);
+         JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
+         b.addActionListener(this);
+         tw.setButton(b);
+         tw.setVisible(true);
+         return;
+      case sm_USE_ALL_CHORDS_TEXT: {
+         m_CfgFName = "";
+         setCfg(null);
+         return;
+      }
       case sm_FILE_OPEN_TEXT:
          m_FileChooser = makeCfgFileChooser(new FileOpenActionListener());
          m_FileChooser.showOpenDialog(m_Twidlit);
          m_FileChooser = null;
          return;
       case sm_FILE_SAVE_AS_TEXT:
-      case sm_FILE_ALL_CHORDS_MAPPED_TEXT:
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
          return;
@@ -440,18 +452,13 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       case sm_FILE_SAVE_AS_TEXT:
          tw = new MenuSaveTextWindow(
             "Mapped Chords", 
-            Cfg.toString(m_SettingsWindow,
-                         m_Twidlit.getKeyMap().getAssignments()), 
+            (new Cfg(m_SettingsWindow,
+                     m_Twidlit.getKeyMap().getAssignments())).toString(), 
             m_CfgDir);
-         tw.setPersistName("chord.list");
-         break;
-      case sm_FILE_ALL_CHORDS_MAPPED_TEXT:
-         tw = new MenuSaveTextWindow(
-            sm_FILE_ALL_CHORDS_MAPPED_TEXT, 
-            Cfg.toString(m_SettingsWindow, 
-                         Assignment.listAllByFingerCount()),
-            m_CfgDir);
-         tw.setPersistName("chord.list");
+         tw.setPersistName(sm_CHORD_LIST_PERSIST);
+         tw.setSaver(new CfgSaver(command));
+         tw.setExtension(sm_CFG_TXT);
+         tw.addExtension(sm_CFG);
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          tw = new MenuSaveTextWindow(
@@ -461,13 +468,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             m_CfgDir);
          break;
        default:
-         Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);  
-      }
-      if (command != sm_TUTOR_CHORDS_BY_TIME_TEXT) {
-         tw.setPersistName(sm_CFG);
-         tw.setSaver(new CfgSaver(command));
-         tw.setExtension(sm_CFG_TXT);
-         tw.addExtension(sm_CFG);
+         Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
+         return;
       }
       tw.setVisible(true);
    }
@@ -504,6 +506,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    ///////////////////////////////////////////////////////////////////
    private void setCfg(Cfg cfg) {
+      m_AllChordsItem.setEnabled(cfg != null);
+      if (cfg == null) {
+         cfg = new Cfg(m_SettingsWindow, Assignment.listAllByFingerCount());
+      }
       m_TwidlitInit.setKeyMap(new KeyMap(cfg.getAssignments()));
       boolean settingsVisible = m_SettingsWindow.isVisible();
       if (settingsVisible) {
@@ -537,7 +543,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       public MenuSaveTextWindow(String title, String str, String dir) {
          this(title, str, "txt", dir);
       }
-      
       public MenuSaveTextWindow(String title, String str, String ext, String dir) {
          super(title, str, ext);
          setDirectory(dir);
@@ -609,7 +614,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          default:
             Log.err("CfgSaver: unknown action \"" + action + '"');
          case sm_FILE_SAVE_AS_TEXT:
-         case sm_FILE_ALL_CHORDS_MAPPED_TEXT:
          case sm_TUTOR_CHORDS_BY_TIME_TEXT:
             m_Action = action;
          }   
@@ -632,21 +636,18 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
             return;
          }
-         ArrayList<Assignment> asgs =
-           (m_Action == sm_FILE_ALL_CHORDS_MAPPED_TEXT)
-             ? Assignment.listAllByFingerCount()
-             : m_Twidlit.getKeyMap().getAssignments();
+         ArrayList<Assignment> asgs = m_Twidlit.getKeyMap().getAssignments();
          switch (eff.getExtension()) {
          case sm_CFG_TXT:
-            Cfg.writeText(f, m_SettingsWindow, asgs);
+            (new Cfg(m_SettingsWindow, asgs)).writeText(f);
             return;
          case sm_CFG:
-            Cfg.write(f, m_SettingsWindow, asgs);
+            (new Cfg(m_SettingsWindow, asgs)).write(f);
             return;
          default:
             Log.err("CfgSaver: unknown extension \"" + eff.getExtension() + '"');
          }
-     }
+      }
 
       // Data ////////////////////////////////////////////////////////
       private String m_Action;
@@ -823,9 +824,9 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    // Final //////////////////////////////////////////////////////////
    private static final String sm_FILE_MENU_TEXT = "File";
+   private static final String sm_FILE_ALL_CHORDS_TEXT = "All Chords...";
    private static final String sm_FILE_OPEN_TEXT = "Open...";
    private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
-   private static final String sm_FILE_ALL_CHORDS_MAPPED_TEXT = "All Chords Mapped";
    private static final String sm_FILE_MAP_CHORDS_TEXT = "Map Chords...";
    private static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
    private static final String sm_FILE_PREF_TEXT = "Preferences...";
@@ -859,12 +860,14 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String sm_HELP_SYNTAX_TEXT = "Files and Syntax";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
+   private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
 
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_TXT = "cfg.txt";
    private static final String sm_PREF_DIR_PERSIST = "pref.dir";
    private static final String sm_CFG_DIR_PERSIST = "cfg.dir";
    private static final String sm_CFG_FILE_PERSIST = "cfg.file";
+   private static final String sm_CHORD_LIST_PERSIST = "chord.list";
    private static final String sm_NGRAMS_FILE_PERSIST = "ngrams.file";
    private static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
    private static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
@@ -892,6 +895,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private String m_CfgFName;
    private SettingsWindow m_SettingsWindow;
    private JFileChooser m_FileChooser;
+   private JMenuItem m_AllChordsItem;
    private JMenu m_CountsMenu;
    private JMenuItem m_CountsTableItem;
    private JMenuItem m_CountsGraphItem;

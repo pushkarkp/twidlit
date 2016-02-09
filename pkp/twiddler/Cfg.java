@@ -32,47 +32,21 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    public static Cfg read(File f) {
       Cfg cfg = new Cfg();
-      if (!cfg.read1(f)) {
-         cfg.readText1(null);
-      }
-      return cfg;
+      return cfg.read1(f) ? cfg : null;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static Cfg readText(File f) {
       Cfg cfg = new Cfg();
-      cfg.readText1(f);
-//System.out.println(cfg);
-      return cfg;
+      return cfg.readText1(f) ? cfg : null;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String toString(Settings tc, ArrayList<Assignment> asgs) {
-      String str = Assignment.toString(asgs, KeyPress.Format.FILE);
-      for (IntSettings is: tc.getIntSettings().values()) {
-         if (!is.isDefault()) {
-            str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
-         }
-      }
-      if (tc.isEnableRepeat()) {
-         str += String.format("%s %s",
-                              Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME),
-                              Boolean.toString(tc.isEnableRepeat())) + '\n';
-      }
-      if (tc.isEnableStorage()) {
-         str += String.format("%s %s",
-                              Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME),
-                              Boolean.toString(tc.isEnableStorage())) + '\n';
-      }
-      return str;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static void writeText(File f, Settings tc, ArrayList<Assignment> asgs) {
+   public void writeText(File f) {
 		BufferedWriter bw;
       try {
          bw = new BufferedWriter(new FileWriter(f));
-         bw.write(toString(tc, asgs));
+         bw.write(toString());
 			bw.flush();
          bw.close();
       } catch (IOException e) {
@@ -162,6 +136,21 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public Cfg() {
+      m_EnableRepeat = false;
+      m_EnableStorage = false;
+      m_Assignments = new ArrayList<Assignment>();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public Cfg(Settings set, ArrayList<Assignment> asgs) {
+      m_IntSettings = set.getIntSettings();
+      m_EnableRepeat = isEnableRepeat();
+      m_EnableStorage = isEnableStorage();
+      m_Assignments = asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public void write(File f) {
       write(f, this, getAssignments());
    }
@@ -169,11 +158,6 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    public boolean hasAssignments() {
       return m_Assignments != null && m_Assignments.size() > 0;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public void writeText(File f) {
-      writeText(f, this, getAssignments());
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -193,9 +177,21 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      String str = "";
-      for (IntSettings is: IntSettings.values()) {
-         str += is.toString() + "\n";
+      String str = Assignment.toString(m_Assignments, KeyPress.Format.FILE);
+      for (IntSettings is: getIntSettings().values()) {
+         if (!is.isDefault()) {
+            str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
+         }
+      }
+      if (isEnableRepeat()) {
+         str += String.format("%s %s",
+                              Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME),
+                              Boolean.toString(isEnableRepeat())) + '\n';
+      }
+      if (isEnableStorage()) {
+         str += String.format("%s %s",
+                              Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME),
+                              Boolean.toString(isEnableStorage())) + '\n';
       }
       return str;
    }
@@ -323,9 +319,9 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private void readText1(File f) {
+   private boolean readText1(File f) {
       URL url = null;
-      if (f != null && f.exists()) {
+      if (f != null && f.exists() && !f.isDirectory()) {
          try {
             url = f.toURI().toURL();
          } catch (MalformedURLException e) {
@@ -333,7 +329,7 @@ public class Cfg implements Settings {
          }
       }
       if (url == null) {
-         url = Io.toUrl("chords.cfg.txt", null, "pref");
+         return false;
       }
       SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
       boolean readSettings = false;
@@ -347,14 +343,11 @@ public class Cfg implements Settings {
             m_Assignments.add(asg);
          } else if (asg != null || readSettings
                  || !(readSettings = readTextSettings(spr))) {
-            String fName = "chords.cfg.txt";
-            if (f != null) {
-               fName = f.getPath();
-            }
-            Log.warn(String.format("Cfg failed to read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, fName));
+            Log.warn(String.format("Cfg failed to read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, f.getPath()));
          }
       }
       spr.close();
+      return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////

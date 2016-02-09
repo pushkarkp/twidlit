@@ -89,10 +89,12 @@ public class Assignment extends java.lang.Object {
                   ++code;
                   // omit keys with keyboard state etc
                   while (code == 0x39 // CapsLock
-                      || code == 0x49 // Insert
-                      || code == 0x53 // NumLock
                       || code == 0x32 // IntlHash
-                      || code == 0x46) { // PrintScreen
+                      || code == 0x46 // PrintScreen
+                      || code == 0x47 // ScrollLock
+                      || code == 0x48 // Pause
+                      || code == 0x49 // Insert
+                      ) {
                      ++code;
                   }
                   if (code > MAX_CODE) {

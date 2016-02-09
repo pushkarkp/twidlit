@@ -262,7 +262,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       if (kp.isModifiers()) {
          return;
       }
-//System.out.printf("keyPressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
+//System.out.printf("pressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
       m_TimerKeyWait.restart();
       if (m_KeyStartMs != 0) {
          Log.log(String.format("keyPressed event %dms now %dms", 

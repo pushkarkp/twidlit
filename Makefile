@@ -1,4 +1,4 @@
-JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/chords.cfg.txt pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
+JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null
 QUIET_CLEAN_AND_BACK=${QUIET_CLEAN}; cd - > /dev/null
