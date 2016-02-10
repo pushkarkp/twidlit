@@ -150,17 +150,9 @@ class ChordMapper extends ControlDialog implements ActionListener {
             Log.warn("Mapping requires both a chords and a characters files.");
             return;
          }
-         if (m_ChordsFile != null) {
-            Persist.set("map.chords.file", m_ChordsFile.getPath());
-         }
-         if (m_CharsFile != null) {
-            Persist.set("map.chars.file", m_CharsFile.getPath());
-         }
-         if (m_MappedFile == null) {
-            Persist.unset("map.mapped.file");
-         } else {
-            Persist.set("map.mapped.file", m_MappedFile.getPath());
-         }
+         Persist.setFile("map.chords.file", m_ChordsFile);
+         Persist.setFile("map.chars.file", m_CharsFile);
+         Persist.setFile("map.mapped.file", m_MappedFile);
          Persist.set("map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
          Persist.set("map.frequency.sort", m_CheckBoxSort.isSelected());
          map(m_MappedFile, m_ChordsFile, m_CharsFile);
@@ -265,7 +257,6 @@ class ChordMapper extends ControlDialog implements ActionListener {
       box.setOpaque(false);
       box.setAlignmentX(Component.LEFT_ALIGNMENT);
       JButton b = createButton(buttonLabel);
-      b.setBackground(Pref.getColor("background.color"));
       b.setMargin(new Insets(0, 5, 0, 5));
       box.add(b);
       box.add(Box.createHorizontalGlue());
@@ -275,7 +266,6 @@ class ChordMapper extends ControlDialog implements ActionListener {
       b = new JButton(sm_CLEAR);
       b.setPreferredSize(new Dimension(15, 15));
       b.setMargin(new Insets(0, 0, 0, 0));
-      b.setBackground(Pref.getColor("background.color"));
       b.addActionListener(new FileNameClearer(label));
       box.add(b);
       return box;

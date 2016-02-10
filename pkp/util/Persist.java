@@ -115,6 +115,21 @@ public class Persist {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean setFile(String name, File f) {
+      if (f == null) {
+         unset(name);
+         return false;
+      }
+      File rel = Io.asRelative(f);
+      if (!rel.exists()) {
+         unset(name);
+         return false;
+      }
+      set(name, rel.getPath());
+      return true;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static File getFile(String name) {
       return getFile(name, null);
    }
