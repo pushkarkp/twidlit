@@ -148,14 +148,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       Persist.set(sm_PREF_DIR_PERSIST, Io.getRelativePath(m_PrefDir));
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_CFG_FILE_PERSIST, m_CfgFName);
-      if (m_NGramsFile != null) {
-         Persist.set(sm_NGRAMS_FILE_PERSIST, Io.getRelativePath(m_NGramsFile.getPath()));
-      }
+      Persist.setFile(sm_NGRAMS_FILE_PERSIST, m_NGramsFile);
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
-      if (m_KeyPressFile != null) {
-         Persist.set(sm_KEY_SOURCE_FILE_PERSIST, Io.getRelativePath(m_KeyPressFile.getPath()));
-      }
+      Persist.setFile(sm_KEY_SOURCE_FILE_PERSIST, m_KeyPressFile);
       super.persist("");
    }
 
