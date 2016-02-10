@@ -15,39 +15,34 @@ import pkp.util.Log;
 public class LookupTableBuilder extends LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
-   public static final boolean sm_SWAP_KEYS = true;
-
-   ////////////////////////////////////////////////////////////////////////////
    public static LookupTable read(URL url, 
-                                  boolean reverse, 
                                   boolean mustExist,
                                   LookupBuilder.Duplicates duplicates,
                                   int minFreq, 
                                   int maxFreq,
-                                  Io.StringToInt si1, 
-                                  Io.StringToInt si2) {
-//System.out.println(url.getPath());
-      LookupTableBuilder lb = new LookupTableBuilder(minFreq, maxFreq);
-      lb.setDuplicates(duplicates);
-      lb.setMessage(String.format(" in %s", url.getPath()));
-      SpacedPairReader spr = new SpacedPairReader(url, mustExist);
-      String first;
-      while ((first = spr.getNextFirst()) != null) {
-         String second = spr.getNextSecond();
-         int i1 = si1.cvt(first);
-         int i2 = si2.cvt(second);
-         if (i1 == Io.sm_PARSE_FAILED || i2 == Io.sm_PARSE_FAILED) {
-            Log.err(String.format("Failed to parse \"%s %s\" in line %d of \"%s\".",
-                                  first, second, spr.getLineNumber(), url.getPath()));
+                                  Io.StringToInts si) {
+      LookupTableBuilder ltb = new LookupTableBuilder(minFreq, maxFreq);
+      ltb.setDuplicates(duplicates);
+      ltb.setMessage(String.format(" in %s", url.getPath()));
+      LineReader lr = new LineReader(url, mustExist);
+      String line;
+      while ((line = lr.readLine()) != null) {
+         int[] in = si.cvt(line.trim());
+         if (in.length < 2
+          || in[0] == Io.sm_PARSE_FAILED
+          || in[1] == Io.sm_PARSE_FAILED
+          || (in.length >= 3 && in[2] == Io.sm_PARSE_FAILED)) {
+            Log.err(String.format("Failed to parse line %d \"%s\" of \"%s\".",
+                                  lr.getLineNumber(), line, url.getPath()));
          }
-         if (reverse) {
-            lb.add(i2, i1);
+         if (in.length == 2) {
+            ltb.add(in[0], Lookup.sm_NO_VALUE, in[1]);
          } else {
-            lb.add(i1, i2);
+            ltb.add(in[0], in[1], in[2]);
          }
       }
-      spr.close();
-      return lb.build();
+      lr.close();
+      return ltb.build();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -57,7 +52,7 @@ public class LookupTableBuilder extends LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
    public void add(int key, int index) {
-      super.newEntry(key, LookupTable.sm_NO_VALUE, index);
+      super.newEntry(key, Lookup.sm_NO_VALUE, index);
    }
 
    ////////////////////////////////////////////////////////////////////////////

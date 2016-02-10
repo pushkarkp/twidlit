@@ -130,7 +130,7 @@ class LookupImplementation implements LookupTable, LookupSet {
    ////////////////////////////////////////////////////////////////////////////
    @Override // LookupSet
    public boolean is(int key1, int key2) {
-//System.out.printf("0x%x 0x%x: 0x%x%n", key1, key2, get(key1 - m_Offset, key2));
+//System.out.printf("0x%x 0x%x: 0x%x%n", key1, key2, get(key1, key2));
       return get(key1, key2) == sm_TRUE;
    }
 
@@ -196,9 +196,9 @@ class LookupImplementation implements LookupTable, LookupSet {
    ////////////////////////////////////////////////////////////////////////////
    private String foundToString(int k, int found) {
 //System.out.printf("foundToString: k %d found %d\n", k, found);
-      String str = String.format("%4d: ", k);
+      String str = String.format("0x%x: ", k);
       if (found >= 0) {
-         str += String.format("%d\n", found);
+         str += String.format("%d%n", found);
       } else if (found == sm_NO_VALUE) {
          str += "no value\n";
       } else {

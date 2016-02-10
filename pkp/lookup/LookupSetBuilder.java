@@ -22,49 +22,27 @@ public class LookupSetBuilder extends LookupBuilder {
                                 boolean mustExist, 
                                 int minFreq, 
                                 int maxFreq,
-                                Io.StringToInt si) {
-      LookupSetBuilder lb = new LookupSetBuilder(minFreq, maxFreq);
-      lb.setMessage(String.format(" in %s", url.getPath()));
+                                Io.StringToInts si) {
+      LookupSetBuilder lsb = new LookupSetBuilder(minFreq, maxFreq);
+      lsb.setMessage(String.format(" in %s", url.getPath()));
       LineReader lr = new LineReader(url, mustExist);
       String line;
       while ((line = lr.readLine()) != null) {
-         int i = si.cvt(line.trim());
-         if (i == Io.sm_PARSE_FAILED) {
-            Log.err(String.format("Failed to parse \"%s\" in line %d of \"%s\".",
-                                  line, lr.getLineNumber(), url.getPath()));
+         int[] in = si.cvt(line.trim());
+         if (in.length < 1
+          || in[0] == Io.sm_PARSE_FAILED
+          || (in.length >= 2 && in[1] == Io.sm_PARSE_FAILED)) {
+            Log.err(String.format("Failed to parse line %d \"%s\" of \"%s\".",
+                                  lr.getLineNumber(), line, url.getPath()));
          }
-         lb.add(i);
+         if (in.length == 1) {
+            lsb.add(in[0]);
+         } else {
+            lsb.add(in[0], in[1]);
+         }
       }
       lr.close();
-      return lb.build();
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static LookupSet read2(URL url, 
-                                 boolean reverse, 
-                                 boolean mustExist, 
-                                 int minFreq, 
-                                 int maxFreq,
-                                 Io.StringToInt si1,
-                                 Io.StringToInt si2) {
-      LookupSetBuilder lb = new LookupSetBuilder(minFreq, maxFreq);
-      SpacedPairReader spr = new SpacedPairReader(url, mustExist);
-      String str1;
-      while ((str1 = spr.getNextFirst()) != null) {
-         int v1 = si1.cvt(str1);
-         int v2 = si2.cvt(spr.getNextSecond());
-         if (v1 == Io.sm_PARSE_FAILED || v2 == Io.sm_PARSE_FAILED) {
-            Log.err(String.format("Failed to parse \"%s\", line %d of \"%s\".",
-                                  spr.getNextLine(), spr.getLineNumber(), url.getPath()));
-         }
-         if (reverse) {
-            lb.add(v2, v1);
-         } else {
-            lb.add(v1, v2);
-         }
-      }
-      spr.close();
-      return lb.build();
+      return lsb.build();
    }
 
    ////////////////////////////////////////////////////////////////////////////

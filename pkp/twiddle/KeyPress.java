@@ -58,48 +58,68 @@ public class KeyPress {
       sm_FileFormat = Format.valueOf(str.toUpperCase());
       str = Pref.get("display.format", Format.STD.name());
       sm_DisplayFormat = Format.valueOf(str.toUpperCase());
-      final Io.StringToInt escKey = new Io.StringToInt() {
+      final Io.StringToInts escKeyEscCharSwap = new Io.StringToInts() {
+                                       public int[] cvt(String str) {
+                                          int key = escKeyToInt(str);
+                                          int value = Io.parseEscape1(str.substring(6).trim());
+                                          return new int[]{value, key};
+                                       }
+                                    };
+      final Io.StringToInts escKeyPos0xFFFFSwap = new Io.StringToInts() {
+                                       public int[] cvt(String str) {
+                                          int key = escKeyToInt(str);
+                                          int value = Io.toPosInt(0xFFFF, str.substring(6).trim());
+                                          return new int[]{value, key};
+                                       }
+                                    };
+      final Io.StringToInts escKey = new Io.StringToInts() {
+                                       public int[] cvt(String str) {
+                                          int key = escKeyToInt(str);
+                                          return new int[]{key & 255, key >> 8};
+                                       }
+                                    };
+      final Io.StringToInts escChar = new Io.StringToInts() {
+                                       public int[] cvt(String str) {
+                                          return new int[]{Io.parseEscape1(str)};
+                                       }
+                                    };
+      final Io.StringToInt escKey1 = new Io.StringToInt() {
                                        public int cvt(String str) {
                                           return escKeyToInt(str);
                                        }
                                     };
-      final Io.StringToInt escChar = new Io.StringToInt() {
-                                       public int cvt(String str) {
-                                          return Io.parseEscape1(str);
-                                       }
-                                    };
-      final Io.StringToInt parsePos0xFFFF = new Io.StringToInt() {
-                                          public int cvt(String str) {
-                                             return Io.toPosInt(0xFFFF, str);
-                                           }
-                                       };
       sm_KeyValueToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"),
-         LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
+         Io.sm_MUST_EXIST,
          Duplicates.OVERWRITE,
          1, 0x7F,
-         escKey, escChar);
+         escKeyEscCharSwap);
       sm_KeyEventToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
-         LookupTableBuilder.sm_SWAP_KEYS, Io.sm_MUST_EXIST,
+         Io.sm_MUST_EXIST,
          Duplicates.ERROR,
          0x10, 0x7F,
-         escKey, parsePos0xFFFF);
-      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true, escKey)).build();
+         escKeyPos0xFFFFSwap);
+      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true, escKey1)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"),
          Io.sm_MUST_EXIST,
-         0, 0x20, escChar);
+         0, 0x20, 
+         escChar);
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
          Io.sm_MUST_EXIST,
-         0x54, 0x70, escKey);
+         0x54, 0x70, 
+         escKey);
+//System.out.println(sm_Duplicate);
       sm_Lost = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
          Io.sm_MUST_EXIST,
-         0x1, 0x0, escKey);
+         0x1, 0x0,
+         escKey);
+//System.out.println(sm_Lost);
       int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
       sm_KeyCodeToValue = new HashMap<Integer, Character>(0x80);
       for (int i = 0; kcv[i] > 0; i += 2) {
@@ -165,7 +185,7 @@ public class KeyPress {
       if (Io.findFirstNotOfUpTo(str.substring(2), Io.sm_HEX_DIGIT, 4) < 4) {
          Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found non-hex digit in \"" + str + '"');
       }
-      return Integer.parseInt(str.substring(2), 16);
+      return Integer.parseInt(str.substring(2, 6), 16);
    }
 
    ////////////////////////////////////////////////////////////////////////////
