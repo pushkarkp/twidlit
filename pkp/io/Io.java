@@ -282,8 +282,8 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static final Io.StringToInt sm_parseInt = 
-      new Io.StringToInt() {
+   public static final StringToInt sm_parseInt = 
+      new StringToInt() {
          public int cvt(String str) {
             return Io.toInt(str);
          }
