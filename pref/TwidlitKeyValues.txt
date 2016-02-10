@@ -1,12 +1,12 @@
 #
 # Copyright 2015 Pushkar Piggott
 #
-# A list of the ASCII values of key-strokes.
+# A list of the ASCII values of keystrokes.
 # see www.w3.org/TR/DOM-Level-3-Events-code
 # Key code names can be found in TwidlitKeyNames.txt.
 #
 # Entries are of the form:
-# <key stroke code> <value>
+# <keystroke code> <value>
 # Values are characters, 2 digit numbers, or escape codes.
 # 
 # first the ctrl/alt codes
