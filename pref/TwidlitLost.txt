@@ -1,20 +1,23 @@
 #
 # Copyright 2015 Pushkar Piggott
 #
-# A list of the key-strokes that never reach an application.
+# A list of the keycodes that never reach an application.
 # Twidlit therefore can't use them. They vary with the OS.
-#
-# Entries are of the form:
-# <modifier> <key code>
 #
 # A single digit is used for the modifier as the side of the
 # keyboard it comes from is irrelevant. 
 # Key code and modifier names are in TwidlitKeyNames.txt. 
 #
-\k053d # <Ctrl><Alt><Delete></Alt></Ctrl>
+\k054c # <Ctrl><Alt><Delete></Alt></Ctrl>
+\k0529 # <Ctrl><Alt><Escape></Alt></Ctrl>
 \k0129 # <Ctrl><Escape></Ctrl> Eaten by Windows
 \k0429 # <Alt><Escape></Alt> Eaten by Windows
+\k0629 # <Alt><Shift><Escape></Shift></Alt> Eaten by Windows
 \k042b # <Alt><Tab></Alt> Eaten by Windows
+\k062b # <Alt><Shift><Tab></Shift></Alt> Eaten by Windows
 \k043d # <Alt><F4></Alt> Closes window
+\k063d # <Alt><Shift><F4></Shift></Alt> Closes window
 \k042c # <Alt><Space></Alt> Eaten by Windows
+\k062c # <Alt><Shift><Space></Shift></Alt> Eaten by Windows
 \k0043 # F10 Eaten by Windows
+\k0243 # <Shift>F10</Shift> Eaten by Windows (sometimes)
