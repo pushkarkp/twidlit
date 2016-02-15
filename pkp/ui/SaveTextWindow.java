@@ -6,9 +6,6 @@
 package pkp.ui;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.FlowLayout;
@@ -26,6 +23,9 @@ import pkp.io.Io;
 ///////////////////////////////////////////////////////////////////////////////
 public class SaveTextWindow extends TextWindow implements ActionListener {
 
+   ////////////////////////////////////////////////////////////////////////////
+   public static final String sm_SAVE_AS_TEXT = "Save As...";
+   
    ////////////////////////////////////////////////////////////////////////////
    public interface Saver {
       public void fileChosen(JFileChooser fc);
@@ -50,14 +50,17 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
       m_Dir = ".";
       m_Saver = null;
       m_ChoosenFileUser = null;
-      m_Button = new JButton("Save As...");
-      m_Button.addActionListener(this);
+      m_Buttons = new ArrayList<JButton>();
+      m_Buttons.add(new JButton(sm_SAVE_AS_TEXT));
+      m_Buttons.get(0).addActionListener(this);
       m_ButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
       getContentPane().add(m_ButtonPanel, BorderLayout.PAGE_END);
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void setButton(JButton b) { m_Button = b; }
+   public void setButton(JButton b) { m_Buttons.set(0, b); }
+   public void addButton(JButton b) { m_Buttons.add(b); }
+   public JButton getButton(int i) { return m_Buttons.get(i); }
    public void setDirectory(String dir) { m_Dir = dir; }
    public String getDirectory() { return m_Dir; }
    public void setSaver(Saver fs) { m_Saver = fs; } 
@@ -80,10 +83,12 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    ///////////////////////////////////////////////////////////////////
    @Override
    public void setVisible(boolean visible) { 
-      if (visible && m_Button != null) {
-         m_ButtonPanel.add(m_Button);
-         m_Command = m_Button.getText();
-         m_Button = null;
+      if (visible && m_Buttons.get(0) != null) {
+         m_Command = m_Buttons.get(0).getText();
+         for (int i = m_Buttons.size() - 1; i >= 0; --i) {
+            m_ButtonPanel.add(m_Buttons.get(i));
+         }
+         m_Buttons.set(0, null);
       }
       super.setVisible(visible);      
    }
@@ -111,14 +116,12 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
                "\"" + f.getPath() + "\" exists, overwrite?", 
                "File Exists", 
                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            write(f);
+            Io.write(f, getText());
             if (m_ChoosenFileUser != null) {
                m_ChoosenFileUser.setFileChooser(m_FileChooser);
             }
+            dispose();
          }
-      } else if (e.getActionCommand() != "CancelSelection") {
-         // ignore other actions
-         //Log.err("SaveTextWindow: Unknown action \"" + e.getActionCommand() + '"');
       }
    }
 
@@ -133,23 +136,10 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
       ExtensionFileFilter.setFileFilters(m_FileChooser, m_Extension);
    }
    
-   ////////////////////////////////////////////////////////////////////////////
-   public void write(File f) {
-      try {
-         BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-         bw.write(getText());
-			bw.flush();
-         bw.close();
-      } catch (IOException e) {
-         Log.warn("failed to write to \"" + f.getPath() + "\".");
-         return;
-      }
-   }
-
    // Data ////////////////////////////////////////////////////////////////////
    private JFileChooser m_FileChooser;
    private JPanel m_ButtonPanel;
-   private JButton m_Button;
+   private ArrayList<JButton> m_Buttons;
    private String m_Command;
    private ArrayList<String> m_Extension;
    private String m_Dir;

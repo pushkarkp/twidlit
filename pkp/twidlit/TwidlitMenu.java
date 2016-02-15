@@ -13,6 +13,7 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import java.util.ArrayList;
 import pkp.twiddle.Assignment;
+import pkp.twiddle.Chord;
 import pkp.twiddle.KeyMap;
 import pkp.twiddle.Twiddle;
 import pkp.twiddler.Cfg;
@@ -240,11 +241,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private void actionPerformed(String command) {
       switch (command) {
       case sm_FILE_ALL_CHORDS_TEXT:
-         MenuSaveTextWindow tw = new MenuSaveTextWindow(
-            "All Chords Mapped",
-            (new Cfg(m_SettingsWindow, 
-                     Assignment.listAllByFingerCount())).toString(),
-            m_CfgDir);
+         MenuSaveMappingsWindow tw = new MenuSaveMappingsWindow(sm_ALL_CHORDS_TITLE, m_CfgDir);
          tw.setPersistName(sm_CHORD_LIST_PERSIST);
          JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
          b.addActionListener(this);
@@ -443,25 +440,17 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    ///////////////////////////////////////////////////////////////////
    private void viewSaveText(String command) {
-      MenuSaveTextWindow tw = null;
+      MenuSaveMappingsWindow tw = null;
       switch (command) {
       case sm_FILE_SAVE_AS_TEXT:
-         tw = new MenuSaveTextWindow(
-            "Mapped Chords", 
-            (new Cfg(m_SettingsWindow,
-                     m_Twidlit.getKeyMap().getAssignments())).toString(), 
-            m_CfgDir);
+         tw = new MenuSaveMappingsWindow(sm_SAVE_AS_TITLE, m_CfgDir);
          tw.setPersistName(sm_CHORD_LIST_PERSIST);
-         tw.setSaver(new CfgSaver(command));
+         tw.setSaver(new CfgSaver(command, tw));
          tw.setExtension(sm_CFG_TXT);
          tw.addExtension(sm_CFG);
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
-         tw = new MenuSaveTextWindow(
-            "Chords By Time",
-            "#   Mean Range (Times)\n" + 
-            getChordTimes().listChordsByTime(),
-            m_CfgDir);
+         tw = new MenuSaveMappingsWindow(sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
          break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
@@ -536,14 +525,69 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    
    ///////////////////////////////////////////////////////////////////
    class MenuSaveTextWindow extends SaveTextWindow {
-      public MenuSaveTextWindow(String title, String str, String dir) {
-         this(title, str, "txt", dir);
-      }
       public MenuSaveTextWindow(String title, String str, String ext, String dir) {
          super(title, str, ext);
          setDirectory(dir);
          Font font = getFont();
          setFont(new Font("monospaced", font.getStyle(), font.getSize()));
+      }
+   }
+   
+   ///////////////////////////////////////////////////////////////////
+   class MenuSaveMappingsWindow extends MenuSaveTextWindow implements ActionListener {
+
+      ////////////////////////////////////////////////////////////////
+      MenuSaveMappingsWindow(String title, String dir) {
+         super(title, "", "txt", dir);
+         addButton(new JButton(sm_CONVERT_TEXT[0]));
+         getButton(1).addActionListener(this);
+         replaceText(getContent()); 
+      }
+      
+      ////////////////////////////////////////////////////////////////
+      @Override 
+      public void actionPerformed(ActionEvent e) {
+         if (e.getActionCommand() == sm_CONVERT_TEXT[0]) {
+            getButton(1).setText(sm_CONVERT_TEXT[1]);
+            replaceText(getContent()); 
+            return;
+         }
+         if (e.getActionCommand() == sm_CONVERT_TEXT[1]) {
+            getButton(1).setText(sm_CONVERT_TEXT[0]);
+            replaceText(getContent()); 
+            return;
+         }
+         super.actionPerformed(e);
+      }
+      
+      ////////////////////////////////////////////////////////////////
+      private String getContent() {
+         if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
+            Chord.use4Finger(false);
+         }
+         String str = getContentForTitle();
+          if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
+            Chord.use4Finger(true);
+         }
+         return str;
+      }
+      
+      ////////////////////////////////////////////////////////////////
+      private String getContentForTitle() {
+         switch (getTitle()) {
+         case sm_ALL_CHORDS_TITLE:
+            return (new Cfg(m_SettingsWindow, 
+                            Assignment.listAllByFingerCount())).toString();
+         case sm_SAVE_AS_TITLE:
+            return (new Cfg(m_SettingsWindow,
+                            m_Twidlit.getKeyMap().getAssignments())).toString();
+         case sm_CHORDS_BY_TIME_TITLE:
+            return "#   Mean Range (Times)\n"
+                 + getChordTimes().listChordsByTime();
+         default:
+            Log.err("MenuSaveMappingsWindow.getContentForTitle() bad title: " + getTitle());
+            return "";
+         }
       }
    }
    
@@ -605,7 +649,8 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    class CfgSaver implements SaveTextWindow.Saver {
 
       ////////////////////////////////////////////////////////////////
-      CfgSaver(String action) {
+      CfgSaver(String action, SaveTextWindow stw) {
+         m_Window = stw;
          switch (action) {
          default:
             Log.err("CfgSaver: unknown action \"" + action + '"');
@@ -632,21 +677,24 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
             return;
          }
-         ArrayList<Assignment> asgs = m_Twidlit.getKeyMap().getAssignments();
          switch (eff.getExtension()) {
          case sm_CFG_TXT:
-            (new Cfg(m_SettingsWindow, asgs)).writeText(f);
-            return;
+            Io.write(f, m_Window.getText());
+            break;
          case sm_CFG:
-            (new Cfg(m_SettingsWindow, asgs)).write(f);
-            return;
+            (new Cfg(m_SettingsWindow, 
+                     m_Twidlit.getKeyMap().getAssignments())).write(f);
+            break;
          default:
             Log.err("CfgSaver: unknown extension \"" + eff.getExtension() + '"');
+            break;
          }
+         m_Window.dispose();
       }
 
       // Data ////////////////////////////////////////////////////////
       private String m_Action;
+      private SaveTextWindow m_Window;
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -856,7 +904,11 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String sm_HELP_SYNTAX_TEXT = "Files and Syntax";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
+   private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
+   private static final String sm_SAVE_AS_TITLE = "Mapped Chords";
+   private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
+   private static final String[] sm_CONVERT_TEXT = {"As 0MRL", "As 4finger"};
 
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_TXT = "cfg.txt";

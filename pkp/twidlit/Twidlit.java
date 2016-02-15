@@ -400,7 +400,6 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          Log.setFile(Io.createFile(m_HomeDir, "TwidlitLog.txt"));
       }
       KeyPress.init();
-      Chord.use4Finger(!Pref.get("write.syntax", "4finger").toLowerCase().equals("0MRL"));
       Twidlit twidlit = new Twidlit();
    }
 }
