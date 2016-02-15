@@ -53,7 +53,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_HighlightStage.DELAY.setMsec(m_DelayMsec);
       m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC,
                        Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC)
-                     + Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC));
+                     + Pref.getInt(sm_PREF_HIDE_MSEC, sm_DEFAULT_HIDE_MSEC));
 
       m_ThumbPanel = createThumbPanel();
       m_ChordPanel = createChordPanel();
@@ -347,8 +347,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private void calculateTimes() {
       int delay = m_HighlightStage.DELAY.getMsec();
       int hlight = Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC);
-      int rehlight = Pref.getInt(sm_PREF_REHIGHLIGHT_MSEC, sm_DEFAULT_REHIGHLIGHT_MSEC);
-      int cycle = delay + hlight + rehlight;
+      int hide = Pref.getInt(sm_PREF_HIDE_MSEC, sm_DEFAULT_HIDE_MSEC);
+      int cycle = delay + hlight + hide;
       double factor = (double)m_SpeedMsec / cycle;
       clearMark();
       m_MarkMsec = (int)(factor * Pref.getInt(sm_PREF_MARK_MSEC, sm_DEFAULT_MARK_MSEC));
@@ -356,9 +356,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
       factor = (double)(m_SpeedMsec - delay) / (cycle - delay);
       m_HighlightStage.HIGHLIGHT.setMsec((int)(factor * hlight + 0.5));
-      m_HighlightStage.HIDE.setMsec((int)(factor * rehlight + 0.5));
+      m_HighlightStage.HIDE.setMsec((int)(factor * hide + 0.5));
 //System.out.printf("cycle %d Pref.h %d Pref.r %d delay %d factor %g hlight %d hide %d m_SpeedMsec %d%n", 
-//         cycle, hlight, rehlight, delay, factor,
+//         cycle, hlight, hide, delay, factor,
 //         m_HighlightStage.HIGHLIGHT.getMsec(),
 //         m_HighlightStage.HIDE.getMsec(),
 //         m_SpeedMsec);
@@ -572,7 +572,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private static final String sm_PREF_COLOR_MARK_MATCH = "twiddler.mark.match.color";
    private static final String sm_PREF_COLOR_MARK_MISMATCH = "twiddler.mark.mismatch.color";
    private static final String sm_PREF_HIGHLIGHT_MSEC = "twiddler.highlight.msec";
-   private static final String sm_PREF_REHIGHLIGHT_MSEC = "twiddler.rehighlight.msec";
+   private static final String sm_PREF_HIDE_MSEC = "twiddler.hide.msec";
    private static final String sm_PREF_MARK_MSEC = "twiddler.mark.msec";
    private static final String sm_PREF_PROGRESS_STEP_MSEC = "twiddler.progress.step.msec";
 
@@ -585,7 +585,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    private static final int sm_DEFAULT_DELAY_MSEC = 0;
    private static final int sm_DEFAULT_HIGHLIGHT_MSEC = 2000;
-   private static final int sm_DEFAULT_REHIGHLIGHT_MSEC = 4000;
+   private static final int sm_DEFAULT_HIDE_MSEC = 4000;
    private static final int sm_DEFAULT_MARK_MSEC = 2000;
    private static final int sm_DEFAULT_STEP_MSEC = 150;
    
