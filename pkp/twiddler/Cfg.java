@@ -11,8 +11,6 @@ import java.nio.ByteBuffer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -43,15 +41,7 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public void writeText(File f) {
-		BufferedWriter bw;
-      try {
-         bw = new BufferedWriter(new FileWriter(f));
-         bw.write(toString());
-			bw.flush();
-         bw.close();
-      } catch (IOException e) {
-         Log.warn("Cfg failed to write to \"" + f.getPath() + "\".");
-      }
+      Io.write(f, toString());
    }
 
    ////////////////////////////////////////////////////////////////////////////

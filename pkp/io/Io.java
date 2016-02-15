@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
@@ -198,6 +200,19 @@ public class Io {
          ++prefix;
       }
       return path.substring(prefix);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void write(File f, String str) {
+		BufferedWriter bw;
+      try {
+         bw = new BufferedWriter(new FileWriter(f));
+         bw.write(str);
+			bw.flush();
+         bw.close();
+      } catch (IOException e) {
+         Log.warn("Io failed to write to \"" + f.getPath() + "\".");
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
