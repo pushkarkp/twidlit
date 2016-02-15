@@ -18,7 +18,7 @@ public class PersistentFrame extends JFrame {
    public void setVisible(boolean set) {
       if (set) {
          String persistName = getPersistName();
-//System.out.printf("%s %d%n", persistName, Persist.getInt(persistName + ".x", 0));
+//System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", Persist.getInt(persistName + ".x", 0));
          Rectangle r = new Rectangle(Persist.getInt(persistName + ".x", 0),
                                      Persist.getInt(persistName + ".y", 0),
                                      Persist.getInt(persistName + ".w", 500),
@@ -33,7 +33,7 @@ public class PersistentFrame extends JFrame {
    public void dispose() {
       String persistName = getPersistName();
       Rectangle r = getBounds();
-//System.out.printf("%s %d%n", persistName + ".x", r.x);
+//System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", r.x);
       Persist.set(persistName + ".x", Integer.toString(r.x));
       Persist.set(persistName + ".y", Integer.toString(r.y));
       Persist.set(persistName + ".w", Integer.toString(r.width));
