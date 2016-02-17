@@ -10,6 +10,7 @@
 package pkp.source;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.io.File;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
@@ -23,15 +24,16 @@ public class KeyPressSource implements KeyPressListSource {
    /////////////////////////////////////////////////////////////////////////////
    public KeyPressSource(File f) {
       m_File = f;
-      ArrayList<ArrayList<Integer>> keys = new ArrayList<ArrayList<Integer>>();
+      ArrayList<ArrayList<KeyPressList>> keys = new ArrayList<ArrayList<KeyPressList>>();
       if (m_File == null || !m_File.exists()) {
          keys.add(getDefault());
       } else {
          LineReader lr = new LineReader(Io.toExistUrl(m_File), Io.sm_MUST_EXIST);
+//new KeyPressList(KeyPress.fromKeyCode(
          keys.add(getKeys(lr));
          lr.close();
       }
-      m_UniformSource = new UniformSource(keys, 4);
+      m_UniformSource = new UniformSource<KeyPressList>(keys, 4);
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,7 @@ public class KeyPressSource implements KeyPressListSource {
    /////////////////////////////////////////////////////////////////////////////
    @Override // KeyPressListSource
    public KeyPressList getNext() {
-      return new KeyPressList(KeyPress.fromKeyCode(m_UniformSource.get()));
+      return m_UniformSource.get();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -63,7 +65,7 @@ public class KeyPressSource implements KeyPressListSource {
 
    /////////////////////////////////////////////////////////////////////////////
    // upper and lower case alphabetics by default
-   private ArrayList<Integer> getDefault() {
+   private ArrayList<KeyPressList> getDefault() {
       byte[] str = new byte[2 * ('z' - 'a' + 1)];
       int k = 0;
       for (int i = 'A'; i <= 'a'; i += 'a' - 'A') {
@@ -71,14 +73,14 @@ public class KeyPressSource implements KeyPressListSource {
             str[k++] = (byte)(i + j);
          }
       }
-      ArrayList<Integer> al = new ArrayList<Integer>();
+      ArrayList<KeyPressList> al = new ArrayList<KeyPressList>();
       add(al, new String(str), 1);
       return al;
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   private ArrayList<Integer> getKeys(LineReader lr) {
-      ArrayList<Integer> al = new ArrayList<Integer>();
+   private ArrayList<KeyPressList> getKeys(LineReader lr) {
+      ArrayList<KeyPressList> al = new ArrayList<KeyPressList>();
       String line;
       while ((line = lr.readLine()) != null) {
          int times = 1;
@@ -96,15 +98,20 @@ public class KeyPressSource implements KeyPressListSource {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   private void add(ArrayList<Integer> al, String str, int times) {
-      KeyPressList kpl = KeyPressList.parseTextAndTags(str);
-      for (int i = 0; i < times; ++i) {
-         for (int j = 0; j < kpl.size(); ++j) {
-//System.out.print(kpl.get(j));
-            al.add(kpl.get(j).toInt());
+   private void add(ArrayList<KeyPressList> al, String str, int times) {
+      ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
+      List<String> strs = Io.split(str, ' ');
+      for (int i = 0; i < strs.size(); ++i) {
+         KeyPressList kpl = KeyPressList.parseTextAndTags(strs.get(i));
+         if (kpl.isValid()) {
+            kpls.add(kpl);
          }
       }
-//System.out.println();
+      for (int i = 0; i < times; ++i) {
+         for (int j = 0; j < kpls.size(); ++j) {
+            al.add(kpls.get(j));
+         }
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -118,5 +125,5 @@ public class KeyPressSource implements KeyPressListSource {
 
    // Data /////////////////////////////////////////////////////////////////////
    private File m_File;
-   private UniformSource m_UniformSource;
+   private UniformSource<KeyPressList> m_UniformSource;
 }
