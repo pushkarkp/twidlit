@@ -389,14 +389,15 @@ class ChordMapper extends ControlDialog implements ActionListener {
    ////////////////////////////////////////////////////////////////////////////
    private String getChars(String line, LineReader lr) {
       int initial = Io.findFirstNotOf(line, Io.sm_WS);
-      int length = Io.findFirstOf(line.substring(initial), Io.sm_WS);
+      String rest = line.substring(initial);
+      int length = Io.findFirstOf(rest, Io.sm_WS);
       if (length == 0) {
          Log.log(String.format("Initial |%c|", line.charAt(initial)));
          Log.log(String.format("Failed to parse \"%s\" on line %d of \"%s\"",
                                line, lr.getLineNumber(), lr.getPath()));
          return "";
       }
-      if (length == -1) {
+      if (length == rest.length()) {
          length = line.length() - initial;
       }
       KeyPressList kpl = KeyPressList.parseTextAndTags(line.substring(initial, initial + length));

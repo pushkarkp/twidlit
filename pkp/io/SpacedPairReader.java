@@ -81,14 +81,14 @@ public class SpacedPairReader {
       }
       m_Line = in.trim();
       int split = Io.findFirstOf(m_Line, Io.sm_WS);
-      if (split == -1) {
+      if (split == m_Line.length()) {
          Log.warn(String.format("Failed to parse \"%s\", line %d of \"%s\".",
                                in, getLineNumber(), m_In.getPath()));
          return;
       }
       m_1 = m_Line.substring(0, split);
       m_2 = m_Line.substring(split).trim();
-      if (m_SingleToken2 && Io.findFirstOf(m_2, Io.sm_WS) != -1) {
+      if (m_SingleToken2 && Io.findFirstOf(m_2, Io.sm_WS) != m_2.length()) {
          Log.err(String.format("Failed to parse \"%s\", line %d of \"%s\".",
                                in, getLineNumber(), m_In.getPath()));
       }

@@ -14,6 +14,8 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +218,26 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static List<String> split(String str, char c) {
+      String ch = String.valueOf(c);
+      ArrayList<String> als = new ArrayList<String>();
+      int start = 0;
+      do {
+         while (start < str.length() && str.charAt(start) == c) {
+            ++start;
+         }
+         str = str.substring(start);
+         int end = findFirstOf(str, ch);
+         String found = str.substring(0, end);
+         if (!"".equals(found)) {
+            als.add(found);
+         }
+         start = end;
+      } while (start < str.length());
+      return als;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static int findFirstOf(String str, String chars) {
       return findFirstOfUpTo(str, chars, str.length());
    }
@@ -223,13 +245,14 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static int findFirstOfUpTo(String str, String chars, int upTo) {
       upTo = Math.min(upTo, str.length());
+//System.out.printf("\"%s\" '%s' %d%n", str, chars, upTo);
       for (int i = 0; i < chars.length(); ++i) {
          int p = str.indexOf(chars.charAt(i));
          if (p < upTo) {
             upTo = p;
          }
       }
-      return upTo;
+      return upTo == -1 ? str.length() : upTo;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -362,7 +385,6 @@ public class Io {
    public static boolean parseBool(String str) {
       return parseBool("", str);
    }
-
 
    ////////////////////////////////////////////////////////////////////////////
    public static boolean parseBool(String str, String value) {
