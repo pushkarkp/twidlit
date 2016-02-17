@@ -12,21 +12,22 @@
 package pkp.source;
 
 import java.util.Random;
+import java.util.List;
 import java.util.ArrayList;
 
 ////////////////////////////////////////////////////////////////////////////////
-class UniformSource {
+class UniformSource<T> {
 
    /////////////////////////////////////////////////////////////////////////////
-   UniformSource(ArrayList<ArrayList<Integer>> items) {
+   UniformSource(ArrayList<ArrayList<T>> items) {
       this(items, 2);
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   UniformSource(ArrayList<ArrayList<Integer>> items, int pool) {
+   UniformSource(ArrayList<ArrayList<T>> items, int pool) {
       m_Random = new Random();
       add(items);
-      m_POOL_SIZE = Math.max(pool, m_Items.length / 16);
+      m_POOL_SIZE = Math.max(pool, m_Items.size() / 16);
       m_First = 0;
       m_Next = 0;
    }
@@ -34,7 +35,7 @@ class UniformSource {
    /////////////////////////////////////////////////////////////////////////////
    // Returns a random chord from the pool using the predefined pool size.
    // It may be the same as the last one unless next has been called.
-   int get() {
+   T get() {
       return get(m_POOL_SIZE);
    }
    
@@ -42,25 +43,25 @@ class UniformSource {
    void next(boolean accepted) {
       if (accepted) {
          // let it go
-         m_First = (m_First + 1) % m_Items.length;
+         m_First = (m_First + 1) % m_Items.size();
       } else {
          // put it back in the pool 
-         int first = m_Items[m_First];
+         T first = m_Items.get(m_First);
          int j;
          for (int i = m_First; i != m_Next; i = j) {
-            j = (i + 1) % m_Items.length;
-            m_Items[i] = m_Items[j];
+            j = (i + 1) % m_Items.size();
+            m_Items.set(i, m_Items.get(j));
          }
-         m_Items[m_Next] = first;
+         m_Items.set(m_Next, first);
       }
-//System.out.printf("next() hit %b m_First [%d] 0x%x m_Next [%d] 0x%x%n", accepted, m_First, m_Items[m_First], m_Next, m_Items[m_Next]);
+//System.out.printf("next() hit %b m_First .get(%d) 0x%x m_Next .get(%d) 0x%x%n", accepted, m_First, m_Items.get(m_First), m_Next, m_Items.get(m_Next));
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
       String str = "";
-      for (int i = 0; i < m_Items.length; ++i) {
-         str += m_Items[i];
+      for (int i = 0; i < m_Items.size(); ++i) {
+         str += m_Items.get(i);
          str += (i == m_POOL_SIZE - 1) ? '|' : ' ';
       }
       return str;
@@ -69,7 +70,7 @@ class UniformSource {
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
-   private void add(ArrayList<ArrayList<Integer>> allItems) {
+   private void add(ArrayList<ArrayList<T>> allItems) {
       int size = 0;
       for (int j = 0; j < allItems.size(); ++j) {
          size += allItems.get(j).size();
@@ -78,22 +79,22 @@ class UniformSource {
       while (size * times < m_POOL_SIZE) {
          ++times;
       }         
-      m_Items = new int[size];
+      m_Items = new ArrayList<T>(size);
       int base = 0;
       for (int j = 0; j < allItems.size(); ++j) {
-//System.out.printf("%d: ", j);
-         ArrayList<Integer> items = allItems.get(j);
+//System.out.printf("j %d: ", j);
+         ArrayList<T> items = allItems.get(j);
          for (int i = 0; i < items.size(); ++i) {
-            m_Items[base + i] = items.get(i);
-//System.out.print(m_Items[base + i] + " ");
+            m_Items.add(items.get(i));
+//System.out.print(m_Items.get(base + i) + " ");
          }
 //System.out.println();
          // shuffle them
          for (int i = 0; i < items.size(); ++i) {
             int rand = m_Random.nextInt(items.size());
-            int swap = m_Items[base + rand];
-            m_Items[base + rand] = m_Items[base + i];
-            m_Items[base + i] = swap;
+            T swap = m_Items.get(base + rand);
+            m_Items.set(base + rand, m_Items.get(base + i));
+            m_Items.set(base + i, swap);
          }
          base += items.size();
       }
@@ -101,19 +102,19 @@ class UniformSource {
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   private int get(int pool) {
-      int ix = (m_Next + m_Random.nextInt(pool)) % m_Items.length;
+   private T get(int pool) {
+      int ix = (m_Next + m_Random.nextInt(pool)) % m_Items.size();
 //System.out.printf("pool %d ix %d%n", pool, ix);
-      int swap = m_Items[ix];
-      m_Items[ix] = m_Items[m_Next];
-      m_Items[m_Next] = swap;
-      m_Next = (m_Next + 1) % m_Items.length;
+      T swap = m_Items.get(ix);
+      m_Items.set(ix, m_Items.get(m_Next));
+      m_Items.set(m_Next, swap);
+      m_Next = (m_Next + 1) % m_Items.size();
       return swap;
    }
    
    // Data /////////////////////////////////////////////////////////////////////
    private Random m_Random;
-   private int[] m_Items;
+   private List<T> m_Items;
    private final int m_POOL_SIZE;
    private int m_First;
    private int m_Next;

@@ -58,7 +58,7 @@ public class ChordSource implements KeyPressListSource {
          }
       }
 //System.out.println();
-      m_UniformSource = new UniformSource(chords);
+      m_UniformSource = new UniformSource<Integer>(chords);
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -102,5 +102,5 @@ public class ChordSource implements KeyPressListSource {
    // Data /////////////////////////////////////////////////////////////////////
    private KeyMap m_KeyMap;
    private int[] m_Counts;
-   private UniformSource m_UniformSource;
+   private UniformSource<Integer> m_UniformSource;
 }
