@@ -275,8 +275,11 @@ public class KeyPress {
             }
             swo.setOffset(start + ((c1 == 'x') ? 4 : 2));
             return KeyPress.parseText((char)ch, mod);
-         } else {
-            int k = Integer.parseInt(str.substring(start + 2, start + 6), 16);
+         } else if (start + 6 > str.length()) {
+            Log.warn('"' + str.substring(start) + "\" is too short");
+            return new KeyPress();
+         } else {   
+            int k = Io.toIntWarnParse(str.substring(start + 2, start + 6), 16);
 //System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(start + 2, start + 6), k);
             swo.setOffset(start + 6);
             return new KeyPress(k, mod.plus(Modifiers.fromKeyCode(k)));

@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.lang.NumberFormatException;
 import java.util.List;
 import pkp.util.Log;
 
@@ -340,6 +341,21 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static int toIntWarnParse(String value) {
+      return toIntWarnParse(value, 10);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toIntWarnParse(String value, int base) {
+      try {
+         return Integer.parseInt(value, base);
+      } catch (NumberFormatException e) {
+         Log.warn("Failed to parse \"" + value + "\" to integer.");
+         return sm_PARSE_FAILED;
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static int toInt(String value) {
       if (value != null && !"".equals(value)) {
          int neg = 1;
@@ -348,11 +364,13 @@ public class Io {
             neg = -1;
          }
          try {
+            int parsed;
             if (value.length() > 1 && value.substring(0,2).equals("0x")) {
-               return neg * Integer.parseInt(value.substring(2), 16);
+               parsed = toIntWarnParse(value.substring(2), 16);
             } else {
-               return neg * Integer.parseInt(value);
+               parsed = toIntWarnParse(value);
             }
+            return parsed == sm_PARSE_FAILED ? parsed : neg * parsed;
          } catch (NumberFormatException e) {}
       }
       return sm_PARSE_FAILED;
