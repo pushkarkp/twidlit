@@ -52,7 +52,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
             Log.log("Using Windows new line and \n is not defined");
          } else {
             m_NL = kpl.get(0);
-            kpl = KeyPressList.parseTextAndTags("\r");
+            kpl = KeyPressList.parseText("\r");
             if (kpl.isValid()) {
                m_CR = kpl.get(0);
             } else {
