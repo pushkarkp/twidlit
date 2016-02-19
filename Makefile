@@ -5,7 +5,7 @@ QUIET_CLEAN_AND_BACK=${QUIET_CLEAN}; cd - > /dev/null
 
 all: classes
 jar: ./Twidlit/Twidlit.jar
-io: pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
+io: pkp/io/CrLf.class pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
 string: pkp/string/StringSource.class pkp/string/StringInt.class pkp/string/StringsInts.class pkp/string/StringsIntsBuilder.class
 lookup: pkp/lookup/LookupBuilder.class pkp/lookup/LookupImplementation.class pkp/lookup/LookupSet.class pkp/lookup/LookupSetBuilder.class pkp/lookup/LookupTable.class pkp/lookup/LookupTableBuilder.class pkp/lookup/SharedIndex.class
 ui: pkp/ui/ControlDialog.class pkp/ui/ControlWindow.class pkp/ui/ExtensionFileFilter.class pkp/ui/HtmlWindow.class pkp/ui/IntegerTextField.class pkp/ui/IntegerSetter.class pkp/ui/LabelComponentBox.class pkp/ui/PersistentDialog.class pkp/ui/PersistentFrame.class pkp/ui/PersistentMenuBar.class pkp/ui/ProgressWindow.class pkp/ui/SaveTextWindow.class pkp/ui/ScalePanel.class pkp/ui/SliderBuilder.class pkp/ui/TextWindow.class

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import pkp.io.Io;
+import pkp.io.CrLf;
 import pkp.lookup.SharedIndexableInts;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -27,7 +28,7 @@ class CharCounts implements SharedIndexableInts {
       m_Counts = new int[bigrams
                          ? (sm_CHARS + 1) * sm_CHARS
                          : sm_CHARS];
-      m_Prev = -1;
+      m_CrLf = new CrLf();
       m_Repeat = 0;
       m_Bigrams = bigrams;
    }
@@ -57,7 +58,12 @@ class CharCounts implements SharedIndexableInts {
 
    ////////////////////////////////////////////////////////////////////////////
    public void nextChar(char c) {
-      if (c != m_Prev) {
+      char prev = m_CrLf.getPrev();
+      c = m_CrLf.next(c);
+      if (c == '\0') {
+         return;
+      }
+      if (c != prev) {
          m_Repeat = 0;
       } else {
          ++m_Repeat;
@@ -67,11 +73,10 @@ class CharCounts implements SharedIndexableInts {
          }
       }
       ++m_Counts[c];
-      if (m_Bigrams && m_Prev != -1) {
-         ++m_Counts[combine(m_Prev, c)];
-//System.out.printf("\"%c%c\" combine(m_Prev, c) %5d m_Counts[combine(m_Prev, c)] %3d%n", m_Prev, c, combine(m_Prev, c), m_Counts[combine(m_Prev, c)]);               
+      if (m_Bigrams && prev != 0) {
+         ++m_Counts[combine(prev, c)];
+//System.out.printf("\"%c%c\" combine(prev, c) %5d m_Counts[combine(prev, c)] %3d%n", prev, c, combine(prev, c), m_Counts[combine(prev, c)]);               
       }
-      m_Prev = c;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -106,7 +111,7 @@ class CharCounts implements SharedIndexableInts {
    // Data ////////////////////////////////////////////////////////////////////
    private static int m_MAX_REPEAT;
    private int[] m_Counts;
-   private int m_Prev;
+   private CrLf m_CrLf;
    private int m_Repeat;
    private boolean m_Bigrams;
 }

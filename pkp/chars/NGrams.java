@@ -17,6 +17,7 @@ import pkp.lookup.LookupBuilder.Duplicates;
 import pkp.lookup.SharedIndexableInts;
 import pkp.io.LineReader;
 import pkp.io.Io;
+import pkp.io.CrLf;
 import pkp.util.Pref;
 import pkp.util.Log;
 
@@ -56,6 +57,7 @@ class NGrams implements SharedIndexableInts {
       }
       m_RELEVANT = lsbr.build();
       m_START = ltbs.build();
+      m_CrLf = new CrLf();
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -78,6 +80,10 @@ class NGrams implements SharedIndexableInts {
 
    ////////////////////////////////////////////////////////////////////////////
    public void nextChar(char c) {
+      c = m_CrLf.next(c);
+      if (c == '\0') {
+         return;
+      }
       if (!m_RELEVANT.is(c)) {
          // irrelevant new char invalidates any current ngrams
          if (m_Current.size() > 0) {
@@ -142,11 +148,11 @@ class NGrams implements SharedIndexableInts {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
-         String ng = Io.parseEscape(line);
+         String ng = CrLf.normalize(Io.parseEscape(line));
+//System.out.println("|" + line + "| -> |" + ng + "|");
          if (!NGram.isValid(ng)) {
             Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {
-//System.out.println(">" + ng + "<");
             nGrams.add(ng);
          }
       }
@@ -161,6 +167,7 @@ class NGrams implements SharedIndexableInts {
    private ArrayList<NGram> m_Current;
    private ArrayList<Integer> m_CurrentIndex;
    private ArrayList<Integer> m_Counts;
+   private CrLf m_CrLf;
    private int m_MaxLength;
 
    // Main /////////////////////////////////////////////////////////////////////
