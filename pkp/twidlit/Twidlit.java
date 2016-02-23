@@ -220,6 +220,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    /////////////////////////////////////////////////////////////////////////////
    @Override // Log.Quitter
    public void quit() {
+      //m_TwiddlerWindow.setVisible(false);
+      m_TwiddlerWindow.dispose();
       setVisible(false);
       m_ChordTimes.persist("");
       getJMenuBar().setVisible(false); // persist
