@@ -120,7 +120,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
          return;
       }
       case sm_CHORDS: {
-         File f = chooseFile("chords", m_ChordsFile, "cfg.txt");
+         File f = chooseFile("chords", m_ChordsFile, "chords");
          if (f != null) {
             m_ChordsFile = Io.asRelative(f);
             setLabel(m_ChordsFileLabel, m_ChordsFile);
