@@ -167,7 +167,7 @@ public class Counts {
       pw.step();
       int labelSize = getLabelSize();
       String pad = (new String(new char[labelSize])).replace('\0', ' ');
-      final int WIDTH = 1 + sm_PAGE_WIDTH - labelSize;
+      final int WIDTH = sm_PAGE_WIDTH - labelSize;
       double scale = WIDTH / (m_Index.getMax() + 0.5);
       String str = "";
       final int STEP = Math.max(1, m_Index.getSize() / (getProgressCount() - 1));
@@ -180,7 +180,7 @@ public class Counts {
 				int last = Math.min(dots, WIDTH - 1);
             String label = m_Index.getLabel(i);
             str += pad.substring(0, pad.length() - label.length()) + label;
-            str += (new String(new char[last])).replace('\0', '=');
+            str += ' ' + (new String(new char[last])).replace('\0', '=');
 				str += (dots == WIDTH) ? "=\n"
                  : (dots > WIDTH) ? ">\n" : "\n";
 			}
