@@ -392,8 +392,8 @@ public class ChordTimes implements Persistent {
    public static void main(String[] args) {
       final int LIMIT = 100;
       Log.init(Log.ExitOnError);
-      Persist.init("TwidlitPersist.properties", ".", "pref");
-      Pref.init("TwidlitPreferences.txt", Persist.get("pref.dir"), "pref");
+      Persist.init("twidlit.properties", ".", "pref");
+      Pref.init("twidlit.preferences", Persist.get("pref.dir"), "pref");
       int count = Integer.parseInt(args[2]);
       ChordTimes times = new ChordTimes(true, true, Integer.parseInt(args[0]));
       for (int i = 0; i < count; ++i) {

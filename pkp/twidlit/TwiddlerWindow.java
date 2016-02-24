@@ -616,27 +616,4 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private Timer m_MarkTimer;
    private Twiddle m_Twiddle;
    private boolean m_RightHand;
-
-   // Main /////////////////////////////////////////////////////////////////////
-   public static void main(String[] args) {
-      Persist.init("TwidlitPersist.properties", ".", "pref");
-      Pref.init("TwidlitPreferences.txt", Persist.get("pref.dir"), "pref");
-      Pref.setIconPath("/data/icon.gif");
-      JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Twidlit", true);
-      TwiddlerWindow win = new TwiddlerWindow(false, menuItem, null);
-      win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      win.setVisible(true);
-      Random r = new Random();
-      for (int i = 0; ; ++i) {
-         Twiddle tw = new Twiddle(r.nextInt(4080) + 1);
-         if ((i & 1) == 0) {
-            win.show(tw, null);
-         } else {
-            win.markMismatch(tw);
-         }
-         try {
-            Thread.sleep(2000);
-         } catch (InterruptedException e) {}
-      }
-   }
 }

@@ -169,8 +169,8 @@ public class KeyMap {
 
    // Main ////////////////////////////////////////////////////////////////////
    public static void main(String[] args) {
-      Pref.init("TwidlitPreferences.txt", "pref", "pref");
-      Log.init(new File("TwidlitLog.txt"), Log.ExitOnError);
+      Pref.init("twidlit.preferences", "pref", "pref");
+      Log.init(new File("twidlit.log"), Log.ExitOnError);
       KeyPress.init();
       File f = new File("pref", "keymap.txt");
       URL url = null;

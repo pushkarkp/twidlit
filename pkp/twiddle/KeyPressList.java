@@ -256,7 +256,7 @@ public class KeyPressList extends java.lang.Object {
          System.out.println("usage '<action list>'...'");
          return;
       }
-      Pref.init("TwidlitPreferences.txt", "pref", "pref");
+      Pref.init("twidlit.preferences", "pref", "pref");
       KeyPress.init();
       for (String arg: args) {
          KeyPressList kpl = KeyPressList.parseTextAndTags(arg);

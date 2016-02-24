@@ -278,7 +278,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          if (m_NGramsFile != null) {
             m_FileChooser.setSelectedFile(m_NGramsFile);
          }
-         m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("ngrams"));
+         m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("keys"));
          m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_FileChooser = null;
@@ -446,11 +446,12 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          tw = new MenuSaveMappingsWindow(sm_SAVE_AS_TITLE, m_CfgDir);
          tw.setPersistName(sm_CHORD_LIST_PERSIST);
          tw.setSaver(new CfgSaver(command, tw));
-         tw.setExtension(sm_CFG_TXT);
+         tw.setExtension(sm_CFG_CHORDS);
          tw.addExtension(sm_CFG);
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          tw = new MenuSaveMappingsWindow(sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
+         tw.setExtension("timed.chords");
          break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
@@ -474,7 +475,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    ////////////////////////////////////////////////////////////////////////////
    private JFileChooser makeCfgFileChooser(ActionListener al) {
       JFileChooser fc = makeFileChooser(al, m_CfgDir);
-      fc.setFileFilter(new ExtensionFileFilter(sm_CFG_TXT));
+      fc.setFileFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
       fc.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
       return fc;
    }
@@ -538,7 +539,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
       ////////////////////////////////////////////////////////////////
       MenuSaveMappingsWindow(String title, String dir) {
-         super(title, "", "txt", dir);
+         super(title, "", "chords", dir);
          addButton(new JButton(sm_CONVERT_TEXT[0]));
          getButton(1).addActionListener(this);
          replaceText(getContent()); 
@@ -627,7 +628,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
                return;
             }             
             switch (eff.getExtension()) {
-            case sm_CFG_TXT:
+            case sm_CFG_CHORDS:
                m_CfgDir = f.getParent();
                m_CfgFName = f.getName();
                m_Twidlit.extendTitle(f.getAbsolutePath());
@@ -678,7 +679,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             return;
          }
          switch (eff.getExtension()) {
-         case sm_CFG_TXT:
+         case sm_CFG_CHORDS:
             Io.write(f, m_Window.getText());
             break;
          case sm_CFG:
@@ -844,14 +845,14 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             tw = new MenuSaveTextWindow(
                "Character Counts", 
                m_Counts.table(pw),
-               "counts", 
+               "count.keys", 
                m_OutDir);
             break;
          case sm_COUNTS_GRAPH_TEXT:
             tw = new MenuSaveTextWindow(
                "Graph of Character Counts", 
                m_Counts.graph(pw),
-               "graph",
+               "graph.keys",
                m_OutDir);
             break;
          }
@@ -901,7 +902,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
    private static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
    private static final String sm_HELP_REF_TEXT = "Reference";
-   private static final String sm_HELP_SYNTAX_TEXT = "Files and Syntax";
+   private static final String sm_HELP_SYNTAX_TEXT = "Files Types";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
@@ -911,7 +912,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String[] sm_CONVERT_TEXT = {"As 0MRL", "As 4finger"};
 
    private static final String sm_CFG = "cfg";
-   private static final String sm_CFG_TXT = "cfg.txt";
+   private static final String sm_CFG_CHORDS = "cfg.chords";
    private static final String sm_PREF_DIR_PERSIST = "pref.dir";
    private static final String sm_CFG_DIR_PERSIST = "cfg.dir";
    private static final String sm_CFG_FILE_PERSIST = "cfg.file";
@@ -924,13 +925,13 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "key.source.file";
    
    private static final String[] sm_PREF_FILES = new String[] {
-      "TwidlitDuplicates.txt",
-      "TwidlitKeyNames.txt",
-      "TwidlitKeyValues.txt",
-      "TwidlitKeyEvents.txt",
-      "TwidlitLost.txt",
-      "TwidlitPreferences.txt",
-      "TwidlitUnprintables.txt"
+      "twidlit.duplicate.keys",
+      "twidlit.event.keys",
+      "twidlit.lost.keys",
+      "twidlit.preference.keys",
+      "twidlit.name.keys",
+      "twidlit.unprintable.keys",
+      "twidlit.value.keys"
    };
 
    // Data ///////////////////////////////////////////////////////////

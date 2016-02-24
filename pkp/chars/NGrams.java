@@ -172,7 +172,7 @@ class NGrams implements SharedIndexableInts {
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
-      Pref.init("TwidlitPreferences.txt", "pref", "pref");
+      Pref.init("twidlit.preferences", "pref", "pref");
       Pref.setIconPath("/data/icon.gif");
       Log.init(Io.createFile(".", "log.txt"), Log.ExitOnError);
       NGrams nGrams = new NGrams(new File(argv[0]));

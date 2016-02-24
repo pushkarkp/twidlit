@@ -89,38 +89,38 @@ public class KeyPress {
                                        }
                                     };
       sm_KeyValueToCode = LookupTableBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "twidlit.value.keys"),
          Io.sm_MUST_EXIST,
          Duplicates.OVERWRITE,
          1, 0x7F,
          escKeyEscCharSwap);
       sm_KeyEventToCode = LookupTableBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyEvents.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "twidlit.event.keys"),
          Io.sm_MUST_EXIST,
          Duplicates.ERROR,
          0x10, 0x7F,
          escKeyPos0xFFFFSwap);
-      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyNames.txt"), true, escKey1)).build();
+      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "twidlit.name.keys"), true, escKey1)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitUnprintables.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "twidlit.unprintable.keys"),
          Io.sm_MUST_EXIST,
          0, 0x20, 
          escChar);
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitDuplicates.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "twidlit.duplicate.keys"),
          Io.sm_MUST_EXIST,
          0x54, 0x70, 
          escKey);
 //System.out.println(sm_Duplicate);
       sm_Lost = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "TwidlitLost.txt"),
+         Persist.getExistDirJarUrl("pref.dir", "twidlit.lost.keys"),
          Io.sm_MUST_EXIST,
          0x1, 0x0,
          escKey);
 //System.out.println(sm_Lost);
-      int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "TwidlitKeyValues.txt"));
+      int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "twidlit.value.keys"));
       sm_KeyCodeToValue = new HashMap<Integer, Character>(0x80);
       for (int i = 0; kcv[i] > 0; i += 2) {
          sm_KeyCodeToValue.put(kcv[i], (char)kcv[i + 1]);
@@ -488,8 +488,8 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void main(String[] args) {
-      Persist.init("TwidlitPersist.properties", ".", "pref");
-      Pref.init("TwidlitPreferences.txt", Persist.get("pref.dir"), "pref");
+      Persist.init("twidlit.properties", ".", "pref");
+      Pref.init("twidlit.preferences", Persist.get("pref.dir"), "pref");
       KeyPress.init();
       if (args.length == 0) {
          //System.out.println("add a string");

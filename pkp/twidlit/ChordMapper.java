@@ -63,10 +63,10 @@ class ChordMapper extends ControlDialog implements ActionListener {
       }
       m_Times = times;
       m_ChordsFile = Persist.getFile("map.chords.file");
-      m_CharsFile = Persist.getFile("map.chars.file");
+      m_KeysFile = Persist.getFile("map.keys.file");
       m_MappedFile = Persist.getFile("map.mapped.file");
       m_GotEnter = false;
-      m_DuplicateChars = false;
+      m_DuplicateKeys = false;
       m_ExistingTwiddles = (ArrayList<Integer>[])new ArrayList[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          m_ExistingTwiddles[i] = new ArrayList<Integer>();
@@ -83,7 +83,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
       box.add(Box.createVerticalGlue());
-      label = new JLabel("<html>Select a file of chords and a file of characters to combine.</html>");
+      label = new JLabel("<html>Select a file of chords and a file of keystrokes to combine.</html>");
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
@@ -92,12 +92,12 @@ class ChordMapper extends ControlDialog implements ActionListener {
       setLabel(m_ChordsFileLabel, m_ChordsFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      fileBox = createButtonLabelBox(sm_CHARS);
-      m_CharsFileLabel = (JLabel)fileBox.getComponent(2);
-      setLabel(m_CharsFileLabel, m_CharsFile);
+      fileBox = createButtonLabelBox(sm_KEYS);
+      m_KeysFileLabel = (JLabel)fileBox.getComponent(2);
+      setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      m_CheckBoxSkipDup = new JCheckBox("Skip duplicate characters", Persist.getBool("map.skip.duplicates", true));
+      m_CheckBoxSkipDup = new JCheckBox("Skip duplicate keystrokes", Persist.getBool("map.skip.duplicates", true));
       m_CheckBoxSkipDup.setOpaque(false);
       m_CheckBoxSkipDup.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(m_CheckBoxSkipDup);
@@ -127,16 +127,16 @@ class ChordMapper extends ControlDialog implements ActionListener {
          }
          return;
       }
-      case sm_CHARS: {
-         File f = chooseFile("characters", m_CharsFile, "counts");
+      case sm_KEYS: {
+         File f = chooseFile("keystrokes", m_KeysFile, "keys");
          if (f != null) {
-            m_CharsFile = Io.asRelative(f);
-            setLabel(m_CharsFileLabel, m_CharsFile);
+            m_KeysFile = Io.asRelative(f);
+            setLabel(m_KeysFileLabel, m_KeysFile);
          }
          return;
       }
       case sm_MAPPED: {
-         File f = chooseFile("mapped", m_MappedFile, "cfg.txt");
+         File f = chooseFile("mapped", m_MappedFile, "cfg.chords");
          if (f != null && !f.isDirectory()) {
             m_MappedFile = Io.asRelative(f);
          }
@@ -144,34 +144,34 @@ class ChordMapper extends ControlDialog implements ActionListener {
          return;
       }
       case sm_OK:
-         // require both chords and chars or mapped with neither
-         if ((m_ChordsFile == null || m_CharsFile == null)
-          && (m_MappedFile == null || m_ChordsFile != null || m_CharsFile != null)) {
-            Log.warn("Mapping requires both a chords and a characters files.");
+         // require both chords and keys or mapped with neither
+         if ((m_ChordsFile == null || m_KeysFile == null)
+          && (m_MappedFile == null || m_ChordsFile != null || m_KeysFile != null)) {
+            Log.warn("Mapping requires both a chords and a keystrokes files.");
             return;
          }
          Persist.setFile("map.chords.file", m_ChordsFile);
-         Persist.setFile("map.chars.file", m_CharsFile);
+         Persist.setFile("map.keys.file", m_KeysFile);
          Persist.setFile("map.mapped.file", m_MappedFile);
          Persist.set("map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
          Persist.set("map.frequency.sort", m_CheckBoxSort.isSelected());
-         map(m_MappedFile, m_ChordsFile, m_CharsFile);
+         map(m_MappedFile, m_ChordsFile, m_KeysFile);
          if (m_CheckBoxSort.isSelected()) {
             m_Assignments = orderByChordTimes(m_Assignments);
          }
          SaveTextWindow stw = new SaveTextWindow(
             "Chord Mappings",
             Assignment.toString(m_Assignments, KeyPress.Format.FILE),
-            "cfg.txt");
+            "cfg.chords");
          stw.setPersistName("chord.list");
          Font font = stw.getFont();
          stw.setFont(new Font("monospaced", font.getStyle(), font.getSize()));
-         stw.setExtension("cfg.txt");
+         stw.setExtension("cfg.chords");
          stw.setVisible(true);
-         if (m_DuplicateChars) {
+         if (m_DuplicateKeys) {
             String action = m_CheckBoxSkipDup.isSelected() ? "skipped" : "found";
             String seeLog = Log.hasFile() ? " (see log for details)." : ".";
-            Log.warn("Duplicate characters were " + action + seeLog);
+            Log.warn("Duplicate keystrokes were " + action + seeLog);
          }
          // return;
       case sm_CANCEL:
@@ -245,7 +245,6 @@ class ChordMapper extends ControlDialog implements ActionListener {
       fc.setCurrentDirectory(dir);
       ArrayList<String> effs = new ArrayList<String>();
       effs.add(ext);
-      effs.add("txt");
       ExtensionFileFilter.setFileFilters(fc, effs);
       fc.addChoosableFileFilter(fc.getAcceptAllFileFilter());
       return fc;
@@ -305,8 +304,8 @@ class ChordMapper extends ControlDialog implements ActionListener {
          if (m_Label == m_ChordsFileLabel) {
             m_ChordsFile = null;
          }
-         if (m_Label == m_CharsFileLabel) {
-            m_CharsFile = null;
+         if (m_Label == m_KeysFileLabel) {
+            m_KeysFile = null;
          }
          if (m_Label == m_MappedFileLabel) {
             m_MappedFile = null;
@@ -319,10 +318,10 @@ class ChordMapper extends ControlDialog implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private enum Target { MAPPED, CHORD, CHARS };
+   private enum Target { MAPPED, CHORD, KEYS };
 
    ////////////////////////////////////////////////////////////////////////////
-   private void map(File mappedF, File chordF, File charsF) {
+   private void map(File mappedF, File chordF, File keysF) {
       if (mappedF != null) {
          LineReader mappedLr = new LineReader(Io.toExistUrl(mappedF), Io.sm_MUST_EXIST);
          for (;;) {
@@ -334,19 +333,19 @@ class ChordMapper extends ControlDialog implements ActionListener {
          }
          mappedLr.close();
       }
-      if (chordF != null && charsF != null) {
+      if (chordF != null && keysF != null) {
          LineReader chordLr = new LineReader(Io.toExistUrl(chordF), Io.sm_MUST_EXIST);
-         LineReader charsLr = new LineReader(Io.toExistUrl(charsF), Io.sm_MUST_EXIST);
+         LineReader keysLr = new LineReader(Io.toExistUrl(keysF), Io.sm_MUST_EXIST);
          for (;;) {
             String chord = getStr(chordLr, Target.CHORD);
-            String chars = getStr(charsLr, Target.CHARS);
-            if (chord == null || chars == null) {
+            String keys = getStr(keysLr, Target.KEYS);
+            if (chord == null || keys == null) {
                break;
             }
-            m_Assignments.add(Assignment.parseLine(chord + " = " + chars));
+            m_Assignments.add(Assignment.parseLine(chord + " = " + keys));
          }
          chordLr.close();
-         charsLr.close();
+         keysLr.close();
       }
    }
 
@@ -358,8 +357,8 @@ class ChordMapper extends ControlDialog implements ActionListener {
             return null;
          }
          String str = "";
-         if (target == Target.CHARS) {
-            str = getChars(line, lr);
+         if (target == Target.KEYS) {
+            str = getkeys(line, lr);
          } else if (line.length() < 6) {
             Log.warn(String.format("Line too short. Failed to parse \"%s\" on line %d of \"%s\"",
                                    line, lr.getLineNumber(), lr.getPath()));
@@ -387,7 +386,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private String getChars(String line, LineReader lr) {
+   private String getkeys(String line, LineReader lr) {
       int initial = Io.findFirstNotOf(line, Io.sm_WS);
       String rest = line.substring(initial);
       int length = Io.findFirstOf(rest, Io.sm_WS);
@@ -411,7 +410,7 @@ class ChordMapper extends ControlDialog implements ActionListener {
          if (kpl.equals(m_Assignments.get(i).getKeyPressList())) {
             Log.log(String.format(action + " repeat of '%s' on line %d of \"%s\"",
                                   line.substring(initial, initial + length), lr.getLineNumber(), lr.getPath()));
-            m_DuplicateChars = true;
+            m_DuplicateKeys = true;
             if (m_CheckBoxSkipDup.isSelected()) {
                return "";
             }
@@ -504,7 +503,7 @@ System.out.printf("i %d label %s%n", i, label);
    private static final String sm_HELP = "Help";
    private static final String sm_MAPPED = "Mapped";
    private static final String sm_CHORDS = "Chords";
-   private static final String sm_CHARS = "Characters";
+   private static final String sm_KEYS = "Keystrokes";
    private static final String sm_CLEAR = "x";
 
    private static final int sm_OFFSET[][] = new int[][]{{0, 3}, {4, 7}};
@@ -513,14 +512,14 @@ System.out.printf("i %d label %s%n", i, label);
    private KeyPress m_CR;
    private JFileChooser m_FileChooser;
    private JLabel m_ChordsFileLabel;
-   private JLabel m_CharsFileLabel;
+   private JLabel m_KeysFileLabel;
    private JLabel m_MappedFileLabel;
    private File m_ChordsFile;
-   private File m_CharsFile;
+   private File m_KeysFile;
    private File m_MappedFile;
    private JCheckBox m_CheckBoxSkipDup;
    private JCheckBox m_CheckBoxSort;
-   private boolean m_DuplicateChars;
+   private boolean m_DuplicateKeys;
    private boolean m_GotEnter;
    private ArrayList<Integer>[] m_ExistingTwiddles;
    private ArrayList<Assignment> m_Assignments;

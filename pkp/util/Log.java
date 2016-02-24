@@ -204,7 +204,7 @@ public class Log implements ActionListener {
          Log.err("Failed to create URL from \"" + m_File + "\": " + e + ".");
       }
       m_TextWindow = new TextWindow(url);
-      m_TextWindow.setTitle("TwidlitLog.txt");
+      m_TextWindow.setTitle(m_File.getName());
       JButton b = new JButton(sm_BUTTON_STRING);
       b.addActionListener(this);
       b.setPreferredSize(new Dimension(65, 20));

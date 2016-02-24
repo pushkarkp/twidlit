@@ -1,4 +1,4 @@
-JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/TwidlitDuplicates.txt pref/TwidlitKeyEvents.txt pref/TwidlitKeyNames.txt pref/TwidlitKeyValues.txt pref/TwidlitLost.txt pref/TwidlitPersist.properties pref/TwidlitPreferences.txt pref/TwidlitUnprintables.txt
+JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/twidlit.duplicate.keys pref/twidlit.event.keys pref/twidlit.name.keys pref/twidlit.value.keys pref/twidlit.lost.keys pref/twidlit.properties pref/twidlit.preferences pref/twidlit.unprintable.keys
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null
 QUIET_CLEAN_AND_BACK=${QUIET_CLEAN}; cd - > /dev/null
@@ -34,7 +34,7 @@ clean:
 	@cd pkp/twiddle; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twiddler; ${QUIET_CLEAN_AND_BACK}
 	@cd pkp/twidlit; ${QUIET_CLEAN_AND_BACK}
-	@${QUIET_CLEAN} pref/TwidlitPreferences.txt classlist.txt TwidlitLog.txt TwidlitPersist.properties ||:
+	@${QUIET_CLEAN} pref/twidlit.preferences classlist.txt twidlit.log twidlit.properties ||:
 version:
 	@script/incVersion.sh show data/about.html
 major minor update:
@@ -45,10 +45,10 @@ major minor update:
 %.class: %.java
 	javac $<
 
-pref/TwidlitPreferences.txt: data/ref.html script/makePrefs.sh
-	@script/makePrefs.sh data/ref.html pref/TwidlitPreferences.tmp
-	@diff pref/TwidlitPreferences.txt pref/TwidlitPreferences.tmp 2> /dev/null ||:
-	@mv pref/TwidlitPreferences.tmp pref/TwidlitPreferences.txt
+pref/twidlit.preferences: data/ref.html script/makePrefs.sh
+	@script/makePrefs.sh data/ref.html pref/twidlit.preferences.tmp
+	@diff pref/twidlit.preferences pref/twidlit.preferences.tmp 2> /dev/null ||:
+	@mv pref/twidlit.preferences.tmp pref/twidlit.preferences
    
 # list of the classes to jar, escaping the $s
 classlist.txt: classes

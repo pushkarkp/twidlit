@@ -395,11 +395,11 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    public static void main(String[] argv) {
       m_HomeDir = argv.length == 0 ? "." : argv[0];
       Log.init(Log.ExitOnError);
-      Persist.init("TwidlitPersist.properties", m_HomeDir, "pref");
-      Pref.init("TwidlitPreferences.txt", Persist.get("pref.dir"), "pref");
+      Persist.init("twidlit.properties", m_HomeDir, "pref");
+      Pref.init("twidlit.preferences", Persist.get("pref.dir"), "pref");
       Pref.setIconPath("/data/icon.gif");
       if (Pref.getBool("write.log", true)) {
-         Log.setFile(Io.createFile(m_HomeDir, "TwidlitLog.txt"));
+         Log.setFile(Io.createFile(m_HomeDir, "twidlit.log"));
       }
       KeyPress.init();
       Twidlit twidlit = new Twidlit();
