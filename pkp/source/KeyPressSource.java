@@ -86,10 +86,11 @@ public class KeyPressSource implements KeyPressListSource {
          line = line.trim();
          // read ":<num>" at end of line into times
          int times = 1;
-         // ignore if first character
-         int at = line.substring(1).indexOf(':');
-         // ignore if last character
-         if (at != -1 && at < line.length() - 1) {
+         int at = line.lastIndexOf(':');
+         // ignore if first or last character
+         // or has spaces after
+         if (at > 0 && at < line.length() - 1
+          && line.substring(at).indexOf(' ') == -1) {
             int count = Io.toIntWarnParse(line.substring(at + 1));
             if (count != Io.sm_PARSE_FAILED) {
                line = line.substring(0, at);
