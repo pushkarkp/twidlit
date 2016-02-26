@@ -262,9 +262,16 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
          return;
-      case sm_FILE_MAP_CHORDS_TEXT:
-         new ChordMapper(m_Twidlit, getChordTimes());
+      case sm_FILE_MAP_CHORDS_TEXT: {
+         ChordTimes ct = m_Twidlit.getChordTimes();
+         // don't use the keystroke-prompted chord times
+         if (ct.isKeystrokes()) {
+            ct = new ChordTimes(false, isRightHand());
+         }
+         new ChordMapper(m_Twidlit, 
+                         new SortedChordTimes(ct));
          return;
+      }
       case sm_FILE_PREF_TEXT:
          m_FileChooser = makeFileChooser(new PrefActionListener(), m_PrefDir);
          m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -451,7 +458,7 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          tw = new MenuSaveMappingsWindow(sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
-         tw.setExtension("timed.chords");
+         tw.setExtension(m_Twidlit.getChordTimes().getExtension());
          break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
@@ -505,15 +512,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       if (settingsVisible) {
          m_SettingsWindow.setVisible(true);
       }
-   }
-
-   ///////////////////////////////////////////////////////////////////
-   private SortedChordTimes getChordTimes() {
-      ChordTimes ct = m_Twidlit.getChordTimes();
-      if (ct.isKeys()) {
-         ct = new ChordTimes(false, isRightHand());
-      }
-      return new SortedChordTimes(ct);
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -583,8 +581,10 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             return (new Cfg(m_SettingsWindow,
                             m_Twidlit.getKeyMap().getAssignments())).toString();
          case sm_CHORDS_BY_TIME_TITLE:
-            return "#   Mean Range (Times)\n"
-                 + getChordTimes().listChordsByTime();
+            ChordTimes ct = m_Twidlit.getChordTimes();
+            return "# T" + ct.getExtension().replace('.', ' ').substring(1) + '\n'
+                 + "#   Mean Range (Times)\n"
+                 + (new SortedChordTimes(ct)).listChordsByTime();
          default:
             Log.err("MenuSaveMappingsWindow.getContentForTitle() bad title: " + getTitle());
             return "";

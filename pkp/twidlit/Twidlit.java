@@ -116,7 +116,6 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       }
       Init in = (Init)init;
       m_TwiddlerWindow.setRightHand(in.m_Right);
-      m_ChordTimes = new ChordTimes(in.m_File != null, in.m_Right);
       m_KeyMap = in.m_KeyMap;
       m_TextPanel = new TextPanel(m_KeyMap);
       setContentPane(m_TextPanel);
@@ -148,26 +147,25 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    public void setRightHand(boolean right) {
       if (right != isRightHand()) {
          m_TwiddlerWindow.setRightHand(right);
-         if (m_ChordTimes != null) {
-            m_ChordTimes.persist("");
-         }
-         m_ChordTimes = new ChordTimes(!m_TextPanel.isChords(), right);
          if (m_TextPanel.isChords()) {
             // new times need new chords
             setChords();
+         } else {
+            setChordTimes(!m_TextPanel.isChords());
          }
       }
    }
 
    /////////////////////////////////////////////////////////////////////////////
    boolean isRightHand() {
-      return m_ChordTimes.isRightHand();
+      return m_TwiddlerWindow.isRightHand();
    }
 
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
    public void setChords() {
       m_TwiddlerWindow.useDelay(false);
+      setChordTimes(false);
       m_TextPanel.setChords(m_ChordTimes.getCounts());
       start();
    }
@@ -175,7 +173,10 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
    public void setKeystrokes(File f) {
-      m_TwiddlerWindow.useDelay(true);
+      if (!m_TextPanel.isKeystrokes()) {
+         m_TwiddlerWindow.useDelay(true);
+         setChordTimes(true);
+      }
       m_TextPanel.setKeystrokes(f);
       start();
    }
@@ -195,7 +196,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       return m_TwiddlerWindow;
    }
 
-   ///////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////
    void extendTitle(String extension) {
       if (extension == null || "".equals(extension)) {
          setTitle(getClass().getSimpleName());
@@ -376,6 +377,14 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    private void continueTime() {
       m_TimeMs = 0;
   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void setChordTimes(boolean keys) {
+      if (m_ChordTimes != null) {
+         m_ChordTimes.persist("");
+      }
+      m_ChordTimes = new ChordTimes(keys, isRightHand());
+   }
 
    // Data /////////////////////////////////////////////////////////////////////
    private static String m_HomeDir;

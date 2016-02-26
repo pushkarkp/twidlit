@@ -30,6 +30,7 @@ public class ChordTimes implements Persistent {
    /////////////////////////////////////////////////////////////////////////////
    public ChordTimes(boolean isKeys, boolean isRightHand) {
       this(isKeys, isRightHand, Pref.getInt("chord.times.span", 16));
+//System.out.println(getExtension());
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -43,13 +44,21 @@ public class ChordTimes implements Persistent {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public boolean isKeys() {
+   public boolean isKeystrokes() {
       return m_KEYS;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public boolean isRightHand() {
       return m_RIGHTHAND;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public String getExtension() {
+      return "timed."
+           + (isRightHand() ? "right." : "left.")
+           + (isKeystrokes() ? "key." : "")
+           + "chords";
    }
 
    /////////////////////////////////////////////////////////////////////////////
