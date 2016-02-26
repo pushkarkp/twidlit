@@ -16,7 +16,7 @@ text: pkp/text/TextPanel.class
 times: pkp/times/ChordTimes.class pkp/times/SortedChordTimes.class
 twiddle: pkp/twiddle/Assignment.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
 twiddler: pkp/twiddler/Cfg.class pkp/twiddler/Settings.class pkp/twiddler/SettingsWindow.class 
-twidlit: pkp/twidlit/ChordMapper.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
+twidlit: pkp/twidlit/ChordMapper.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/SaveChordsWindow.class pkp/twidlit/SaveTextWindow.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 classes: io string lookup ui util chars source text times twiddle twiddler twidlit
 clean:
 	@cd data; ${QUIET_CLEAN_AND_BACK}

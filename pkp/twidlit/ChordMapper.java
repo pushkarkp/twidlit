@@ -6,7 +6,6 @@
 
 package pkp.twidlit;
 
-import java.awt.Font;
 import java.awt.Window;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -30,7 +29,6 @@ import pkp.times.SortedChordTimes;
 import pkp.io.Io;
 import pkp.io.LineReader;
 import pkp.ui.HtmlWindow;
-import pkp.ui.SaveTextWindow;
 import pkp.ui.ControlDialog;
 import pkp.ui.ExtensionFileFilter;
 import pkp.util.Persist;
@@ -38,7 +36,8 @@ import pkp.util.Pref;
 import pkp.util.Log;
 
 //////////////////////////////////////////////////////////////////////
-class ChordMapper extends ControlDialog implements ActionListener {
+class ChordMapper extends ControlDialog 
+   implements ActionListener, SaveChordsWindow.ContentForTitle {
 
    ///////////////////////////////////////////////////////////////////
    ChordMapper(Window owner, SortedChordTimes times) {
@@ -159,15 +158,11 @@ class ChordMapper extends ControlDialog implements ActionListener {
          if (m_CheckBoxSort.isSelected()) {
             m_Assignments = orderByChordTimes(m_Assignments);
          }
-         SaveTextWindow stw = new SaveTextWindow(
-            "Chord Mappings",
-            Assignment.toString(m_Assignments, KeyPress.Format.FILE),
-            "cfg.chords");
-         stw.setPersistName("chord.list");
-         Font font = stw.getFont();
-         stw.setFont(new Font("monospaced", font.getStyle(), font.getSize()));
-         stw.setExtension("cfg.chords");
-         stw.setVisible(true);
+         SaveChordsWindow scw = new
+            SaveChordsWindow(this, "Chord Mappings", "cfg.chords");
+         scw.setPersistName("chord.list");
+         scw.setExtension("cfg.chords");
+         scw.setVisible(true);
          if (m_DuplicateKeys) {
             String action = m_CheckBoxSkipDup.isSelected() ? "skipped" : "found";
             String seeLog = Log.hasFile() ? " (see log for details)." : ".";
@@ -179,11 +174,17 @@ class ChordMapper extends ControlDialog implements ActionListener {
          dispose();
          return;
       case sm_HELP:
-         HtmlWindow hw = new HtmlWindow(getClass().getResource("/data/map.html"));
+         HtmlWindow hw = new HtmlWindow(getClass().getResource("/data/ref.html") + "#map");
          hw.setTitle(sm_HELP);
          hw.setVisible(true);
          return;
       }
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   @Override // ContentForTitle
+   public String getContentForTitle(String title) {
+      return Assignment.toString(m_Assignments, KeyPress.Format.FILE);
    }
 
    // Private /////////////////////////////////////////////////////////////////

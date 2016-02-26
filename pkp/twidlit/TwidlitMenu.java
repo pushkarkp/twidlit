@@ -23,7 +23,7 @@ import pkp.times.ChordTimes;
 import pkp.times.SortedChordTimes;
 import pkp.ui.PersistentMenuBar;
 import pkp.ui.HtmlWindow;
-import pkp.ui.SaveTextWindow;
+import pkp.ui.SaveTextWindow.Saver;
 import pkp.ui.ProgressWindow;
 import pkp.ui.ExtensionFileFilter;
 import pkp.ui.IntegerSetter;
@@ -31,7 +31,8 @@ import pkp.io.Io;
 import pkp.util.*;
 
 ////////////////////////////////////////////////////////////////////////////////
-class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListener, Persistent {
+class TwidlitMenu extends PersistentMenuBar 
+   implements ActionListener, ItemListener, SaveChordsWindow.ContentForTitle, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    TwidlitMenu(Twidlit twidlit) {
@@ -209,6 +210,27 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
       }
    }
 
+   ///////////////////////////////////////////////////////////////////
+   @Override // ContentForTitle
+   public String getContentForTitle(String title) {
+      switch (title) {
+      case sm_ALL_CHORDS_TITLE:
+         return (new Cfg(m_SettingsWindow, 
+                         Assignment.listAllByFingerCount())).toString();
+      case sm_SAVE_AS_TITLE:
+         return (new Cfg(m_SettingsWindow,
+                         m_Twidlit.getKeyMap().getAssignments())).toString();
+      case sm_CHORDS_BY_TIME_TITLE:
+         ChordTimes ct = m_Twidlit.getChordTimes();
+         return "# T" + ct.getExtension().replace('.', ' ').substring(1) + '\n'
+              + "#   Mean Range (Times)\n"
+              + (new SortedChordTimes(ct)).listChordsByTime();
+      default:
+         Log.err("TwidlitMenu.getContentForTitle() bad title: " + title);
+         return "";
+      }
+   }
+
    // Private ////////////////////////////////////////////////////////
 
    ///////////////////////////////////////////////////////////////////
@@ -241,12 +263,12 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
    private void actionPerformed(String command) {
       switch (command) {
       case sm_FILE_ALL_CHORDS_TEXT:
-         MenuSaveMappingsWindow tw = new MenuSaveMappingsWindow(sm_ALL_CHORDS_TITLE, m_CfgDir);
-         tw.setPersistName(sm_CHORD_LIST_PERSIST);
+         SaveChordsWindow scw = new SaveChordsWindow(this, sm_ALL_CHORDS_TITLE, m_CfgDir);
+         scw.setPersistName(sm_CHORD_LIST_PERSIST);
          JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
          b.addActionListener(this);
-         tw.setButton(b);
-         tw.setVisible(true);
+         scw.setButton(b);
+         scw.setVisible(true);
          return;
       case sm_USE_ALL_CHORDS_TEXT: {
          m_CfgFName = "";
@@ -447,24 +469,24 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
 
    ///////////////////////////////////////////////////////////////////
    private void viewSaveText(String command) {
-      MenuSaveMappingsWindow tw = null;
+      SaveChordsWindow scw =  null;
       switch (command) {
       case sm_FILE_SAVE_AS_TEXT:
-         tw = new MenuSaveMappingsWindow(sm_SAVE_AS_TITLE, m_CfgDir);
-         tw.setPersistName(sm_CHORD_LIST_PERSIST);
-         tw.setSaver(new CfgSaver(command, tw));
-         tw.setExtension(sm_CFG_CHORDS);
-         tw.addExtension(sm_CFG);
+         scw = new SaveChordsWindow(this, sm_SAVE_AS_TITLE, m_CfgDir);
+         scw.setPersistName(sm_CHORD_LIST_PERSIST);
+         scw.setSaver(new CfgSaver(command, scw));
+         scw.setExtension(sm_CFG_CHORDS);
+         scw.addExtension(sm_CFG);
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
-         tw = new MenuSaveMappingsWindow(sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
-         tw.setExtension(m_Twidlit.getChordTimes().getExtension());
+         scw = new SaveChordsWindow(this, sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
+         scw.setExtension(m_Twidlit.getChordTimes().getExtension());
          break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
          return;
       }
-      tw.setVisible(true);
+      scw.setVisible(true);
    }
    
    ////////////////////////////////////////////////////////////////////////////
@@ -520,76 +542,6 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
          return (ExtensionFileFilter)fc.getFileFilter();
       }
       return new ExtensionFileFilter(sm_CFG);
-   }
-   
-   ///////////////////////////////////////////////////////////////////
-   class MenuSaveTextWindow extends SaveTextWindow {
-      public MenuSaveTextWindow(String title, String str, String ext, String dir) {
-         super(title, str, ext);
-         setDirectory(dir);
-         Font font = getFont();
-         setFont(new Font("monospaced", font.getStyle(), font.getSize()));
-      }
-   }
-   
-   ///////////////////////////////////////////////////////////////////
-   class MenuSaveMappingsWindow extends MenuSaveTextWindow implements ActionListener {
-
-      ////////////////////////////////////////////////////////////////
-      MenuSaveMappingsWindow(String title, String dir) {
-         super(title, "", "chords", dir);
-         addButton(new JButton(sm_CONVERT_TEXT[0]));
-         getButton(1).addActionListener(this);
-         replaceText(getContent()); 
-      }
-      
-      ////////////////////////////////////////////////////////////////
-      @Override 
-      public void actionPerformed(ActionEvent e) {
-         if (e.getActionCommand() == sm_CONVERT_TEXT[0]) {
-            getButton(1).setText(sm_CONVERT_TEXT[1]);
-            replaceText(getContent()); 
-            return;
-         }
-         if (e.getActionCommand() == sm_CONVERT_TEXT[1]) {
-            getButton(1).setText(sm_CONVERT_TEXT[0]);
-            replaceText(getContent()); 
-            return;
-         }
-         super.actionPerformed(e);
-      }
-      
-      ////////////////////////////////////////////////////////////////
-      private String getContent() {
-         if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
-            Chord.use4Finger(false);
-         }
-         String str = getContentForTitle();
-          if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
-            Chord.use4Finger(true);
-         }
-         return str;
-      }
-      
-      ////////////////////////////////////////////////////////////////
-      private String getContentForTitle() {
-         switch (getTitle()) {
-         case sm_ALL_CHORDS_TITLE:
-            return (new Cfg(m_SettingsWindow, 
-                            Assignment.listAllByFingerCount())).toString();
-         case sm_SAVE_AS_TITLE:
-            return (new Cfg(m_SettingsWindow,
-                            m_Twidlit.getKeyMap().getAssignments())).toString();
-         case sm_CHORDS_BY_TIME_TITLE:
-            ChordTimes ct = m_Twidlit.getChordTimes();
-            return "# T" + ct.getExtension().replace('.', ' ').substring(1) + '\n'
-                 + "#   Mean Range (Times)\n"
-                 + (new SortedChordTimes(ct)).listChordsByTime();
-         default:
-            Log.err("MenuSaveMappingsWindow.getContentForTitle() bad title: " + getTitle());
-            return "";
-         }
-      }
    }
    
    ///////////////////////////////////////////////////////////////////
@@ -839,25 +791,25 @@ class TwidlitMenu extends PersistentMenuBar implements ActionListener, ItemListe
             "Count Progress", "", 
             0, (int)(Counts.getProgressCount()));
          pw.setVisible(true);
-         MenuSaveTextWindow tw = null;
+         SaveTextWindow stw = null;
          switch (m_ShowWhat) {
          case sm_COUNTS_TABLE_TEXT:
-            tw = new MenuSaveTextWindow(
+            stw = new SaveTextWindow(
                "Character Counts", 
                m_Counts.table(pw),
                "count.keys", 
                m_OutDir);
             break;
          case sm_COUNTS_GRAPH_TEXT:
-            tw = new MenuSaveTextWindow(
+            stw = new SaveTextWindow(
                "Graph of Character Counts", 
                m_Counts.graph(pw),
                "graph.keys",
                m_OutDir);
             break;
          }
-         tw.setChoosenFileUser(new CountsChoosenFileUser());
-         tw.setVisible(true);
+         stw.setChoosenFileUser(new CountsChoosenFileUser());
+         stw.setVisible(true);
          pw.setVisible(false);
       }
 
