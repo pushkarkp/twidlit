@@ -33,17 +33,17 @@ import pkp.util.Log;
 public class HtmlWindow extends PersistentFrame implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
-   public static HtmlWindow create(String fileName) {
-      try {
-         return new HtmlWindow(new File(fileName).toURI().toURL());      
-      } catch (MalformedURLException e) {
-         Log.err("Failed to create URL from '" + fileName + "' " + e);
-      }
-      return null;
+   public HtmlWindow() {
+      this("");
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public HtmlWindow(URL url) {
+      this(url.toString());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public HtmlWindow(String link) {
       setIconImage(Pref.getIcon().getImage());
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
       m_Position = -1;
@@ -80,7 +80,9 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
          m_EditorPane,
          JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
-      startWith(url.toString());
+      if (!"".equals(link)) {
+         startWith(link);
+      }
       pack();
       setResizable(true);
    }
