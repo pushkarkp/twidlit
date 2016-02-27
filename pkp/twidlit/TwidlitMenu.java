@@ -861,7 +861,6 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_SAVE_AS_TITLE = "Mapped Chords";
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
-   private static final String[] sm_CONVERT_TEXT = {"As 0MRL", "As 4finger"};
 
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_CHORDS = "cfg.chords";
