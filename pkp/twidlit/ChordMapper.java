@@ -96,14 +96,9 @@ class ChordMapper extends ControlDialog
       setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      m_CheckBoxSkipDup = new JCheckBox("Skip duplicate keystrokes", Persist.getBool("map.skip.duplicates", true));
-      m_CheckBoxSkipDup.setOpaque(false);
-      m_CheckBoxSkipDup.setAlignmentX(Component.LEFT_ALIGNMENT);
-      box.add(m_CheckBoxSkipDup);
-      m_CheckBoxSort = new JCheckBox("Sort by chord frequency", Persist.getBool("map.frequency.sort", false));
-      m_CheckBoxSort.setOpaque(false);
-      m_CheckBoxSort.setAlignmentX(Component.LEFT_ALIGNMENT);
-      box.add(m_CheckBoxSort);
+      m_CheckBoxSkipDup = addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("map.skip.duplicates", true));
+      m_CheckBoxSort = addCheckBox(box, "Sort by chord frequency", Persist.getBool("map.frequency.sort", false));
+      m_CheckBoxShowAll = addCheckBox(box, "Show unmapped chords", Persist.getBool("map.show.unmapped", false));
       addButton(createButton(sm_HELP));
       addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_OK));
@@ -154,9 +149,12 @@ class ChordMapper extends ControlDialog
          Persist.setFile("map.mapped.file", m_MappedFile);
          Persist.set("map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
          Persist.set("map.frequency.sort", m_CheckBoxSort.isSelected());
+         Persist.set("map.show.unmapped", m_CheckBoxShowAll.isSelected());
          map(m_MappedFile, m_ChordsFile, m_KeysFile);
          if (m_CheckBoxSort.isSelected()) {
             m_Assignments = orderByChordTimes(m_Assignments);
+         } else if (m_CheckBoxShowAll.isSelected()) {
+            m_Assignments = addUnmapped(m_Assignments);
          }
          SaveChordsWindow scw = new
             SaveChordsWindow(this, "Chord Mappings", "cfg.chords");
@@ -278,6 +276,15 @@ class ChordMapper extends ControlDialog
       return button;
    }
 
+   ////////////////////////////////////////////////////////////////////////////
+   private JCheckBox addCheckBox(Box box, String label, boolean check) {
+      JCheckBox cb = new JCheckBox(label, check);
+      cb.setOpaque(false);
+      cb.setAlignmentX(Component.LEFT_ALIGNMENT);
+      box.add(cb);
+      return cb;
+   }
+   
    ////////////////////////////////////////////////////////////////////////////
    private void setLabel(JLabel label, File f) {
       if (f == null || f.getPath() == "") {
@@ -477,10 +484,9 @@ class ChordMapper extends ControlDialog
 
    ///////////////////////////////////////////////////////////////////////////////
    private ArrayList<Assignment> orderByChordTimes(ArrayList<Assignment> asgs) {
-      ArrayList<Assignment> sorted = new ArrayList<Assignment>(Chord.sm_VALUES);
-      for (int i = 0; i < Chord.sm_VALUES; ++i) {
+      ArrayList<Assignment> sorted = new ArrayList<Assignment>();
+      for (int i = 0; i < m_Times.getSize(); ++i) {
          String label = m_Times.getSortedLabel(i);
-System.out.printf("i %d label %s%n", i, label);
          int chord = Chord.fromString(label);
          if (chord == 0) {
             Log.err("Badly formed chord \"" + m_Times.getSortedLabel(i) + "\".");
@@ -493,11 +499,34 @@ System.out.printf("i %d label %s%n", i, label);
                break;
             }
          }
-         sorted.add(i, (a < asgs.size()) ? asgs.get(a) : Assignment.sm_NO_ASSIGNMENT);
+         if (a < asgs.size()) {
+            sorted.add(asgs.get(a));
+         } else if (m_CheckBoxShowAll.isSelected()) {
+            sorted.add(new Assignment(new Twiddle(chord), new KeyPressList()));
+         }
       }
       return sorted;
    }
-   
+
+   ///////////////////////////////////////////////////////////////////////////////
+   private ArrayList<Assignment> addUnmapped(ArrayList<Assignment> asgs) {
+      ArrayList<Assignment> all = new ArrayList<Assignment>(asgs);
+      for (int i = 0; i < Chord.sm_VALUES; ++i) {
+         int chord = i + 1;
+         int a = 0;
+         for (; a < asgs.size(); ++a) {
+            Twiddle tw = asgs.get(a).getTwiddle();
+            if (tw.getThumbKeys().isEmpty() && tw.getChord().toInt() == chord) {
+               break;
+            }
+         }
+         if (a == asgs.size()) {
+            all.add(new Assignment(new Twiddle(chord), new KeyPressList()));
+         }
+      }
+      return all;
+   }
+
    // Data /////////////////////////////////////////////////////////////////////
    private static final String sm_OK = "OK";
    private static final String sm_CANCEL = "Cancel";
@@ -506,8 +535,6 @@ System.out.printf("i %d label %s%n", i, label);
    private static final String sm_CHORDS = "Chords";
    private static final String sm_KEYS = "Keystrokes";
    private static final String sm_CLEAR = "x";
-
-   private static final int sm_OFFSET[][] = new int[][]{{0, 3}, {4, 7}};
 
    private KeyPress m_NL;
    private KeyPress m_CR;
@@ -520,6 +547,7 @@ System.out.printf("i %d label %s%n", i, label);
    private File m_MappedFile;
    private JCheckBox m_CheckBoxSkipDup;
    private JCheckBox m_CheckBoxSort;
+   private JCheckBox m_CheckBoxShowAll;
    private boolean m_DuplicateKeys;
    private boolean m_GotEnter;
    private ArrayList<Integer>[] m_ExistingTwiddles;
