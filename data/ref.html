@@ -10,23 +10,22 @@
 <dt><a href='#counts'>Counts</a>
 <dt><a href='#tutor'>Tutor</a>
 </dl>
+<dt><a href='#dialogs'>Dialogs</a>
+<dd><dl>
+<dt><a href='#map'>Map Chords</a>
+<dt><a href='#countsrange'>Range of Counts Displayed</a>
+<dt><a href='#delay'>Chord Delay</a>
+<dt><a href='#speed'>Twiddling Speed</a>
+</dl>
 <dt><a href='#windows'>Windows</a>
 <dd><dl>
 <dt><a href='#twiddler'>Twiddler</a>
-<dt><a href='#hlp'>Help</a></b>
+<dt><a href='#text'>Text pane</a>
+<dt><a href='#help'>Help</a></b>
 <dt><a href='#stw'>Save text</a>
 </dl>
-<dt><a href='#chord'>Chords</a>
-<dt><a href='#cfg'>Chord files</a>
-<dt><a href='#format'><tt>Txt</tt> formats</a>
+<dt><a href='#stats'>Chord and keystroke numbers</a>
 <dt><a href='#pref'>Preferences</a>
-<dd><dl>
-<dt><a href='#pref.txt'><tt>TwidlitPreferences.txt</tt></a>
-<dt><a href='#key.txt'><tt>TwidlitKeyValues.txt</tt>, <tt>TwidlitKeyNames.txt</tt> and <tt>TwidlitKeyEvents.txt</tt></a>
-<dt><a href='#unprint.txt'><tt>TwidlitUnprintables.txt</tt></a>
-<dt><a href='#dup.txt'><tt>TwidlitDuplicates.txt</tt></a>
-<dt><a href='#lost.txt'><tt>TwidlitLost.txt</tt></a>
-</dl>
 </dl>
 
 <a name='menus'>
@@ -34,22 +33,21 @@
 <a name='file'>
 <h2>File</h2>
 <dl>
-<dt><b>All Chords...</b>
-<dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with a one keystroke mapping. 
-Click the <em>Use</em> button to use this mapping. 
-This option is disabled by default since this is the mapping in use. 
-It is ideal for chording practice and timing. 
+<dt><a name='allchords'><b>All Chords...</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every thumb-less chord provided with a one keystroke mapping. 
+Click the <em>Use</em> button to use this mapping, it is ideal for chording practice and timing. 
+The menu item is disabled when this is the mapping in use, you can then use <em>File > Save As...</em> if you want to view it. 
 <dt><a name='open'><b>Open...</b>
-<dd>Discards the current Twiddler configuration (if any) and uses the selected <a href='#cfg'><tt>cfg.txt</tt> or <tt>cfg</tt> file</a>. 
+<dd>Opens a <em>File Open</em> dialog. 
+The selected <a href='syn.html#cfg'><tt>cfg.chords</tt> or <tt>cfg</tt> file</a> becomes the chord mapping. 
 <dt><a name='saveas'><b>Save As...</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping. 
-<dt><b>Reverse</b>
-<dd>Flips the buttons in each row
-<a name='allchords'>
+Click the <em>Save As...</em> button to save it as <tt>cfg.chords</tt> or <tt>cfg</tt>.
 <dt><b>Map Chords...</b>
-<dd>Opens a dialog that allows you to create a new <tt>cfg.txt</tt> file that maps chords to characters.
+<dd>Opens the <a href="#map">Map Chords dialog</a>.
 <dt><b>Twiddler Settings...</b>
-<dd>Opens a dialog that allows you to modify the current configuration's Twiddler settings. These were used by Twiddler 2. I am not sure which ones affect Twiddler 3.
+<dd>Opens a dialog that allows you to modify the current configuration's Twiddler settings. 
+Only <em>Mass storage</em> and <em>Key repeat</em> are <a href='http://twiddler.tekgear.com/doc/static/config_format_v4_rev0.pdf'>used by Twiddler 3</a>. 
 <dt><b>Preferences...</b>
 <dd>Allows you to select a location for the <a href="#pref">preference</a> text files. 
 </dl>
@@ -60,19 +58,22 @@ It is ideal for chording practice and timing.
 <dt><b>Include Bigrams</b>
 <dd> Whether to count bigrams (pairs of characters).
 <dt><b>Include Ngrams</b>
-<dd> Whether to count the ngrams (sequences of characters) listed in <tt>TwidlitNGrams.txt</tt>.
+<dd> Whether to count the ngrams (sequences of characters) listed in the file of ngrams.
+This item is disabled if no file has been selected. 
+<dt><b>Ngrams File...</b>
+<dd>Allows you to select a file of <a href='syn.html#ngram'><tt>ngrams</tt><a>. 
 <dt><b>Count File...</b>
-<dd>Allows you to select a file and add its character counts to the stored totals. 
+<dd>Allows you to select a file and add the character counts to the stored counts. 
+It is up to you to check that the file really is text. 
 <dt><b>Count Files...</b>
 <dd>Allows you to select a folder and add the character counts of all contained files to the stored counts. 
+It is up to you to check that all the files are text. 
 <dt><b>Set Range Displayed...</b>
-<dd>Opens a dialog where you can set the range of character frequencies displayed as table or graph.
+<dd>Opens the <a href='#countsrange'>Range of Counts Displayed dialog</a>. 
 <dt><b>Table Counts</b>
-<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a table. 
-The columns are ASCII, value, count and percent. 
+<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a <a href="syn.html#ccount">table</a>. 
 <dt><b>Graph Counts</b>
-<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a graph. 
-This is a simple text graph just to give a better indication of the relative magnitudes. 
+<dd>Opens a <a href='#stw'>Save Text window</a> displaying the character frequencies as a <a href="syn.html#graph">graph</a>. 
 <dt><b>Clear Counts</b>
 <dd>Clears the counts to zero.
 </dl>
@@ -80,50 +81,111 @@ This is a simple text graph just to give a better indication of the relative mag
 <a name='tutor'>
 <h2>Tutor</h2>
 <dl>
-<dt><b>Left/Right Hand</b>
-<dd>Sets the hand being used to twiddle. Hands are timed separately. (The progress bar will appear on the opposite side.)
 <dt><b>Show Twiddler</b>
-<dd>Whether the Twiddler window is visible.
-<dt><b>Highlight Expected Chord</b>
-<dd>Whether the Twiddler window highlights the expected chord.
-<dt><b>Mark Chord Pressed</b>
-<dd>Whether the Twiddler window marks the chord that has just been pressed. 
-<dt><b>Delay...</b>
-<dd>Opens a dialog that allows you to adjust the time the Twiddler window waits before displaying the chord to be pressed.
-<dt><b>Speed...</b>
-<dd>Opens a dialog that allows you to adjust the time Twidlit waits for a chord to be pressed.
-<dt><b>Chords</b>
-<dd>Sets testing to random chords. 
-The text pane will remain blank. 
-Twidlit tests all chords with equal probability, but can only show chords that are mapped. 
-<a name='keys'>
-<dt><b>Keystrokes</b>
-<dd>Sets testing to keystrokes read from a file. 
+<dd>Whether the <a href='#twiddler'>Twiddler window</a> is visible.
+<dt><b>Left/Right Hand</b>
+<dd>Sets the hand being used to twiddle. 
+Hands are timed separately. 
+(The progress bars are on the side away from your palm.)
+<dt><a name='chords'><b>Chords</b>
+<dd>Sets practice to random chords. 
+The <a href='#text'>Text pane</a> will remain blank. 
+Twidlit attempts to test all chords with equal probability, but can only show chords that are mapped. 
+<dt><a name='keys'><b>Keystrokes</b>
+<dd>Sets practice to keystrokes read from a file. 
 Clicking on this menu item displays a file chooser to open a <a href='syn.html#keys'>file of keystrokes</a>. 
 If no file is chosen then upper and lower case alphabetic keys are used. 
+<dt><b>Delay...</b>
+<dd>Opens the <a href='#delay'>Chord Delay dialog</a>. 
+This option is disabled if <em>Tutor > Chords</em> is selected. 
+<dt><b>Speed...</b>
+<dd>Opens the <a href='#speed'>Twiddling Speed dialog</a>. 
 <dt><b>Timed</b>
 <dd>Whether your chording (for the current hand) is timed.
-<dt><b>List Chords By Time</b>
-<dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every unmodified chord with (and sorted by) the median time taken to press it. 
-Initially these times are all zero.
+<dt><a name='timelist'><b>List Chords By Time</b>
+<dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every thumb-less chord as a <a href="syn.html#timed"><tt>timed.chords</tt></a> file. 
 <dt><b>Clear Times</b>
 <dd>Clears the chording times for the current hand.
 </dl>
+
+<a name='dialogs'>
+<h1>Dialogs</h1>
+<a name='map'>
+<h2>Map Chords</h2>
+This dialog allows you to create a new <a href="syn.html#cfg"><tt>cfg.chords</tt></a> file.
+<br><br>
+Select a <a href="syn.html#chords"><tt>chords</tt></a> file and a <a href="syn.html#keys"><tt>keys</tt></a> file and click <em>OK</em>. 
+Twidlit combines each chord from the <tt>chords</tt> file with the corresponding keystroke from the <tt>keys</tt> file to generate a mapping. 
+If the selected files are <a href="syn.html#timed"><tt>timed.chords</tt></a> and <a href="syn.html#ccount"><tt>count.keys</tt></a> then you have matched your fastest chords with your most frequent characters. 
+<br><br>
+You can also specify a <tt>cfg.chords</tt> file of mappings you wish to preserve. 
+These mappings are added to the output as-is, and the corresponding chords in the <tt>chords</tt> file are ignored. 
+If you use a file of your chosen mnemonic mappings for less used keystrokes then the result will be the combination of these with a fastest to most frequent mapping.  
+<a name='countsrange'>
+<h2>Range of Counts Displayed</h2>
+This dialog adjusts the range of character frequencies displayed as a table or a graph. 
+It is particularly useful with graphs as it improves the resolution. 
+
+<a name='delay'>
+<h2>Chord Delay</h2>
+This dialog adjusts the time between a keystroke being highlighted in the <a href='#text'>Text pane</a> and the chord being displayed in the <a href='#twiddler'>Twiddler window</a>.
+
+<a name='speed'>
+<h2>Twiddling Speed</h2>
+This dialog adjusts the time Twidlit <a href="#wait">waits</a> for a chord to be pressed. 
 
 <a name='windows'>
 <h1>Windows</h1>
 <a name='twiddler'>
 <h2>Twiddler</h2>
-The Twiddler window indicates the chord to press, while the progress bar to one side shows the elapsed time (up to six seconds). 
-The chord is highlighted for two seconds or until pressed. 
-If it isn't pressed it is highlighted again every six seconds. 
+<h3>Chords</h3>
+The Twiddler window highlights the chord to press. 
+It also marks any chord that is pressed, in yellow if it matches and black otherwise. 
 <br><br>
-The six second cycle time can be adjusted via the menu, and the component times can be changed individually in the preferences. 
-<br><br>
-The window also marks any chord that is pressed, in yellow if it matches and black otherwise. 
 Sometimes nothing appears when you thought you pressed a chord. 
-This is the result of a miss-key. 
-The Twiddler generates nothing if two or more buttons are pressed in the same row. 
+This is the result of a miss-key: the Twiddler generates nothing if two or more buttons are pressed in the same row. 
+
+<a name="wait">
+<h3>Timing</h3>
+Twidlit only waits for a chord for a limited period, the <em>wait time</em>.  
+After that, the time the chord takes is ignored. 
+This allows you to just stop at any time. 
+Timing restarts on the next chord, and the chord that went untimed will be repeated soon. 
+<br><br>
+The wait time comprises the following: 
+<dl>
+<dt><b>Delay time</b>
+<dd>
+The delay time is not used when random chording. 
+It is the length of time after a keystroke is highlighted in the <a href='#text'>Text pane</a> before its chord is highlighted in the Twiddler window. 
+It can be adjusted using <em><a href="#tutor">Tutor<a> > Delay...</em> 
+</dl>
+<dl>
+<dt><b>Cycle time</b>
+<dd>
+After the delay the cycle repeats indefinitely, but only the first is included in the wait time. 
+It can be adjusted using <em><a href="#tutor">Tutor<a> > Speed...</em>, and consists of:
+<dl>
+<dt><b>Highlight time</b>
+<dd>
+The highlight time is the time a chord is highlighted in the Twiddler window. 
+Its percentage of the cycle time can be adjusted in the <a href="#pref.txt">preferences</a>. 
+<dt><b>Hide time</b>
+<dd>
+The hide time is the rest of the cycle time. 
+</dl>
+</dl>
+
+<a name='progress'>
+<h3>Progress bars</h3>
+There are three progress bars to one side of the Twiddler display. 
+Their time extent is the wait time. 
+The narrow dashed bars between them mark out the seconds. 
+<br><br>
+The outer-most bar shows the mean of the mean times of all the chords, the middle bar shows the mean time for the current chord, and the inner-most (timer) bar shows the elapsed time.
+If the elapsed time exceeds the wait time the timer bar goes red and then blank. 
+The missed chord is not lost, it will be repeated soon. 
+
 <h3>Ambiguity</h3>
 If you like, you can map more than one chord to a keystroke.
 You might choose to map a Shift-less finger cord to <em>A</em>, for example. 
@@ -133,112 +195,67 @@ This is a problem for Twidlit because it does not know which chord was pressed w
 The Twiddler window always displays the chord with the least number of thumb buttons.
 If there is still ambiguity it displays the chord with the least number of finger buttons.
 
+<a name='text'>
+<h2>Text pane</h2>
+The Text pane is in the main window, underneath the menu bar. 
+It displays the upcoming keystrokes with the current keystroke highlighted. 
+It remains blank when <em><a href="#chords">Tutor > Chords<a></em> is checked. 
+
 <a name='help'>
 <h2>Help</h2>
-The help text contains a few hypertext links. 
 Navigation buttons (back and forwards) appear at the top of the Help window if you follow an internal link. 
 
 <a name='stw'>
 <h2>Save Text</h2>
-This window displays text that can be selected and copied, or saved. 
-Editing is not supported. 
+The Save Text window displays text that can be selected, copied or saved, but editing is not supported. 
 <br><br>
 You can use the <em>Save As...</em> button to save the contents. 
-If it contains chord mappings the dialog allows you to save it as <tt>cfg.txt</tt> or <tt>cfg</tt>. 
+If it contains chord mappings, the save dialog allows you to save it as <tt>cfg.chords</tt> or <tt>cfg</tt>. 
+If it contains chords, the <em>As 0MRL</em> button allows you to convert them to 0MRL format. 
 
-<a name='chord'>
-<h1>Chords</h1>
-Here are a few chord statistics: 
-<table style="width:100%">
-  <tr><td>One button chords</td><td>12</td></tr>
-  <tr><td>Two buttons chords</td><td>54</td></tr>
-  <tr><td>Three buttons chords</td><td>108</td></tr>
-  <tr><td>Four buttons chords</td><td>81</td></tr>
-  <tr><td>Total chords</td><td>255</td></tr>
+<a name='stats'>
+<h1>Chord and keystroke numbers</h1>
+Here are some chord numbers: 
+<table style="width:80%">
+  <tr><td>One button chords</td><td align='right'>12</td></tr>
+  <tr><td>Two buttons chords</td><td align='right'>54</td></tr>
+  <tr><td>Three buttons chords</td><td align='right'>108</td></tr>
+  <tr><td>Four buttons chords</td><td align='right'>81</td></tr>
+  <tr><td><strong>Total chords</strong></td><td align='right'><strong>255</strong></td></tr>
 </table>
-And some character statistics: 
-<table style="width:100%">
-  <tr><td>Alphabet</td><td>26</td></tr>
-  <tr><td>Digits</td><td>10</td></tr>
-  <tr><td>Punctuation</td><td>32</td></tr>
-  <tr><td>White space</td><td>3</td></tr>
-  <tr><td>Total printable</td><td>71</td></tr>
-And some key statistics: 
-<table style="width:100%">
-  <tr><td>Function keys</td><td>12</td></tr>
-  <tr><td>Cursor keys</td><td>8</td></tr>
-  <tr><td>Others (Esc, Del, Backspace)</td><td>3</td></tr>
-  <tr><td>Total unprintable</td><td>23</td></tr>
+<br>
+And some character numbers: 
+<table style="width:80%">
+  <tr><td>Alphabet</td><td align='right'>52</td></tr>
+  <tr><td>Digits</td><td align='right'>10</td></tr>
+  <tr><td>Punctuation</td><td align='right'>32</td></tr>
+  <tr><td>White space</td><td align='right'>3</td></tr>
+  <tr><td><strong>Total printable</strong></td><td align='right'><strong>97</strong></td></tr>
 </table>
-
-<a name='cfg'>
-<h1>Chord files</h1>
-Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.txt</tt> (text). 
-The Twiddler can only read <tt>cfg</tt>s, and you and I can only read <tt>cfg.txt</tt>s. 
-Happily Twidlit can read and write both.
-<br><br>
-I get confused trying to manage binary files that have to be given the same name (<tt>twiddler.cfg</tt>) when in use, 
-so I keep my config files as text and only save them as binary when loading the Twiddler. 
-<br><br>
-The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
-No other extension can be used so you do not need to type the extension on the file name, it will be added if not present. 
-
-<a name='format'>
-<h1><tt>Txt</tt> formats</h1>
-Twidlit represents characters (e.g. lower case f) and keystrokes (e.g. Shift and F1 held down together). 
-<br><br>us
-The following are the options for writing to text files. 
-Only STD, TAG and HEX are suitable for <tt>cfg.txt</tt> files because they encode both characters and non-character keystrokes (e.g. <tt>&lt;F1></tt>). 
-Twidlit reads them all except TXT. 
-<dl>
-<dt><b>STD</b>
-<dd>Text is represented as escaped characters, 
-White space and non-character keystrokes are tagged. 
-For example, <tt>\# This&lt;Tab>is&lt;Space>it&lt;PageDown></tt>.
-<dt><b>TAG</b>
-<dd>Everything is tagged, for example, 
-<tt>&lt;Ctrl>&lt;PageUp> &lt;/Ctrl>&lt;Shift>&lt;KeyT>&lt;/Shift></tt>.
-<dt><b>ESC</b>
-<dd>Text is represented as escaped characters. 
-All characters represent themselves except for:
-<table style="width:100%">
-  <tr><td>Back space (0x8)</td><td><b>\b</b></td></tr>
-  <tr><td>Tab (0x9)</td><td><b>\t</b></td></tr>
-  <tr><td>New line (0xa)</td><td><b>\n</b></td></tr>
-  <tr><td>Carriage return (0xd)</td><td><b>\r</b></td></tr>
-  <tr><td>Escape (0x1b)</td><td><b>\e</b></td></tr>
-  <tr><td>Space (0x20)</td><td><b>\s</b></td></tr>
-  <tr><td>Back slash (otherwise the start of an escape sequence)</td><td><b>\\</b></td></tr>
-  <tr><td>Hash (otherwise the start of a comment)</td><td><b>\#</b></td></tr>
-  <tr><td>Less than (otherwise the start of a tag)</td><td><b>\&lt;</b></td></tr>
-  <tr><td>Character as hexadecimal (<em>nn</em> is two hex digits)</td><td><b>\x<em>nn</em></b></td></tr>
+<br>
+And some key numbers: 
+<table style="width:80%">
+  <tr><td>Function keys</td><td align='right'>12</td></tr>
+  <tr><td>Cursor keys</td><td align='right'>8</td></tr>
+  <tr><td>Others (Esc, Del, Backspace)</td><td align='right'>3</td></tr>
+  <tr><td><strong>Total unprintable</strong></td><td align='right'><strong>23</strong></td></tr>
 </table>
-For example <tt>This\tis\sit</tt>.
-<dt><b>HEX</b>
-<dd>Keystrokes are represented by hexadecimal keycode values.
-<table style="width:100%">
-  <tr><td>Keystroke as hexadecimal (<em>nnnn</em> is four hex digits)</td><td><b>\k<em>nnnn</em></b></td></tr>
-</table>
-For example <tt>\k002c\k022f\k0028</tt>.
-<dt><b>TXT</b>
-<dd>Characters represent themselves, for example, <tt>This is text</tt>.
-</dl>
 
 <a name='pref'>
 <h1>Preferences</h1>
 Much of the way Twidlit looks and works can be tuned by editing the preference text files. 
 They are stored in <em>Twidlit.jar</em>, but you can access them by using <em>File > Preferences...</em> to choose a location to store them. 
 Twidlit will copy any of them not already there to that location, and will read them from there next time it starts. 
-Just delete any you don't edit.
-
+Just delete any that you don't edit, or want to revert to the defaults.
+The syntax is described <a href='syn.html#types'>here<a>.
 <a name='pref.txt'>
-<h2><tt>TwidlitPreferences.txt</tt></h2>
+<h2><tt>twidlit.preferences</tt></h2>
 <dl>
 <dt><tt>background.color 0xf5f5d5</tt><br>
 <dd>The color of the background of most windows.
 <dt><tt>border.color 0xc0c0a0</tt><br>
 <dd>The color of the border on the mapping dialog.
-<dt><tt>chord.times.span 16</tt><br>
+<dt><a name='chord.times.span'><tt>chord.times.span 16</tt><br>
 <dd>The number of sequential chord times recorded. 
 It must be must be one of (1, 2, 4, 8, 16, 32, 64).
 <dt><tt>control.separation.size 10</tt><br>
@@ -258,17 +275,20 @@ The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>.
 <dt><tt>new.line windows</tt><br>
 <dd>The new line style used in text files. 
 <dt><tt>text.color lightGray</tt><br>
-<dd>The color of text in the text window. 
+<dd>The color of text in the Text pane. 
 <dt><tt>text.highlight.color black</tt><br>
-<dd>The color of highlighted text in the text window. 
+<dd>The color of highlighted text in the Text pane. 
 <dt><tt>text.font Serif</tt><br>
-<dd>The font used in the text window. 
+<dd>The font used in the Text pane. 
 <dt><tt>text.size 48</tt><br>
-<dd>The size of text in the text window. 
+<dd>The size of text in the Text pane. 
 <dt><tt>twiddler.background.color black</tt><br>
 <dd>The background color of the Twiddler window.
 <dt><tt>twiddler.button.color lightGray</tt><br>
 <dd>The color of the buttons and progress bar in the Twiddler window.
+<dt><tt>twiddler.delayed.show.percent 20</tt><br>
+<dd>The percent of the <a href="#wait">cycle time</a> for which a chord is highlighted in the Twiddler window after delay.
+Set this to zero to turn it off. 
 <dt><tt>twiddler.highlight.color red</tt><br>
 <dd>The color used to highlight the buttons of a chord in the Twiddler window.
 <dt><tt>twiddler.label.color white</tt><br>
@@ -277,15 +297,14 @@ The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>.
 <dd>The color used to mark a chord that matches the one highlighted.
 <dt><tt>twiddler.mark.mismatch.color black</tt><br>
 <dd>The color used to mark a chord that does not match the one highlighted.
+<dt><tt>twiddler.mark.percent 33</tt><br>
+<dd>The percent of the <a href="#wait">cycle time</a> for which a pressed chord is marked in the Twiddler window. 
+Set this to zero to turn off chord marking. 
 <dt><tt>twiddler.progress.step.msec 150</tt><br>
-<dd>The time in milliseconds between updates of the Twiddler window progress bar.
-<dt><tt>twiddler.highlight.msec 2000</tt><br>
-<dd>The milliseconds for which a chord is highlighted  in the Twiddler window. 
-<dt><tt>twiddler.hide.msec 4000</tt><br>
-<dd>The milliseconds delay before a chord is highlighted again in the Twiddler window.
-The progress bar duration is the sum of this and the highlight time.
-<dt><tt>twiddler.mark.msec 2000</tt><br>
-<dd>The milliseconds for which a chord is marked in the Twiddler window.
+<dd>The milliseconds between updates of the Twiddler window progress bar.
+<dt><tt>twiddler.show.percent 33</tt><br>
+<dd>The percent of the <a href="#wait">cycle time</a> for which a chord is highlighted in the Twiddler window if there is no delay.
+Set this to zero to turn it off. 
 <dt><tt>window.border.size 8</tt><br>
 <dd>The size of the border on some windows.
 <dt><tt>write.log false</tt><br>
@@ -293,19 +312,19 @@ The progress bar duration is the sum of this and the highlight time.
 </dl>
 
 <a name='key.txt'>
-<h2><tt>TwidlitKeyValues.txt</tt>, <tt>TwidlitKeyNames.txt</tt> and <tt>TwidlitKeyEvents.txt</tt></h2>
+<h2><tt>twidlit.value.keys</tt>, <tt>twidlit.name.keys</tt> and <tt>twidlit.event.keys</tt></h2>
 Twidlit is set up to use the US keyboard mapping. 
 If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
 <a name='unprint.txt'>
-<h2><tt>TwidlitUnprintables.txt</tt></h2>
+<h2><tt>twidlit.unprintable.keys</tt></h2>
 Some ASCII values are unprintable (<em>backspace</em>, for example). 
 When every keystroke needs to be visible the values in this file are treated specially.
 <a name='dup.txt'>
-<h2><tt>TwidlitDuplicates.txt</tt></h2>
+<h2><tt>twidlit.duplicate.keys</tt></h2>
 Some keys are duplicates (<em>Numpad4</em>, for example). 
-You can configure your twiddler to generate them but they never appear in text.
+You can configure your Twiddler to generate them but they never appear in text.
 <a name='lost.txt'>
-<h2><tt>TwidlitLost.txt</tt></h2>
+<h2><tt>twidlit.lost.keys</tt></h2>
 Some keystrokes never reach an application (<em>&lt;Alt&gt;&lt;Tab&gt;&lt/Alt&gt;</em>, for example). 
-They vary with OS.
+They vary with OS, Twidlit comes set up for Windows.
 </html>
