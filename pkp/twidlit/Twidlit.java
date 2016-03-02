@@ -338,6 +338,11 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   boolean isTimed() {
+      return m_Timed;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    void setTimed(boolean set) {
       m_Timed = set;
    }

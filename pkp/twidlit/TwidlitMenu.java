@@ -85,24 +85,23 @@ class TwidlitMenu extends PersistentMenuBar
       JMenu tutorMenu = new JMenu(sm_TUTOR_MENU_TEXT);
       add(tutorMenu);
       m_HandButtons = new ButtonGroup();
-      addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
-      addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
-      tutorMenu.addSeparator();
       TwiddlerWindow tw = new TwiddlerWindow(
          isRightHand(), 
          addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), 
          m_Twidlit);
       m_Twidlit.setTwiddlerWindow(tw);
-      addCheckItem(tutorMenu, sm_TUTOR_HIGHLIGHT_CHORD_TEXT);
-      addCheckItem(tutorMenu, sm_TUTOR_MARK_PRESSED_TEXT);
-      m_DelayItem = add(tutorMenu, sm_TUTOR_DELAY_TEXT);
-      add(tutorMenu, sm_TUTOR_SPEED_TEXT);
+      tutorMenu.addSeparator();
+      addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
+      addRadioItem(tutorMenu, Hand.RIGHT.toString(), m_HandButtons);
       tutorMenu.addSeparator();
       m_SourceButtons = new ButtonGroup();
       addRadioItem(tutorMenu, sm_TUTOR_CHORDS_TEXT, m_SourceButtons);
       addRadioItem(tutorMenu, sm_TUTOR_KEYS_TEXT, m_SourceButtons);
       tutorMenu.addSeparator();
-      addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
+      m_DelayItem = add(tutorMenu, sm_TUTOR_DELAY_TEXT);
+      add(tutorMenu, sm_TUTOR_SPEED_TEXT);
+      m_TutorTimedItem = addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
+      m_OtherTimed = Persist.getBool(sm_TUTOR_OTHER_TIMED_PERSIST);
       add(tutorMenu, sm_TUTOR_CHORDS_BY_TIME_TEXT);
       add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
       
@@ -130,6 +129,8 @@ class TwidlitMenu extends PersistentMenuBar
       setCfg(Cfg.readText(Io.createFile(m_CfgDir, m_CfgFName)));
       m_TwidlitInit.setRightHand(isRightHand());
       setSource();
+      // setSource() flips timed booleans so flip them back 
+      useOtherTimed();
       // use the gathered settings to set up the source
       m_Twidlit.initialize(m_TwidlitInit);
       // revert to using Twidlit itself for settings
@@ -154,6 +155,7 @@ class TwidlitMenu extends PersistentMenuBar
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
       Persist.setFile(sm_KEY_SOURCE_FILE_PERSIST, m_KeyPressFile);
+      Persist.set(sm_TUTOR_OTHER_TIMED_PERSIST, m_OtherTimed);
       super.persist("");
    }
 
@@ -201,12 +203,6 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_TUTOR_VISIBLE_TWIDDLER_TEXT:
          m_Twidlit.getTwiddlerWindow().setVisible(item.getState());
          return;
-      case sm_TUTOR_HIGHLIGHT_CHORD_TEXT:
-         m_Twidlit.getTwiddlerWindow().setHighlight(item.getState());
-         return;
-      case sm_TUTOR_MARK_PRESSED_TEXT:
-         m_Twidlit.getTwiddlerWindow().setMark(item.getState());
-         return;
       }
    }
 
@@ -250,10 +246,12 @@ class TwidlitMenu extends PersistentMenuBar
          case sm_TUTOR_CHORDS_TEXT:
             m_DelayItem.setEnabled(false);
             m_TwidlitInit.setChords();
+            useOtherTimed();
             break;
          case sm_TUTOR_KEYS_TEXT:
             m_DelayItem.setEnabled(true);
             m_TwidlitInit.setKeystrokes(m_KeyPressFile);
+            useOtherTimed();
             break;
          }
       }
@@ -389,7 +387,7 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_TUTOR_SPEED_TEXT: {
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Twiddling Speed",
-            "Maximum wait for a chord (milliseconds):",
+            "Maximum wait for a chord after delay (milliseconds):",
             m_Twidlit.getTwiddlerWindow().getSpeed(),
             1, 30000, 100);
          if (is.isOk()) {
@@ -465,6 +463,16 @@ class TwidlitMenu extends PersistentMenuBar
          hw.setVisible(true);
       }
       return hw;
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   private void useOtherTimed() {
+      if (m_OtherTimed == m_Twidlit.isTimed()) {
+         return;
+      }
+      m_Twidlit.setTimed(m_Twidlit.isTimed());
+      m_TutorTimedItem.setSelected(!m_TutorTimedItem.isSelected());
+      m_OtherTimed = !m_OtherTimed;      
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -840,11 +848,9 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
    private static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
    private static final String sm_TUTOR_MENU_TEXT = "Tutor";
+   private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
-   private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
-   private static final String sm_TUTOR_HIGHLIGHT_CHORD_TEXT = "Highlight Expected Chord";
-   private static final String sm_TUTOR_MARK_PRESSED_TEXT = "Mark Chord Pressed";
    private static final String sm_TUTOR_DELAY_TEXT = "Delay...";
    private static final String sm_TUTOR_SPEED_TEXT = "Speed...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
@@ -854,7 +860,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
    private static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
    private static final String sm_HELP_REF_TEXT = "Reference";
-   private static final String sm_HELP_SYNTAX_TEXT = "Files Types";
+   private static final String sm_HELP_SYNTAX_TEXT = "File Types";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
@@ -874,6 +880,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
    private static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "key.source.file";
+   private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "tutor.other.timed";
    
    private static final String[] sm_PREF_FILES = new String[] {
       "twidlit.duplicate.keys",
@@ -901,6 +908,7 @@ class TwidlitMenu extends PersistentMenuBar
    private JMenuItem m_CountsGraphItem;
    private JMenuItem m_ClearCountsItem;
    private JMenuItem m_DelayItem;
+   private JCheckBoxMenuItem m_TutorTimedItem;
    private Counts m_CharCounts;
    private String m_CountsInDir;
    private String m_CountsOutDir;
@@ -911,6 +919,7 @@ class TwidlitMenu extends PersistentMenuBar
    private File m_NGramsFile;
    private ButtonGroup m_HandButtons;
    private ButtonGroup m_SourceButtons;
+   private boolean m_OtherTimed;
    private File m_KeyPressFile;
    private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;

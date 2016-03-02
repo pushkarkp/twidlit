@@ -48,12 +48,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_COLOR_LABEL = Pref.getColor(sm_PREF_COLOR_LABEL, Color.white);
       m_COLOR_BUTTON_HIGHLIGHT = Pref.getColor(sm_PREF_COLOR_BUTTON_HIGHLIGHT, Color.red);
 
-      m_Delay = true;
+      m_Delay = false;
       m_DelayMsec = Persist.getInt(sm_PERSIST_DELAY_MSEC, sm_DEFAULT_DELAY_MSEC);
-      m_HighlightStage.DELAY.setMsec(m_DelayMsec);
-      m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC,
-                       Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC)
-                     + Pref.getInt(sm_PREF_HIDE_MSEC, sm_DEFAULT_HIDE_MSEC));
+      m_HighlightStage.DELAY.setMsec(0);
+      m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC, sm_DEFAULT_SPEED_MSEC);
+      m_Factor = Pref.getInt(sm_PREF_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) / 100.0;
 
       m_ThumbPanel = createThumbPanel();
       m_ChordPanel = createChordPanel();
@@ -73,6 +72,20 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_ProgressTimer = new Timer(Pref.getInt(sm_PREF_PROGRESS_STEP_MSEC, sm_DEFAULT_STEP_MSEC), this);
       m_ProgressTimer.setActionCommand(sm_PROGRESS_TEXT);
       calculateTimes();
+
+      m_Highlight = m_SpeedMsec > 0 && Pref.getInt(sm_PREF_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) > 0;
+      m_Mark = m_SpeedMsec > 0 && Pref.getInt(sm_PREF_MARK_PERCENT, sm_DEFAULT_SHOW_PERCENT) > 0;
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   @Override // Persistent
+   public void persist(String tag) {
+      if (m_Delay) {
+         Persist.set(sm_PERSIST_DELAY_MSEC, m_HighlightStage.DELAY.getMsec());
+         Persist.set(sm_PERSIST_DELAYED_SPEED_MSEC, m_SpeedMsec);
+      } else {
+         Persist.set(sm_PERSIST_SPEED_MSEC, m_SpeedMsec);
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -114,14 +127,21 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    void useDelay(boolean set) {
+//System.out.printf("useDelay(%b) m_Delay %b%n", set, m_Delay);
       if (m_Delay != set) {
+         persist("");
          m_Delay = set;
          if (m_Delay) {
-            setDelay(m_DelayMsec);
+            m_SpeedMsec = Persist.getInt(sm_PERSIST_DELAYED_SPEED_MSEC, sm_DEFAULT_SPEED_MSEC);
+            m_Factor = Pref.getInt(sm_PREF_DELAYED_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) / 100.0;
+            m_HighlightStage.DELAY.setMsec(m_DelayMsec);
          } else {
-            m_DelayMsec = getDelay(); 
-            setDelay(0);
+            m_SpeedMsec = Persist.getInt(sm_PERSIST_SPEED_MSEC, sm_DEFAULT_SPEED_MSEC);
+            m_Factor = Pref.getInt(sm_PREF_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) / 100.0;
+            m_DelayMsec = m_HighlightStage.DELAY.getMsec(); 
+            m_HighlightStage.DELAY.setMsec(0);
          }
+         calculateTimes();
       }
    }
 
@@ -132,11 +152,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    void setDelay(int delay) {
+//System.out.printf("setDelay(%d)%n", delay);
       m_HighlightStage.DELAY.setMsec(delay);
-      if (delay > m_SpeedMsec) {
-         m_SpeedMsec = delay;
-      }
-      calculateTimes();
+      setProgressBarMaximum();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -146,38 +164,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    void setSpeed(int speed) {
+//System.out.printf("setSpeed(%d)%n", speed);
       m_SpeedMsec = speed;
-      if (m_SpeedMsec < m_HighlightStage.DELAY.getMsec()) {
-         m_HighlightStage.DELAY.setMsec(m_SpeedMsec);
-      }
       calculateTimes();
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   boolean isHighlight() {
-      return m_Highlight;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setHighlight(boolean set) {
-      m_Highlight = set;
-      if (!m_Highlight) {
-         clearHighlight();
-      }
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   boolean isMark() {
-      return m_Mark;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setMark(boolean set) {
-      m_Mark = set;
-      if (!m_Mark) {
-         clearMark();
-         repaint();
-     }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -237,13 +226,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          }
          break;
       }
-   }
-
-   ///////////////////////////////////////////////////////////////////
-   @Override // Persistent
-   public void persist(String tag) {
-      Persist.set(sm_PERSIST_DELAY_MSEC, Integer.toString(m_HighlightStage.DELAY.getMsec()));
-      Persist.set(sm_PERSIST_SPEED_MSEC, Integer.toString(m_SpeedMsec));
    }
 
    // Private //////////////////////////////////////////////////////////////////
@@ -344,24 +326,33 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    }
    
    /////////////////////////////////////////////////////////////////////////////
+   private void setChordShowRatio(int ratio) {
+      calculateTimes();
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
-      int delay = m_HighlightStage.DELAY.getMsec();
-      int hlight = Pref.getInt(sm_PREF_HIGHLIGHT_MSEC, sm_DEFAULT_HIGHLIGHT_MSEC);
-      int hide = Pref.getInt(sm_PREF_HIDE_MSEC, sm_DEFAULT_HIDE_MSEC);
-      int cycle = delay + hlight + hide;
-      double factor = (double)m_SpeedMsec / cycle;
+      double markFactor = Pref.getInt(sm_PREF_MARK_PERCENT, sm_DEFAULT_SHOW_PERCENT) / 100.0;
       clearMark();
-      m_MarkMsec = (int)(factor * Pref.getInt(sm_PREF_MARK_MSEC, sm_DEFAULT_MARK_MSEC));
+      m_MarkMsec = (int)(0.5 + m_SpeedMsec * markFactor);
       m_MarkTimer.setInitialDelay(m_MarkMsec);
 
-      factor = (double)(m_SpeedMsec - delay) / (cycle - delay);
-      m_HighlightStage.HIGHLIGHT.setMsec((int)(factor * hlight + 0.5));
-      m_HighlightStage.HIDE.setMsec((int)(factor * hide + 0.5));
-//System.out.printf("cycle %d Pref.h %d Pref.r %d delay %d factor %g hlight %d hide %d m_SpeedMsec %d%n", 
-//         cycle, hlight, hide, delay, factor,
-//         m_HighlightStage.HIGHLIGHT.getMsec(),
-//         m_HighlightStage.HIDE.getMsec(),
-//         m_SpeedMsec);
+      int delay = m_HighlightStage.DELAY.getMsec();
+      int show = (int)(0.5 + m_SpeedMsec * m_Factor);
+      int hide = m_SpeedMsec - show;
+      m_HighlightStage.HIGHLIGHT.setMsec(show);
+      m_HighlightStage.HIDE.setMsec(hide);
+      setProgressBarMaximum();
+//System.out.printf("delay %d m_SpeedMsec %d delay %d show %d hide %d factor %g%n", 
+//         m_DelayMsec, m_SpeedMsec, 
+//         m_HighlightStage.DELAY.getMsec(), 
+//         m_HighlightStage.HIGHLIGHT.getMsec(), 
+//         m_HighlightStage.HIDE.getMsec(), 
+//         m_Factor);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void setProgressBarMaximum() {
       m_ProgressPanel.setMaximum(
            m_HighlightStage.DELAY.getMsec()
          + m_HighlightStage.HIGHLIGHT.getMsec() 
@@ -425,6 +416,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    private void start() {
       clearHighlight();
+//System.out.printf("m_Highlight %b m_HighlightStage.HIGHLIGHT.getMsec() %d%n", 
+//                  m_Highlight, m_HighlightStage.HIGHLIGHT.getMsec());
       if (m_Highlight && m_HighlightStage.HIGHLIGHT.getMsec() > 0) {
          m_HighlightStage = HighlightStage.START.transition(this);
       } else {
@@ -571,21 +564,22 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private static final String sm_PREF_COLOR_BUTTON_HIGHLIGHT = "twiddler.highlight.color";
    private static final String sm_PREF_COLOR_MARK_MATCH = "twiddler.mark.match.color";
    private static final String sm_PREF_COLOR_MARK_MISMATCH = "twiddler.mark.mismatch.color";
-   private static final String sm_PREF_HIGHLIGHT_MSEC = "twiddler.highlight.msec";
-   private static final String sm_PREF_HIDE_MSEC = "twiddler.hide.msec";
-   private static final String sm_PREF_MARK_MSEC = "twiddler.mark.msec";
+   private static final String sm_PREF_SHOW_PERCENT = "twiddler.show.percent";
+   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "twiddler.delayed.show.percent";
+   private static final String sm_PREF_MARK_PERCENT = "twiddler.mark.percent";
    private static final String sm_PREF_PROGRESS_STEP_MSEC = "twiddler.progress.step.msec";
 
-   private static final String sm_PERSIST_DELAY_MSEC = "chord.delay.msec";
-   private static final String sm_PERSIST_SPEED_MSEC = "chord.speed.msec";
+   private static final String sm_PERSIST_DELAY_MSEC = "twiddler.delay.msec";
+   private static final String sm_PERSIST_SPEED_MSEC = "twiddler.speed.msec";
+   private static final String sm_PERSIST_DELAYED_SPEED_MSEC = "twiddler.delayed.speed.msec";
 
    private static final String sm_HIGHLIGHT_TEXT = "highlight";
    private static final String sm_PROGRESS_TEXT = "progress";
    private static final String sm_CLEAR_MARK_TEXT = "clear.mark";
 
-   private static final int sm_DEFAULT_DELAY_MSEC = 0;
-   private static final int sm_DEFAULT_HIGHLIGHT_MSEC = 2000;
-   private static final int sm_DEFAULT_HIDE_MSEC = 4000;
+   private static final int sm_DEFAULT_DELAY_MSEC = 2000;
+   private static final int sm_DEFAULT_SPEED_MSEC = 6000;
+   private static final int sm_DEFAULT_SHOW_PERCENT = 33;
    private static final int sm_DEFAULT_MARK_MSEC = 2000;
    private static final int sm_DEFAULT_STEP_MSEC = 150;
    
@@ -606,6 +600,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private long m_ProgressStart;
    private Button[] m_Thumb;
    private int m_SpeedMsec;
+   private double m_Factor;
    private boolean m_Highlight;
    private Timer m_HighlightTimer;
    private HighlightStage m_HighlightStage;
