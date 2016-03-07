@@ -270,7 +270,7 @@ public class KeyPress {
             int ch = Io.parseEscapeFirst(str.substring(start));
             if (ch == -1) {
                // error at EOL, already warned
-               swo.end();
+               swo.setOffsetToEnd();
                return new KeyPress();
             }
             swo.setOffset(start + ((c1 == 'x') ? 4 : 2));

@@ -454,7 +454,7 @@ class TwidlitMenu extends PersistentMenuBar
    private HtmlWindow showHtml(HtmlWindow hw, String title, String path) {
       if (hw != null) {
          hw.toFront();
-         hw.startWith(getClass().getResource(path).toString());
+         hw.goTo(getClass().getResource(path).toString());
       } else {
          hw = new HtmlWindow(getClass().getResource(path));
          hw.setTitle(title);
