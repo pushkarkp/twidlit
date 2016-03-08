@@ -245,7 +245,9 @@ And some key numbers:
 <a name='pref'>
 <h1>Preferences</h1>
 Much of the way Twidlit looks and works can be tuned by editing the preference text files. 
-They are stored in <em>Twidlit.jar</em>, but you can access them by using <em>File > Preferences...</em> to choose a location to store them. 
+You may need to edit one or more if you use interesting characters or an OS other than Windows. 
+<br><br>
+The files are stored in <em>Twidlit.jar</em>, but you can access them by using <em>File > Preferences...</em> to choose a location to store them. 
 Twidlit will copy any of them not already there to that location, and will read them from there next time it starts. 
 Just delete any that you don't edit, or want to revert to the defaults.
 The syntax is described <a href='syn.html#types'>here<a>.
@@ -265,11 +267,11 @@ It must be must be one of (1, 2, 4, 8, 16, 32, 64).
 <dd>When character frequency counting, any more are ignored after this many of the same one in a row.
 <dt><tt>count.clear.confirm true</tt><br>
 <dd>Whether to open a dialog to confirm you want to clear the character frequency counts.
-<dt><tt>display.format std</tt><br>
-<dd>The <a href="#format">format</a> used to represent characters and keystrokes in the display. 
+<dt><tt><a name='format'>display.format std</tt><br>
+<dd>The <a href="syn.html#keystroke">format</a> used to represent characters and keystrokes in the display. 
 The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>. 
 <dt><tt>file.format std</tt><br>
-<dd>The <a href="#format">format</a> used to represent characters and keystrokes in text files. 
+<dd>The <a href="syn.html#keystroke">format</a> used to represent characters and keystrokes in text files. 
 The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>. 
 <dt><tt>key.wait.msec 80</tt><br>
 <dd>The milliseconds Twidlit waits for a further keystroke to arrive from the Twiddler before converting the accumulated keys into a chord.
@@ -318,11 +320,11 @@ Twidlit is set up to use the US keyboard mapping.
 If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
 <a name='unprint.txt'>
 <h2><tt>twidlit.unprintable.keys</tt></h2>
-Some ASCII values are unprintable (<em>backspace</em>, for example). 
+Some ASCII values are unprintable (<tt>Backspace</tt>, for example). 
 When every keystroke needs to be visible the values in this file are treated specially.
 <a name='dup.txt'>
 <h2><tt>twidlit.duplicate.keys</tt></h2>
-Some keys are duplicates (<em>Numpad4</em>, for example). 
+Some keys are duplicates (<tt>Numpad4</tt>, for example). 
 You can configure your Twiddler to generate them but they never appear in text.
 <a name='lost.txt'>
 <h2><tt>twidlit.lost.keys</tt></h2>

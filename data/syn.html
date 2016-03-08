@@ -15,7 +15,7 @@
 
 <a name='types'>
 <h2>File types</h2>
-Here's a list of all the files and file types you are likely to come across in association with Twidlit. 
+Here's a list of the file types you are likely to come across using Twidlit. 
 <table style="width:100%">
   <tr><td><tt>*.cfg</tt></td><td><b>binary</b></td><td>chord mappings</td></tr>
   <tr><td><tt>*.chords</tt></td><td><b>text</b></td><td><a href='#chords'>chords</a></td></tr>
@@ -26,7 +26,7 @@ Here's a list of all the files and file types you are likely to come across in a
 
 <a name='comment'>
 <h2>Comments</h2>
-Comments can appear in any text file. 
+Comments can appear in any Twidlit text file. 
 They start with <tt>#</tt> and continue to the end of the line, for example: 
 <br><br>
 <tt>This is not, but # this is a comment.</tt> 
@@ -34,9 +34,8 @@ They start with <tt>#</tt> and continue to the end of the line, for example:
 <a name='chord'>
 <h2>Chord format</h2>
 Chords are represented by an optional thumb-key sequence and a finger sequence. 
-The thumb-key sequence consists of <tt>0</tt> or the initials of the thumb-keys pressed, 
-for example, <tt>CS</tt>. 
-This is just like in the Twiddler documentation. 
+The thumb-key sequence (if it exists) consists of <tt>0</tt> or the initials of the thumb-keys pressed, for example, <tt>CS</tt> for <tt>&lt;Ctrl>&lt;Shift></tt>. 
+This is just like in the Twiddler documentation, but the finger syntax is different. 
 <br><br>
 The finger sequence syntax (called <em>4finger</em>) has a character for each of the four fingers. 
 It starts with the index finger, so rotate your wrist till your index finger is to the left and imagine you are holding a Twiddler. 
@@ -46,7 +45,7 @@ It starts with the index finger, so rotate your wrist till your index finger is 
 <b><tt>'</tt></b> (apostrophe) is the button above it, and<br>
 <b><tt>,</tt></b> (comma) is the button below.<br> 
 <br>
-It's easy to read because the text maps directly to your tactile image without involving the abstract concept of left and right at all. 
+<em>4finger</em> is easy to read because the text maps directly to your tactile image without involving the abstract concept of left and right at all. 
 A whole chord might look like this:<br>
 <b><tt>S    '--|</tt></b><br>
 Or just this:<br>
@@ -56,16 +55,15 @@ Or just this:<br>
 
 <a name='keystroke'>
 <h2>Keystroke formats</h2>
-Twidlit reads and writes characters (e.g. lower case f) and keystrokes (e.g. Shift and F1 held down together). 
-You can specify (<tt>display.format</tt>, <tt>file.format</tt>) which of the following formats Twidlit writes, but only STD, TAG and HEX are suitable for <tt>cfg.txt</tt> files because they encode both characters and non-character keystrokes (e.g. <tt>&lt;F1></tt>). 
-Twidlit reads them all so you can use what you like.  
+You can specify which of the following formats Twidlit writes (Preferences <a href='ref.html#format'><tt>display.format</tt> and <tt>file.format</tt></a>), but note that ESC can only encode characters. 
+Twidlit reads them all so you can write any combination you like.  
 <dl>
 <dt><b>STD</b>
 <dd>Text is represented as escaped characters (see ESC), white space and non-character keystrokes are tagged. 
 For example,<br>
 <tt>\#&lt;Space>This&lt;Tab>is&lt;Space>it&lt;Enter></tt>
 <dt><b>TAG</b>
-<dd>Everything is tagged (tag names are specified in <tt>TwidlitKeyNames.txt</tt>). 
+<dd>Everything is tagged (tag names are specified in <tt>twidlit.name.keys</tt>). 
 For example,<br> 
 <tt>&lt;Ctrl>&lt;PageUp>&lt;/Ctrl>&lt;Shift>&lt;KeyT>&lt;/Shift></tt>
 <dt><b>ESC</b>
@@ -87,7 +85,7 @@ For example,<br>
 <tt>\tThis\sisn't\b\b\b\sit</tt>
 <dt><a name='hex'><b>HEX</b>
 <dd>Keystrokes are represented by hexadecimal keycode (not ASCII) values.
-You can look them up in <tt>TwidlitKeyNames.txt</tt>. 
+You can look them up in <tt>twidlit.name.keys</tt>. 
 <table style="width:100%">
   <tr><td>Keystroke as hexadecimal (<em>nnnn</em> is four hex digits)</td><td><b>\k<em>nnnn</em></b></td></tr>
 </table>
@@ -97,21 +95,21 @@ For example,<br>
 
 <a name='chords'>
 <h2>Chord files (<tt>.chords</tt>)</h2>
-Chord files are text files containing lines that begin with a chord definition. 
+Chord files are text files containing lines that begin with a <a href='chord'>chord definition</a>. 
 The definition may be followed by the end of the line, or by a space and more text. 
-Any <tt>.chords</tt> file can be used, along with a <tt>.keys</tt> file, to <a href="ref.html#map">generate a chord mapping</a>. 
+Any <tt>chords</tt> file can be used, along with a <tt>keys</tt> file, to <a href="ref.html#map">generate a chord mapping</a>. 
 
 <a name='cfg'>
-<h3>Mapped chord files (<tt>.cfg.chords</tt>)</h3>
-Chord mapping files come in two flavours, <tt>.cfg</tt> (binary) and <tt>.cfg.chords</tt> (text). 
-The Twiddler can only read <tt>.cfg</tt>s, and you and I can only read <tt>.cfg.chords</tt>. 
+<h3>Chord mapping files (<tt>.cfg.chords</tt>)</h3>
+Chord mapping files come in two flavours, <tt>cfg</tt> (binary) and <tt>cfg.chords</tt> (text). 
+The Twiddler can only read <tt>cfg</tt>s, and you and I can only read <tt>cfg.chords</tt>. 
 Happily, Twidlit can read and write both.
 <br><br>
 I get confused trying to manage binary files that have to be given the same name (<tt>twiddler.cfg</tt>) when in use, 
-so I keep all my map files as text and only save them as binary when loading the Twiddler. 
-The <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs allows you to choose the type of file you want. 
+so I keep all my mapping files as text and only save them as binary when loading the Twiddler. 
+Use the <em>Files of type</em> selector below the file name box on the <em>Open</em> and <em>Save As</em> dialogs to choose the type of file you want. 
 <br><br>
-Each line of a <tt>.cfg.chords</tt> file comprises a <a href='#chord'>chord</a>, an equals and a list of the <a href='#keys'>keystrokes</a> generated by that chord. 
+Each line of a <tt>cfg.chords</tt> file comprises a <a href='#chord'>chord</a>, an equals and a list of the <a href='#keys'>keystrokes</a> generated by that chord. 
 Here's how a bit of one might look:
 <pre><code># the mappings for e
 0    '||| = e
@@ -133,18 +131,19 @@ For example:
 
 <a name='keys'>
 <h2>Keystroke files (<tt>.keys</tt>)</h2>
-Keystroke files are text files containing lines that begin with one keystroke(s) definition. 
+Keystroke files are text files containing lines that begin with a <a href='#keystroke'>keystroke(s) definition</a>. 
 The definition may be followed by the end of the line, or by a space and more text. 
-Any <tt>.keys</tt> file can be used, along with a <tt>.chords</tt> file, to <a href="ref.html#map">generate a chord mapping</a>. 
+Any <tt>keys</tt> file can be used, along with a <tt>chords</tt> file, to <a href="ref.html#map">generate a chord mapping</a>. 
 
 <a name='ngram'>
 <h3>Ngram files (<tt>.keys</tt>)</h3>
 The menu item <tt><a href='ref.html#counts'>Counts</a> > Ngrams File...</tt> allows you to select a file of ngrams. 
-Each line is an ngram. If you add comments, make sure they are hard up against the end of the ngram. 
+Each line is an ngram. 
+Spaces count, if you add comments make sure they are hard up against the end of the ngram. 
 For example:
 <pre><code># code ngrams
-) {\n# there are plenty of these
-) {\n # but few of these
+) {# there are plenty of these in my code
+) { # not so many of these
 </code></pre> 
 
 <a name='ccount'>
@@ -186,9 +185,9 @@ and\s
 
 <a name='pref'>
 <h3>Preference files (<tt>.keys</tt>)</h3>
-The menu item <tt><a href='ref.html#file'>File</a> > Preferences...</tt> saves the following files: 
+The menu item <tt><a href='ref.html#file'>File</a> > Preferences...</tt> saves the following <a href='ref.html#pref'>preference</a> files: 
 <br><br>
-<table style="width:80%">
+<table style="width:100%">
   <tr><td><tt>twidlit.duplicate.keys</tt></td><td>keystroke</td></tr>
   <tr><td><tt>twidlit.event.keys</tt></td><td>keystroke + event code (<tt>0xnn</tt>)</td></tr>
   <tr><td><tt>twidlit.lost.keys</tt></td><td>keystroke</td></tr>
