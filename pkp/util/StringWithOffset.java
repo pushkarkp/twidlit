@@ -17,7 +17,7 @@ public class StringWithOffset {
    public void setOffset(int i) {
       m_Offset = Math.max(0, Math.min(i, m_Str.length()));
    }
-   public void end() {
+   public void setOffsetToEnd() {
       m_Offset = m_Str.length();
    }
    public String getString() {
