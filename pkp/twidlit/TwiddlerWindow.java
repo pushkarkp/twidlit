@@ -108,6 +108,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       }
       m_RightHand = right;
       getContentPane().removeAll();
+      m_ProgressPanel.setRightHand(right);
       if (right) {
          getContentPane().add(m_ProgressPanel);
          getContentPane().add(m_TwiddlerPanel);

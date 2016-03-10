@@ -92,17 +92,17 @@ class ProgressPanel extends JPanel {
       m_RightHand = right;
       m_VerticalPanel.removeAll();
       if (right) {
-         m_VerticalPanel.add(m_ProgressBar);
+         m_VerticalPanel.add(m_MeanMeanProgressBar);
          m_VerticalPanel.add(m_ScalePanel1);
          m_VerticalPanel.add(m_MeanProgressBar);
          m_VerticalPanel.add(m_ScalePanel2);
-         m_VerticalPanel.add(m_MeanMeanProgressBar);
+         m_VerticalPanel.add(m_ProgressBar);
       } else {
-         m_VerticalPanel.add(m_MeanMeanProgressBar);
+         m_VerticalPanel.add(m_ProgressBar);
          m_VerticalPanel.add(m_ScalePanel1);
          m_VerticalPanel.add(m_MeanProgressBar);
          m_VerticalPanel.add(m_ScalePanel2);
-         m_VerticalPanel.add(m_ProgressBar);
+         m_VerticalPanel.add(m_MeanMeanProgressBar);
       }
       if (isVisible()) {
          super.setVisible(true);
