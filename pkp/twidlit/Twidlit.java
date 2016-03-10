@@ -91,6 +91,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       setKeyWaitMsec(Pref.getInt("key.wait.msec"));
       m_StartTimeMs = 0;
       m_TimeMs = 0;
+      m_ProgressFactor = Pref.getInt("progress.timed.percent") / 100.0;
       
       pack();
       // uses Init and calls initilize()
@@ -319,7 +320,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          m_TextPanel.next(
             !m_Timed
             // only record times within 2* progress bar
-            || (m_TimeMs < 2 * m_TwiddlerWindow.getProgressMax()
+            || (m_TimeMs < (int)(0.5 + m_ProgressFactor * m_TwiddlerWindow.getProgressMax())
              && m_ChordTimes.add(tw.getChord().toInt(),
                                  tw.getThumbKeys().toInt(),
                                  m_TimeMs))
@@ -404,6 +405,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    private long m_KeyStartMs;
    private boolean m_Timed;
    private ChordTimes m_ChordTimes;
+   private double m_ProgressFactor;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {

@@ -26,10 +26,11 @@ public class ChordTimes implements Persistent {
    /////////////////////////////////////////////////////////////////////////////
    // without and with thumbkeys
    static final int sm_CHORD_TYPES = 2;
+   public static final int sm_MAX_MSEC = 32000;
 
    /////////////////////////////////////////////////////////////////////////////
    public ChordTimes(boolean isKeys, boolean isRightHand) {
-      this(isKeys, isRightHand, Pref.getInt("chord.times.span", 16));
+      this(isKeys, isRightHand, Pref.getInt("chord.times.stored", 16));
 //System.out.println(getExtension());
    }
 

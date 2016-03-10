@@ -349,8 +349,7 @@ class TwidlitMenu extends PersistentMenuBar
          showCounts(command);
          return;
       case sm_COUNTS_CLEAR_TEXT:
-         if (!Pref.getBool("count.clear.confirm", false)
-          || JOptionPane.showConfirmDialog(
+         if (JOptionPane.showConfirmDialog(
                 m_Twidlit,
                 "Sure you want to clear the character counts?", 
                 sm_COUNTS_CLEAR_TEXT, 
@@ -376,22 +375,23 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_TUTOR_DELAY_TEXT: {
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Chord Delay",
-            "Delay before displaying the chord (milliseconds):",
+            String.format("The milliseconds before the chord is displayed [0..%d]:", ChordTimes.sm_MAX_MSEC),
             m_Twidlit.getTwiddlerWindow().getDelay(), 
-            0, 30000, 100);
+            0, ChordTimes.sm_MAX_MSEC, 100);
          if (is.isOk()) {
             m_Twidlit.getTwiddlerWindow().setDelay(is.getValue());
          }
          return;
       }
       case sm_TUTOR_SPEED_TEXT: {
+         int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("progress.timed.percent");
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Twiddling Speed",
-            "Maximum wait for a chord after delay (milliseconds):",
-            m_Twidlit.getTwiddlerWindow().getSpeed(),
-            1, 30000, 100);
+            String.format("The progress bar interval in milliseconds [0..%d]:", max),
+            m_Twidlit.getTwiddlerWindow().getProgressBarMsec(),
+            0, max, 100);
          if (is.isOk()) {
-            m_Twidlit.getTwiddlerWindow().setSpeed(is.getValue());
+            m_Twidlit.getTwiddlerWindow().setProgressBarMsec(is.getValue());
          }
          return;
       }
