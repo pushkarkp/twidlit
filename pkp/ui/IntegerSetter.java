@@ -30,8 +30,7 @@ public class IntegerSetter implements ActionListener {
       m_Dialog.setResizable(false);
       m_Value = new SpinnerNumberModel(init, min, max, step);
       JSpinner spin = new JSpinner(m_Value);
-      spin.setBackground(Color.black);
-      m_Dialog.getBox().add(new LabelComponentBox(caption, spin));//new JSpinner(m_Value)));
+      m_Dialog.getBox().add(new LabelComponentBox(caption, spin));
       m_Dialog.addButton(createButton("Cancel"));
       m_Dialog.addButton(createButton("OK"));
       m_Dialog.setVisible(true);
