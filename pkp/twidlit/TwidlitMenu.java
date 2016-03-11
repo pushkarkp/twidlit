@@ -886,8 +886,8 @@ class TwidlitMenu extends PersistentMenuBar
       "twidlit.duplicate.keys",
       "twidlit.event.keys",
       "twidlit.lost.keys",
-      "twidlit.preference.keys",
       "twidlit.name.keys",
+      "twidlit.preferences",
       "twidlit.unprintable.keys",
       "twidlit.value.keys"
    };
