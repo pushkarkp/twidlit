@@ -99,9 +99,9 @@ class ChordMapper extends ControlDialog
       m_CheckBoxSkipDup = addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("map.skip.duplicates", true));
       m_CheckBoxSort = addCheckBox(box, "Sort by chord frequency", Persist.getBool("map.frequency.sort", false));
       m_CheckBoxShowAll = addCheckBox(box, "Show unmapped chords", Persist.getBool("map.show.unmapped", false));
-      addButton(createButton(sm_HELP));
-      addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_OK));
+      addButton(createButton(sm_CANCEL));
+      addButton(createButton(sm_HELP));
       setVisible(true);
    }
 

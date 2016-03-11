@@ -265,7 +265,7 @@ class TwidlitMenu extends PersistentMenuBar
          scw.setPersistName(sm_CHORD_LIST_PERSIST);
          JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
          b.addActionListener(this);
-         scw.setButton(b);
+         scw.setOkButton(b);
          scw.setVisible(true);
          return;
       case sm_USE_ALL_CHORDS_TEXT: {

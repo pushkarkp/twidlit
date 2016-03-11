@@ -51,14 +51,21 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
       m_Saver = null;
       m_ChoosenFileUser = null;
       m_Buttons = new ArrayList<JButton>();
+      m_OkButton = 0;
       m_Buttons.add(new JButton(sm_SAVE_AS_TEXT));
-      m_Buttons.get(0).addActionListener(this);
+      m_Buttons.get(m_OkButton).addActionListener(this);
       m_ButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
       getContentPane().add(m_ButtonPanel, BorderLayout.PAGE_END);
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void setButton(JButton b) { m_Buttons.set(0, b); }
+   public void addCornerButton(JButton b) {
+      ++m_OkButton;
+      m_Buttons.add(0, b); 
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public void setOkButton(JButton b) { m_Buttons.set(m_OkButton, b); }
    public void addButton(JButton b) { m_Buttons.add(b); }
    public JButton getButton(int i) { return m_Buttons.get(i); }
    public void setDirectory(String dir) { m_Dir = dir; }
@@ -140,6 +147,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    private JFileChooser m_FileChooser;
    private JPanel m_ButtonPanel;
    private ArrayList<JButton> m_Buttons;
+   private int m_OkButton;
    private String m_Command;
    private ArrayList<String> m_Extension;
    private String m_Dir;

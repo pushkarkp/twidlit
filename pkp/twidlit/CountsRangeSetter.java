@@ -30,8 +30,8 @@ class CountsRangeSetter implements ActionListener {
       Box box = m_Dialog.getBox();
       box.add(new LabelComponentBox("Minimum count:", m_Min));
       box.add(new LabelComponentBox("Maximum count:", m_Max));
-      m_Dialog.addButton(createButton("Cancel"));
       m_Dialog.addButton(createButton("OK"));
+      m_Dialog.addButton(createButton("Cancel"));
       m_Dialog.setVisible(true);
    }
    

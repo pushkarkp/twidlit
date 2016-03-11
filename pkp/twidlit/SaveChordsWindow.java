@@ -23,7 +23,7 @@ class SaveChordsWindow extends SaveTextWindow implements ActionListener {
    SaveChordsWindow(ContentForTitle cft, String title, String dir) {
       super(title, "", "chords", dir);
       m_ContentForTitle = cft;
-      addButton(new JButton(sm_CONVERT_TEXT[0]));
+      addCornerButton(new JButton(sm_CONVERT_TEXT[0]));
       getButton(1).addActionListener(this);
       replaceText(getContent()); 
    }
