@@ -102,7 +102,7 @@ public class Io {
                fos.write(buf, 0, i);
             }
          } catch (Exception e) {
-            Log.err("Failed to copy '" + inParent + "/" + fName + "' from JAR.");
+            Log.err("Failed to copy '" + inParent + "/" + fName + "' from JAR: " + e);
          } finally {
             try {
                if (fis != null) {
