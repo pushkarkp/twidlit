@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
+import java.util.List;
 import java.util.ArrayList;
 import pkp.twiddle.Assignment;
 import pkp.twiddle.Chord;
@@ -557,18 +558,24 @@ class TwidlitMenu extends PersistentMenuBar
       @Override 
       public void actionPerformed(ActionEvent e) {
          if (e.getActionCommand() == "ApproveSelection") {
-            File f = m_FileChooser.getSelectedFile();
-            if (!f.exists() || !f.isDirectory()) {
-               Log.warn("\"" + f.getPath() + "\" is not an existing folder.");
+            File outFolder = m_FileChooser.getSelectedFile();
+            if (!outFolder.exists() || !outFolder.isDirectory()) {
+               Log.warn("\"" + outFolder.getPath() + "\" is not an existing folder.");
                return;
             }
-            for (int i = 0; i < sm_PREF_FILES.length; ++i) {
-               File save = new File(f, sm_PREF_FILES[i]);
+            List<String> names = Io.listFromCodeJarFolder(sm_PREF);
+            boolean saved = false;
+            for (int i = 0; i < names.size(); ++i) {
+               File save = new File(outFolder, names.get(i));
                if (!save.exists()) {
-                  Io.saveFromJar(sm_PREF_FILES[i], "pref", f.getPath());
+                  saved = true;
+                  Io.saveFromCodeJar(names.get(i), sm_PREF, outFolder.getPath());
                }
             }
-            m_PrefDir = f.getPath();
+            m_PrefDir = outFolder.getPath();
+            if (!saved) {
+               Log.warn("Nothing saved, all preference files already exist in " + outFolder.getPath());
+            }
          } else if (e.getActionCommand() != "CancelSelection") {
             Log.err("PrefActionListener: unexpected command " + e.getActionCommand());
          }
@@ -826,7 +833,7 @@ class TwidlitMenu extends PersistentMenuBar
       private String m_ShowWhat;
       private String m_OutDir;
    }
-
+   
    // Final //////////////////////////////////////////////////////////
    private static final String sm_FILE_MENU_TEXT = "File";
    private static final String sm_FILE_ALL_CHORDS_TEXT = "All Chords...";
@@ -868,6 +875,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
 
+   private static final String sm_PREF = "pref";
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_CHORDS = "cfg.chords";
    private static final String sm_PREF_DIR_PERSIST = "pref.dir";
@@ -882,16 +890,6 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "key.source.file";
    private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "tutor.other.timed";
    
-   private static final String[] sm_PREF_FILES = new String[] {
-      "twidlit.duplicate.keys",
-      "twidlit.event.keys",
-      "twidlit.lost.keys",
-      "twidlit.name.keys",
-      "twidlit.preferences",
-      "twidlit.unprintable.keys",
-      "twidlit.value.keys"
-   };
-
    // Data ///////////////////////////////////////////////////////////
    // At initialization time m_TwidlitInit is a separate object
    // that collects the settings for the source.

@@ -14,6 +14,9 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
 import java.util.ArrayList;
 import java.lang.NumberFormatException;
 import java.util.List;
@@ -88,31 +91,58 @@ public class Io {
       return url;
    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   public static void saveFromJar(String fName, String inParent, String outParent) {
-      File save = new File(outParent, fName);
-      if (!save.exists()) {
-         InputStream fis = Io.class.getResourceAsStream("/" + inParent + "/" + fName);
-         FileOutputStream fos = null;
-         try {
-            fos = new FileOutputStream(save);
-            byte[] buf = new byte[1024];
-            int i = 0;
-            while ((i = fis.read(buf)) != -1) {
-               fos.write(buf, 0, i);
+   ////////////////////////////////////////////////////////////////////////////////
+   public static List<String> listFromCodeJarFolder(String folderName) {
+      CodeSource src = Io.class.getProtectionDomain().getCodeSource();
+      if (src == null) {
+         return null;
+      }
+      return listFromJarFolder(src.getLocation(), folderName);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////////
+   public static List<String> listFromJarFolder(URL url, String prefix) {
+      ArrayList<String> strs = new ArrayList<String>();
+      if (!"".equals(prefix) && !prefix.endsWith("/")) {
+         prefix = prefix + '/';
+      }
+      try {
+         ZipInputStream zip = new ZipInputStream(url.openStream());
+         ZipEntry e = null;
+         while((e = zip.getNextEntry()) != null) {
+            if (e.getName().startsWith(prefix)) {
+               strs.add(e.getName().substring(prefix.length()));
             }
-         } catch (Exception e) {
-            Log.err("Failed to copy '" + inParent + "/" + fName + "' from JAR: " + e);
-         } finally {
-            try {
-               if (fis != null) {
-                  fis.close();
-               }
-               if (fos != null) {
-                  fos.close();
-               }
-            } catch (Exception e) {}
          }
+      } catch (IOException e) {
+         Log.err("Failed to get jar resources: " + e);
+      }
+      return strs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void saveFromCodeJar(String fName, String inParent, String outParent) {
+      File save = new File(outParent, fName);
+      InputStream fis = Io.class.getResourceAsStream('/' + inParent + '/' + fName);
+      FileOutputStream fos = null;
+      try {
+         fos = new FileOutputStream(save);
+         byte[] buf = new byte[1024];
+         int i = 0;
+         while ((i = fis.read(buf)) != -1) {
+            fos.write(buf, 0, i);
+         }
+      } catch (Exception e) {
+         Log.err("Failed to copy '" + inParent + "/" + fName + "' from JAR: " + e);
+      } finally {
+         try {
+            if (fis != null) {
+               fis.close();
+            }
+            if (fos != null) {
+               fos.close();
+            }
+         } catch (Exception e) {}
       }
    }
 
