@@ -23,8 +23,8 @@ class SaveChordsWindow extends SaveTextWindow implements ActionListener {
    SaveChordsWindow(ContentForTitle cft, String title, String dir) {
       super(title, "", "chords", dir);
       m_ContentForTitle = cft;
-      addCornerButton(new JButton(sm_CONVERT_TEXT[0]));
-      getButton(1).addActionListener(this);
+      addCorner0Button(new JButton(sm_CONVERT_TEXT[0]));
+      getButton(0).addActionListener(this);
       replaceText(getContent()); 
    }
    
@@ -32,12 +32,12 @@ class SaveChordsWindow extends SaveTextWindow implements ActionListener {
    @Override 
    public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand() == sm_CONVERT_TEXT[0]) {
-         getButton(1).setText(sm_CONVERT_TEXT[1]);
+         getButton(0).setText(sm_CONVERT_TEXT[1]);
          replaceText(getContent()); 
          return;
       }
       if (e.getActionCommand() == sm_CONVERT_TEXT[1]) {
-         getButton(1).setText(sm_CONVERT_TEXT[0]);
+         getButton(0).setText(sm_CONVERT_TEXT[0]);
          replaceText(getContent()); 
          return;
       }
@@ -46,11 +46,11 @@ class SaveChordsWindow extends SaveTextWindow implements ActionListener {
    
    ///////////////////////////////////////////////////////////////////
    private String getContent() {
-      if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
+      if (getButton(0).getText() == sm_CONVERT_TEXT[1]) {
          Chord.use4Finger(false);
       }
       String str = m_ContentForTitle.getContentForTitle(getTitle());
-       if (getButton(1).getText() == sm_CONVERT_TEXT[1]) {
+       if (getButton(0).getText() == sm_CONVERT_TEXT[1]) {
          Chord.use4Finger(true);
       }
       return str;

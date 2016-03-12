@@ -52,6 +52,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
       m_ChoosenFileUser = null;
       m_Buttons = new ArrayList<JButton>();
       m_OkButton = 0;
+      m_ButtonsSet = false;
       m_Buttons.add(new JButton(sm_SAVE_AS_TEXT));
       m_Buttons.get(m_OkButton).addActionListener(this);
       m_ButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
@@ -59,7 +60,7 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void addCornerButton(JButton b) {
+   public void addCorner0Button(JButton b) {
       ++m_OkButton;
       m_Buttons.add(0, b); 
    }
@@ -90,12 +91,12 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    ///////////////////////////////////////////////////////////////////
    @Override
    public void setVisible(boolean visible) { 
-      if (visible && m_Buttons.get(0) != null) {
-         m_Command = m_Buttons.get(0).getText();
+      if (visible && !m_ButtonsSet) {
+         m_Command = m_Buttons.get(m_OkButton).getText();
          for (int i = m_Buttons.size() - 1; i >= 0; --i) {
             m_ButtonPanel.add(m_Buttons.get(i));
          }
-         m_Buttons.set(0, null);
+         m_ButtonsSet = true;
       }
       super.setVisible(visible);      
    }
@@ -153,4 +154,5 @@ public class SaveTextWindow extends TextWindow implements ActionListener {
    private String m_Dir;
    private Saver m_Saver;
    private ChoosenFileUser m_ChoosenFileUser;
+   private boolean m_ButtonsSet;
 }
