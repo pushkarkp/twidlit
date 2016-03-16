@@ -15,8 +15,8 @@
 <dd><dl>
 <dt><a href='#map'>Map Chords</a>
 <dt><a href='#countsrange'>Range of Counts Displayed</a>
+<dt><a href='#speed'>Progress Time</a>
 <dt><a href='#delay'>Chord Delay</a>
-<dt><a href='#speed'>Twiddling Speed</a>
 </dl>
 <dt><a href='#windows'>Windows</a>
 <dd><dl>
@@ -96,11 +96,14 @@ Twidlit attempts to test all chords with equal probability, but can only show ch
 <dd>Sets practice to keystrokes read from a file. 
 Clicking on this menu item displays a file chooser to open a <a href='syn.html#keys'>file of keystrokes</a>. 
 If no file is chosen then upper and lower case alphabetic keys are used. 
-<dt><b>Delay...</b>
+<dt><b>Auto-scale</b>
+<dd>Whether the <a href='#wait'>progress time</a> is scaled automatically from the mean of chord means. 
+<dt><b>Set Progress Time...</b>
+<dd>Opens the <a href='#speed'>Progress Time dialog</a>. 
+This option is disabled if <em>Tutor > Auto-scale</em> is selected. 
+<dt><b>Set Chord Delay...</b>
 <dd>Opens the <a href='#delay'>Chord Delay dialog</a>. 
 This option is disabled if <em>Tutor > Chords</em> is selected. 
-<dt><b>Speed...</b>
-<dd>Opens the <a href='#speed'>Twiddling Speed dialog</a>. 
 <dt><b>Timed</b>
 <dd>Whether your chording (for the current hand) is timed.
 <dt><a name='timelist'><b>List Chords By Time</b>
@@ -127,15 +130,13 @@ If you use a file of your chosen mnemonic mappings for less used keystrokes then
 This dialog adjusts the range of character frequencies displayed as a table or a graph. 
 It is particularly useful with graphs as it improves the resolution. 
 
+<a name='speed'>
+<h2>Progress Time</h2>
+This dialog adjusts the time Twidlit <a href="#wait">waits</a> for a chord to be pressed. 
+
 <a name='delay'>
 <h2>Chord Delay</h2>
 This dialog adjusts the time between a keystroke being highlighted in the <a href='#text'>Text pane</a> and the chord being displayed in the <a href='#twiddler'>Twiddler window</a>. 
-It cannot be more than 15 seconds. 
-
-<a name='speed'>
-<h2>Twiddling Speed</h2>
-This dialog adjusts the time Twidlit <a href="#wait">waits</a> for a chord to be pressed. 
-It cannot be more than 15 seconds. 
 
 <a name='windows'>
 <h1>Windows</h1>
@@ -163,7 +164,7 @@ Twidlit only attempts to record the time of a chord if it takes less than twice 
 This allows you to just stop at any time. 
 Timing restarts with the next chord, and the chord that went untimed will be repeated soon. 
 <br><br>
-The progress time can be adjusted using <em><a href="#tutor">Tutor<a> > Speed...</em>, and comprises the following: 
+The progress time can be adjusted using <em><a href="#tutor">Tutor<a> > Set Progress Time...</em>, and comprises the following: 
 <dl>
 <dt><b>Delay time</b>
 <dd>
@@ -268,6 +269,10 @@ The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>.
 <dt><tt>new.line windows</tt><br>
 <dd>The new line style used in text files. 
 Delete the whole thing if not using Windows line ends. 
+<dt><tt>progress.autoscale.step 8</tt><br>
+<dd>The chord presses between updates of the automatic scaling of the <a href="#wait">progress time</a> from the mean of means. 
+<dt><tt>progress.autoscale.mean.percent 50</tt><br>
+<dd>The percentage of the automatically scaled <a href="#wait">progress time</a> that is the mean of means. 
 <dt><tt>progress.chord.show.percent 33</tt><br>
 <dd>The percent of the <a href="#wait">progress time</a> for which a chord is highlighted in the Twiddler window if there is no delay.
 Set this to zero to turn it off. 
@@ -279,8 +284,6 @@ Set this to zero to turn it off.
 Set this to zero to turn off chord marking. 
 <dt><tt>progress.step.msec 150</tt><br>
 <dd>The milliseconds between updates of the Twiddler window progress bar.
-<dt><tt>progress.chord.mean.percent 22</tt><br>
-<dd>The percentage of the <a href="#wait">progress time</a> targeted to be the mean of the chord means. 
 <dt><tt>progress.timed.percent 200</tt><br>
 <dd>The percentage of the <a href="#wait">progress time</a> for which a chord is timed. 
 <dt><tt>text.color lightGray</tt><br>

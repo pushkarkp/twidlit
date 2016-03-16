@@ -314,7 +314,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       Twiddle next = m_TextPanel.getNextTwiddle(pressed.getKeyPressList());
       if (next == null) {
          m_TwiddlerWindow.markMismatch(tw);
-         continueTime();
+         // continue time
+         m_TimeMs = 0;
       } else {
          // only accept chord if not timing or successfully timed
          m_TextPanel.next(
@@ -326,8 +327,10 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
                                  m_TimeMs))
          );
 //System.out.printf("%s %s%n", tw.getChord(), m_ChordTimes.getTimes(tw.getChord().toInt(), 0));
-         show(next, pressed.getTwiddle(0));
-         startTime();
+         m_TwiddlerWindow.show(next, pressed.getTwiddle(0), m_ChordTimes);
+         // start time
+         m_StartTimeMs = System.currentTimeMillis();
+         m_TimeMs = 0;
       }
    }
    
@@ -352,37 +355,11 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
 
    ////////////////////////////////////////////////////////////////////////////
    private void start() {
-      show(m_TextPanel.getFirstTwiddle(), null);
-      startUnrecordedTime();
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void show(Twiddle next, Twiddle prev) {
-      int ch = next.getChord().toInt();
-      int tk = next.getThumbKeys().toInt();
-      m_TwiddlerWindow.setMeanMean(m_ChordTimes.getMeanMean(tk));
-      m_TwiddlerWindow.setMean(m_ChordTimes.getMean(ch, tk));
-      m_TwiddlerWindow.show(next, prev);
-  }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void startTime() {
-      m_StartTimeMs = System.currentTimeMillis();
-      m_TimeMs = 0;
-  }
-
-   ////////////////////////////////////////////////////////////////////////////
-   // Start the timer in the past so the resulting time is not recorded.
-   private void startUnrecordedTime() {
+      m_TwiddlerWindow.show(m_TextPanel.getFirstTwiddle(), null, m_ChordTimes);
+      // Start the timer in the past so the resulting time is not recorded.
       m_StartTimeMs = System.currentTimeMillis() - 2 * m_TwiddlerWindow.getProgressMax();
       m_TimeMs = 0;
-  }
-
-   ////////////////////////////////////////////////////////////////////////////
-   // Discard the current interval's end so it can continue to grow.
-   private void continueTime() {
-      m_TimeMs = 0;
-  }
+   }
 
    /////////////////////////////////////////////////////////////////////////////
    private void setChordTimes(boolean keys) {

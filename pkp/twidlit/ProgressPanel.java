@@ -12,7 +12,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import pkp.twiddle.Twiddle;
+import pkp.times.ChordTimes;
 import pkp.ui.ScalePanel;
+import pkp.util.Pref;
 
 ////////////////////////////////////////////////////////////////////////////////
 class ProgressPanel extends JPanel {
@@ -77,6 +80,20 @@ class ProgressPanel extends JPanel {
 
       m_RightHand = true;
       setRightHand(false);
+      
+      m_AutoScaleStep = Pref.getInt("progress.autoscale.step", 8);
+      m_AutoScalePercent = Pref.getInt("progress.autoscale.mean.percent", 50);
+      setAutoScale(false);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   boolean isAutoScale() {
+      return m_AutoScaleCount > 0;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setAutoScale(boolean set) {
+      m_AutoScaleCount = set ? 1 : 0;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -151,6 +168,15 @@ class ProgressPanel extends JPanel {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   void setMeans(Twiddle tw, ChordTimes ct) {
+      int ch = tw.getChord().toInt();
+      int tk = tw.getThumbKeys().toInt();
+      autoScale(tk, ct.getMeanCount(tk), ct.getMeanMean(tk));
+      setMeanMean(ct.getMeanMean(tk));
+      setMean(ct.getMean(ch, tk));
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    void setSamples(int samples) {
       m_SamplesProgressBar.setValue(samples);
    }
@@ -166,13 +192,36 @@ class ProgressPanel extends JPanel {
       return pb;
    }
    
+   /////////////////////////////////////////////////////////////////////////////
+   void autoScale(int tk, int meanCount, int meanMean) {
+      if (m_AutoScaleCount > 0 && meanCount > 16) {
+         ++m_AutoScaleCount;
+         if (m_AutoScaleCount % m_AutoScaleStep == 2) {
+            int max = round(getMaximum(), 500);
+            int newMaxMax = round((meanMean + sm_AUTOSCALE_HYSTERESIS) * 100 / m_AutoScalePercent, 500);
+            int newMaxMin = round((meanMean - sm_AUTOSCALE_HYSTERESIS) * 100 / m_AutoScalePercent, 500);
+//System.out.printf("autoScale(%d, %d, %d) max %d newMaxMin %d newMaxMax %d%n", tk, meanCount, meanMean, max, newMaxMin, newMaxMax);
+            if (newMaxMax < max || newMaxMin > max) {
+               setMaximum(round(meanMean * 100 / m_AutoScalePercent, 500), 8);
+            }
+         }
+      }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private static int round(int val, int mod) {
+      val += mod / 2;
+      return val - val % mod;
+   }
+
    // Data /////////////////////////////////////////////////////////////////////
    private final Color m_COLOR_HIGHLIGHT_BAR;
    private final Color m_COLOR_BAR;
    private final Color m_COLOR_BACKGROUND;
 
    private static final int sm_THIN = 4;
-   
+   private static final int sm_AUTOSCALE_HYSTERESIS = 50;
+
    private JPanel m_VerticalPanel;
    private JPanel m_HorizontalPanel;
    private ScalePanel m_ScalePanel1;
@@ -183,4 +232,7 @@ class ProgressPanel extends JPanel {
    private JProgressBar m_MeanMeanProgressBar;
    private JProgressBar m_SamplesProgressBar;
    private boolean m_RightHand;
+   private int m_AutoScaleCount;
+   private int m_AutoScaleStep;
+   private int m_AutoScalePercent;
 }

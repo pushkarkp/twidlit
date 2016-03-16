@@ -157,6 +157,11 @@ public class ChordTimes implements Persistent {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public int getMeanCount(int thumbKeys) {
+      return m_MeanCount[Math.min(thumbKeys, 1)];
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    @Override
    public void persist(String tag) {
 //System.out.println("persist " + getFileName());

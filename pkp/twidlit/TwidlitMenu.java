@@ -99,10 +99,13 @@ class TwidlitMenu extends PersistentMenuBar
       addRadioItem(tutorMenu, sm_TUTOR_CHORDS_TEXT, m_SourceButtons);
       addRadioItem(tutorMenu, sm_TUTOR_KEYS_TEXT, m_SourceButtons);
       tutorMenu.addSeparator();
-      m_DelayItem = add(tutorMenu, sm_TUTOR_DELAY_TEXT);
-      add(tutorMenu, sm_TUTOR_SPEED_TEXT);
+      m_TutorAutoScaleItem = addCheckItem(tutorMenu, sm_TUTOR_AUTOSCALE_TEXT);
+      m_SpeedItem = add(tutorMenu, sm_TUTOR_SET_PROGRESS_TIME_TEXT);
+      m_SpeedItem.setEnabled(!m_TutorAutoScaleItem.isSelected());
+      m_DelayItem = add(tutorMenu, sm_TUTOR_SET_DELAY_TEXT);
+      tutorMenu.addSeparator();
       m_TutorTimedItem = addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
-      m_OtherTimed = Persist.getBool(sm_TUTOR_OTHER_TIMED_PERSIST);
+      m_TutorOtherTimed = Persist.getBool(sm_TUTOR_OTHER_TIMED_PERSIST);
       add(tutorMenu, sm_TUTOR_CHORDS_BY_TIME_TEXT);
       add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
       
@@ -120,6 +123,8 @@ class TwidlitMenu extends PersistentMenuBar
       
       enableCountsMenuItems(false);
       setStateFromCheckItems();
+      // after setStateFromCheckItems()
+      m_TutorAutoScale = Persist.getBool(sm_TUTOR_OTHER_AUTOSCALE_PERSIST);
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -156,7 +161,8 @@ class TwidlitMenu extends PersistentMenuBar
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
       Persist.setFile(sm_KEY_SOURCE_FILE_PERSIST, m_KeyPressFile);
-      Persist.set(sm_TUTOR_OTHER_TIMED_PERSIST, m_OtherTimed);
+      Persist.set(sm_TUTOR_OTHER_AUTOSCALE_PERSIST, m_TutorAutoScale);
+      Persist.set(sm_TUTOR_OTHER_TIMED_PERSIST, m_TutorOtherTimed);
       super.persist("");
    }
 
@@ -198,7 +204,23 @@ class TwidlitMenu extends PersistentMenuBar
             enableCountsMenuItems(false);
          }
          return;
+      case sm_TUTOR_AUTOSCALE_TEXT:
+         m_SpeedItem.setEnabled(!item.isSelected());
+         m_TutorAutoScale = item.isSelected();
+         m_Twidlit.getTwiddlerWindow().setAutoScale(item.isSelected());
+//System.out.printf("1m_TutorAutoScale %b%n", m_TutorAutoScale);
+         return;
       case sm_TUTOR_TIMED_TEXT:
+         m_TutorAutoScaleItem.setEnabled(item.isSelected());
+         if (item.isSelected()) {
+            m_TutorAutoScaleItem.setSelected(m_TutorAutoScale);
+         } else {
+//System.out.printf("0m_TutorAutoScale %b%n", m_TutorAutoScale);
+            boolean autoScale = m_TutorAutoScaleItem.isSelected();
+            m_TutorAutoScaleItem.setSelected(false);
+            m_TutorAutoScale = autoScale;
+//System.out.printf("2m_TutorAutoScale %b%n", m_TutorAutoScale);
+         }
          m_Twidlit.setTimed(item.getState());
          return;
       case sm_TUTOR_VISIBLE_TWIDDLER_TEXT:
@@ -373,7 +395,7 @@ class TwidlitMenu extends PersistentMenuBar
          }
          return;
       }
-      case sm_TUTOR_DELAY_TEXT: {
+      case sm_TUTOR_SET_DELAY_TEXT: {
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Chord Delay",
             String.format("The milliseconds before the chord is displayed [0..%d]:", ChordTimes.sm_MAX_MSEC),
@@ -384,10 +406,10 @@ class TwidlitMenu extends PersistentMenuBar
          }
          return;
       }
-      case sm_TUTOR_SPEED_TEXT: {
+      case sm_TUTOR_SET_PROGRESS_TIME_TEXT: {
          int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("progress.timed.percent");
          IntegerSetter is = new IntegerSetter(
-            m_Twidlit, "Twiddling Speed",
+            m_Twidlit, "Progress Time",
             String.format("The progress bar interval in milliseconds [0..%d]:", max),
             m_Twidlit.getTwiddlerWindow().getProgressBarMsec(),
             0, max, 100);
@@ -468,12 +490,12 @@ class TwidlitMenu extends PersistentMenuBar
 
    ///////////////////////////////////////////////////////////////////
    private void useOtherTimed() {
-      if (m_OtherTimed == m_Twidlit.isTimed()) {
+      if (m_TutorOtherTimed == m_Twidlit.isTimed()) {
          return;
       }
       m_Twidlit.setTimed(m_Twidlit.isTimed());
       m_TutorTimedItem.setSelected(!m_TutorTimedItem.isSelected());
-      m_OtherTimed = !m_OtherTimed;      
+      m_TutorOtherTimed = !m_TutorOtherTimed;      
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -858,8 +880,9 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
-   private static final String sm_TUTOR_DELAY_TEXT = "Delay...";
-   private static final String sm_TUTOR_SPEED_TEXT = "Speed...";
+   private static final String sm_TUTOR_AUTOSCALE_TEXT = "Auto-scale";
+   private static final String sm_TUTOR_SET_PROGRESS_TIME_TEXT = "Set Progress Time...";
+   private static final String sm_TUTOR_SET_DELAY_TEXT = "Set Chord Delay...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
@@ -889,7 +912,8 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "key.source.file";
    private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "tutor.other.timed";
-   
+   private static final String sm_TUTOR_OTHER_AUTOSCALE_PERSIST = "tutor.other.autoscale";
+
    // Data ///////////////////////////////////////////////////////////
    // At initialization time m_TwidlitInit is a separate object
    // that collects the settings for the source.
@@ -906,7 +930,9 @@ class TwidlitMenu extends PersistentMenuBar
    private JMenuItem m_CountsGraphItem;
    private JMenuItem m_ClearCountsItem;
    private JMenuItem m_DelayItem;
+   private JMenuItem m_SpeedItem;
    private JCheckBoxMenuItem m_TutorTimedItem;
+   private JCheckBoxMenuItem m_TutorAutoScaleItem;
    private Counts m_CharCounts;
    private String m_CountsInDir;
    private String m_CountsOutDir;
@@ -917,7 +943,8 @@ class TwidlitMenu extends PersistentMenuBar
    private File m_NGramsFile;
    private ButtonGroup m_HandButtons;
    private ButtonGroup m_SourceButtons;
-   private boolean m_OtherTimed;
+   private boolean m_TutorAutoScale;
+   private boolean m_TutorOtherTimed;
    private File m_KeyPressFile;
    private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;
