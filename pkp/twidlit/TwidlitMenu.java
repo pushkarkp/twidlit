@@ -355,7 +355,7 @@ class TwidlitMenu extends PersistentMenuBar
          m_SettingsWindow.setVisible(true);
          return;
       case sm_FILE_QUIT_TEXT:
-         m_Twidlit.quit();
+         m_Twidlit.quit(0);
          return;
       case sm_COUNTS_RANGE_TEXT:
          CountsRangeSetter crs = new CountsRangeSetter(m_Twidlit, m_CountsMinimum, m_CountsMaximum);

@@ -25,7 +25,7 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public interface Quitter {
-      public void quit();
+      public void quit(int err);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ public class Log implements ActionListener {
 		}
       java.lang.Thread.dumpStack();
       if (sm_Quitter != null) {
-         sm_Quitter.quit();
+         sm_Quitter.quit(1);
       } else {
 			if (sm_Log != null) {
 				sm_Log.close1();

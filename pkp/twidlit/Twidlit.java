@@ -221,7 +221,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
 
    /////////////////////////////////////////////////////////////////////////////
    @Override // Log.Quitter
-   public void quit() {
+   public void quit(int err) {
       //m_TwiddlerWindow.setVisible(false);
       m_TwiddlerWindow.dispose();
       setVisible(false);
@@ -232,7 +232,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       dispose();
       // close saves to persist, so write persist last
       Pref.writePersist();
-      System.exit(0);
+      System.exit(err);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -247,9 +247,9 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    @Override // WindowListener
    public void windowOpened(WindowEvent e) { requestFocusInWindow(); }
    @Override // WindowListener
-   public void windowClosed(WindowEvent e) { quit(); }
+   public void windowClosed(WindowEvent e) { quit(0); }
    @Override // WindowListener
-   public void windowClosing(WindowEvent e) { quit(); }
+   public void windowClosing(WindowEvent e) { quit(0); }
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // KeyListener
