@@ -20,7 +20,6 @@ public class TextWindow extends PersistentFrame {
       super();
       setIconImage(Pref.getIcon().getImage());
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-      getContentPane().setBackground(Pref.getColor("background.color"));
       getContentPane().setLayout(new BorderLayout());
       m_TextArea = new JTextArea();
       m_TextArea.setBackground(Pref.getColor("background.color"));
