@@ -91,7 +91,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       setKeyWaitMsec(Pref.getInt("key.wait.msec"));
       m_StartTimeMs = 0;
       m_TimeMs = 0;
-      m_ProgressFactor = Pref.getInt("progress.timed.percent") / 100.0;
+      m_ProgressFactor = Pref.getInt("chord.wait.timed.percent") / 100.0;
       
       pack();
       // uses Init and calls initilize()

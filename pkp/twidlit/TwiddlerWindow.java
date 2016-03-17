@@ -67,10 +67,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_ProgressTimer = new Timer(Pref.getInt(sm_PREF_PROGRESS_STEP_MSEC, sm_DEFAULT_STEP_MSEC), this);
       m_ProgressTimer.setActionCommand(sm_PROGRESS_TEXT);
 
-      m_ProgressPercent = Pref.getInt("progress.timed.percent");
+      m_ProgressPercent = Pref.getInt(sm_PREF_PROGRESS_TIMED_PERCENT);
       // The progress bar interval must be small enough
       // so the timed interval fits in ChordTimes storage.
-      int progressMax = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt(sm_PREF_PROGRESS_TIMED_PERCENT);
+      int progressMax = ChordTimes.sm_MAX_MSEC * 100 / m_ProgressPercent;
       int progressMsec = Persist.getInt(sm_PERSIST_PROGRESS_MSEC, sm_DEFAULT_PROGRESS_MSEC);
       m_ProgressMsec = Math.max(0, Math.min(progressMsec, progressMax));
       m_DelayMsec = Math.max(0, Persist.getInt(sm_PERSIST_DELAY_MSEC, sm_DEFAULT_DELAY_MSEC));
@@ -580,11 +580,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private static final String sm_PREF_COLOR_BUTTON_HIGHLIGHT = "twiddler.highlight.color";
    private static final String sm_PREF_COLOR_MARK_MATCH = "twiddler.mark.match.color";
    private static final String sm_PREF_COLOR_MARK_MISMATCH = "twiddler.mark.mismatch.color";
-   private static final String sm_PREF_SHOW_PERCENT = "progress.chord.show.percent";
-   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "progress.delay.chord.show.percent";
-   private static final String sm_PREF_MARK_PERCENT = "progress.mark.percent";
+   private static final String sm_PREF_SHOW_PERCENT = "chord.wait.chord.show.percent";
+   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "chord.wait.delay.chord.show.percent";
+   private static final String sm_PREF_MARK_PERCENT = "chord.wait.mark.percent";
    private static final String sm_PREF_PROGRESS_STEP_MSEC = "progress.step.msec";
-   private static final String sm_PREF_PROGRESS_TIMED_PERCENT = "progress.timed.percent";
+   private static final String sm_PREF_PROGRESS_TIMED_PERCENT = "chord.wait.timed.percent";
    
    private static final String sm_PERSIST_DELAY_MSEC = "progress.delay.msec";
    private static final String sm_PERSIST_PROGRESS_MSEC = "progress.msec";

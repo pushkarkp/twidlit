@@ -100,7 +100,7 @@ class TwidlitMenu extends PersistentMenuBar
       addRadioItem(tutorMenu, sm_TUTOR_KEYS_TEXT, m_SourceButtons);
       tutorMenu.addSeparator();
       m_TutorAutoScaleItem = addCheckItem(tutorMenu, sm_TUTOR_AUTOSCALE_TEXT);
-      m_SpeedItem = add(tutorMenu, sm_TUTOR_SET_PROGRESS_TIME_TEXT);
+      m_SpeedItem = add(tutorMenu, sm_TUTOR_SET_CHORD_TIME_TEXT);
       m_SpeedItem.setEnabled(!m_TutorAutoScaleItem.isSelected());
       m_DelayItem = add(tutorMenu, sm_TUTOR_SET_DELAY_TEXT);
       tutorMenu.addSeparator();
@@ -406,10 +406,10 @@ class TwidlitMenu extends PersistentMenuBar
          }
          return;
       }
-      case sm_TUTOR_SET_PROGRESS_TIME_TEXT: {
-         int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("progress.timed.percent");
+      case sm_TUTOR_SET_CHORD_TIME_TEXT: {
+         int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("chord.wait.timed.percent");
          IntegerSetter is = new IntegerSetter(
-            m_Twidlit, "Progress Time",
+            m_Twidlit, "Chord Wait",
             String.format("The progress bar interval in milliseconds [0..%d]:", max),
             m_Twidlit.getTwiddlerWindow().getProgressBarMsec(),
             0, max, 100);
@@ -881,7 +881,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
    private static final String sm_TUTOR_AUTOSCALE_TEXT = "Auto-scale";
-   private static final String sm_TUTOR_SET_PROGRESS_TIME_TEXT = "Set Progress Time...";
+   private static final String sm_TUTOR_SET_CHORD_TIME_TEXT = "Set Chord Time...";
    private static final String sm_TUTOR_SET_DELAY_TEXT = "Set Chord Delay...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
