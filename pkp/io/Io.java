@@ -27,6 +27,7 @@ public class Io {
 
    public static final boolean sm_MUST_EXIST = true;
    public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
+   public static final char sm_COMMENT = '#';
    public static final String sm_WS = "   ";
    public static final String sm_HEX_DIGIT = "0123456789abcdefABCDEF";
 
@@ -37,11 +38,6 @@ public class Io {
          return System.in.read();
       } catch (IOException e) {}
       return 0;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static void setComment(char comment) {
-      sm_Comment = comment;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -311,10 +307,10 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public static String trimComment(String line) {
-      if (sm_Comment == 0) {
+      if (sm_COMMENT == 0) {
          return line;
       }
-      return trimToLineEnd(sm_Comment, line);
+      return trimToLineEnd(sm_COMMENT, line);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -481,7 +477,7 @@ public class Io {
       case ' ': return "\\s";
       case '\t': return "\\t";
       case '\\': return "\\\\";
-      case '#': return "\\#";
+      case sm_COMMENT: return "\\" + sm_COMMENT;
       case '<': return "\\<";
       case 11: return "\\v";
       }
@@ -614,9 +610,6 @@ public class Io {
       }
       return new CharIntPair((char)Integer.parseInt(str.substring(2, 4), 16), 4);
    }
-
-   // Data ////////////////////////////////////////////////////////////////////
-   private static char sm_Comment = '#';
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main (String[] args) {
