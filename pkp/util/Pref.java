@@ -37,7 +37,6 @@ public class Pref {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void set(String name, String value) {
-System.out.println(name + " " + value);      
       sm_Pref.set(name, value);
    }
 
