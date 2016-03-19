@@ -50,14 +50,13 @@ public class PersistentFrame extends JFrame {
 
    ////////////////////////////////////////////////////////////////////////////
    // PersistName is converted to tag in PersistentPrperties.
-   // If value is not found, try deleting ./Persistent.properties
+   // If value is not found, try deleting twidlit.properties
    private String getPersistName() {
 //System.out.printf("getPersistName() %s%n", m_PersistName);
       if (m_PersistName == null || "".equals(m_PersistName)) {
-         if ("".equals(getTitle())) {
-            return getClass().getSimpleName();
-         }
-         return getTitle();
+         m_PersistName = "#." + (("".equals(getTitle()))
+                                 ? getClass().getSimpleName()
+                                 : getTitle());
       }
       return m_PersistName;
    }

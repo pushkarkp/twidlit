@@ -35,13 +35,13 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
             }
             JRadioButtonMenuItem rbItem = (JRadioButtonMenuItem)menu.getItem(j);
             if (rbItem.isSelected()) {
-               Persist.set(tag + menu.getText() + "." + rb, Persist.toTag(rb + "." + rbItem.getActionCommand()));
+               Persist.set("#." + tag + menu.getText() + "." + rb, Persist.toTag("#." + rb + "." + rbItem.getActionCommand()));
             }
          } else {
             inRb = false;
             if (menu.getItem(j) instanceof JCheckBoxMenuItem) {
                JCheckBoxMenuItem cbItem = (JCheckBoxMenuItem)menu.getItem(j);
-               Persist.set(tag + menu.getText() + ' ' + cbItem.getText(), cbItem.getState() ? "true" : "false");
+               Persist.set("#." + tag + menu.getText() + ' ' + cbItem.getText(), cbItem.getState() ? "true" : "false");
             } else
             if (menu.getItem(j) instanceof JMenu) {
                persist((JMenu)menu.getItem(j), tag);
@@ -93,11 +93,11 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
    protected JRadioButtonMenuItem addRadioItem(JMenu menu, String text, ButtonGroup buttonGroup) {
       boolean selected = false;
       for (int i = 1; !selected; ++i) {
-         String selection = Persist.get(menu.getText() + "." + i);
+         String selection = Persist.get("#." + menu.getText() + "." + i);
          if (selection == null) {
             break;
          }
-         selected = Persist.match(selection, i + "." + text);
+         selected = Persist.match("#." + selection, "#." + i + "." + text);
       }
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(text, selected);
       menu.add(item);
@@ -114,7 +114,7 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
 
    ///////////////////////////////////////////////////////////////////
    protected JCheckBoxMenuItem addCheckItem(JMenu menu, String text, boolean enabled) {
-      String persist = Persist.get(menu.getText() + " " + text);
+      String persist = Persist.get("#." + menu.getText() + " " + text);
       boolean selected = persist != null && persist.toLowerCase().equals("true");
       JCheckBoxMenuItem item = new JCheckBoxMenuItem(text, selected);
       menu.add(item);

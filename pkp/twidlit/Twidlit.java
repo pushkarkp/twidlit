@@ -59,7 +59,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    /////////////////////////////////////////////////////////////////////////////
    Twidlit() {
       super();
-      Color bg = Pref.getColor("background.color");
+      Color bg = Pref.getColor("#.background.color");
       UIManager.put("OptionPane.background", bg);
       UIManager.put("Panel.background", bg);
       UIManager.put("Button.background", bg);
@@ -81,17 +81,17 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       addWindowListener(this);
       addKeyListener(this);
       setTitle(getClass().getSimpleName());
-      setPersistName(getClass().getSimpleName());
+      setPersistName("#." + getClass().getSimpleName());
       setResizable(true);
 
       TwidlitMenu mb = new TwidlitMenu(this);
       setJMenuBar(mb);
 
       m_KeysPressed = new KeyPressList();
-      setKeyWaitMsec(Pref.getInt("key.wait.msec"));
+      setKeyWaitMsec(Pref.getInt("#.key.wait.msec"));
       m_StartTimeMs = 0;
       m_TimeMs = 0;
-      m_ProgressFactor = Pref.getInt("chord.wait.timed.percent") / 100.0;
+      m_ProgressFactor = Pref.getInt("#.chord.wait.timed.percent") / 100.0;
       
       pack();
       // uses Init and calls initilize()
@@ -389,9 +389,9 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       m_HomeDir = argv.length == 0 ? "." : argv[0];
       Log.init(Log.ExitOnError);
       Persist.init("twidlit.properties", m_HomeDir, "pref");
-      Pref.init("twidlit.preferences", Persist.get("pref.dir"), "pref");
+      Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");
       Pref.setIconPath("/data/icon.gif");
-      if (Pref.getBool("write.log", true)) {
+      if (Pref.getBool("#.write.log", true)) {
          Log.setFile(Io.createFile(m_HomeDir, "twidlit.log"));
       }
       KeyPress.init();

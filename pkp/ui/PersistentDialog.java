@@ -14,11 +14,10 @@ import pkp.util.Persist;
 public class PersistentDialog extends JDialog {
 
    ////////////////////////////////////////////////////////////////////////////
-   public PersistentDialog(Window owner, String name) {
-      super(owner, name);
-      m_PersistName = name;
+   public PersistentDialog(Window owner, String title) {
+      super(owner, title);
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public void setPersistName(String name) {
       m_PersistName = name;
@@ -29,11 +28,11 @@ public class PersistentDialog extends JDialog {
    public void setVisible(boolean set) {
       if (set) {
          String persistName = getPersistName();
-//System.out.println(persistName);         
-         Rectangle r = new Rectangle(Persist.getInt(m_PersistName + ".x", 0),
-                                     Persist.getInt(m_PersistName + ".y", 0),
-                                     Persist.getInt(m_PersistName + ".w", 500),
-                                     Persist.getInt(m_PersistName + ".h", 300));
+//System.out.println(persistName);
+         Rectangle r = new Rectangle(Persist.getInt(persistName + ".x", 0),
+                                     Persist.getInt(persistName + ".y", 0),
+                                     Persist.getInt(persistName + ".w", 500),
+                                     Persist.getInt(persistName + ".h", 300));
          setBounds(r);
       }
       super.setVisible(set);
@@ -54,12 +53,13 @@ public class PersistentDialog extends JDialog {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
+   // PersistName is converted to tag in PersistentPrperties.
+   // If value is not found, try deleting twidlit.properties
    private String getPersistName() {
       if (m_PersistName == null || "".equals(m_PersistName)) {
-         if ("".equals(getTitle())) {
-            return getClass().getSimpleName();
-         }
-         m_PersistName = getTitle();
+         m_PersistName = "#." + (("".equals(getTitle()))
+                                 ? getClass().getSimpleName()
+                                 : getTitle());
       }
       return m_PersistName;
    }

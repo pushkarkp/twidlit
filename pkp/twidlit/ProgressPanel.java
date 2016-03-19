@@ -81,8 +81,8 @@ class ProgressPanel extends JPanel {
       m_RightHand = true;
       setRightHand(false);
       
-      m_AutoScaleStep = Pref.getInt("chord.wait.autoscale.step", 8);
-      m_AutoScalePercent = Pref.getInt("chord.wait.autoscale.mean.percent", 50);
+      m_AutoScaleStep = Pref.getInt("#.chord.wait.autoscale.step", 8);
+      m_AutoScalePercent = Pref.getInt("#.chord.wait.autoscale.mean.percent", 50);
       setAutoScale(false);
    }
 

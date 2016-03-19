@@ -22,7 +22,7 @@ public class TextWindow extends PersistentFrame {
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
       getContentPane().setLayout(new BorderLayout());
       m_TextArea = new JTextArea();
-      m_TextArea.setBackground(Pref.getColor("background.color"));
+      m_TextArea.setBackground(Pref.getColor("#.background.color"));
       m_TextArea.setEditable(false);
       m_ScrollPane = new JScrollPane(m_TextArea);
       getContentPane().add(m_ScrollPane, BorderLayout.CENTER);

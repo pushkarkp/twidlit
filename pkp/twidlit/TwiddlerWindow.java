@@ -574,20 +574,20 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    // Data /////////////////////////////////////////////////////////////////////
 
-   private static final String sm_PREF_COLOR_BACKGROUND = "twiddler.background.color";
-   private static final String sm_PREF_COLOR_BUTTON = "twiddler.button.color";
-   private static final String sm_PREF_COLOR_LABEL = "twiddler.label.color";
-   private static final String sm_PREF_COLOR_BUTTON_HIGHLIGHT = "twiddler.highlight.color";
-   private static final String sm_PREF_COLOR_MARK_MATCH = "twiddler.mark.match.color";
-   private static final String sm_PREF_COLOR_MARK_MISMATCH = "twiddler.mark.mismatch.color";
-   private static final String sm_PREF_SHOW_PERCENT = "chord.wait.chord.show.percent";
-   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "chord.wait.delay.chord.show.percent";
-   private static final String sm_PREF_MARK_PERCENT = "chord.wait.mark.percent";
-   private static final String sm_PREF_PROGRESS_STEP_MSEC = "progress.step.msec";
-   private static final String sm_PREF_PROGRESS_TIMED_PERCENT = "chord.wait.timed.percent";
+   private static final String sm_PREF_COLOR_BACKGROUND = "#.twiddler.background.color";
+   private static final String sm_PREF_COLOR_BUTTON = "#.twiddler.button.color";
+   private static final String sm_PREF_COLOR_LABEL = "#.twiddler.label.color";
+   private static final String sm_PREF_COLOR_BUTTON_HIGHLIGHT = "#.twiddler.highlight.color";
+   private static final String sm_PREF_COLOR_MARK_MATCH = "#.twiddler.mark.match.color";
+   private static final String sm_PREF_COLOR_MARK_MISMATCH = "#.twiddler.mark.mismatch.color";
+   private static final String sm_PREF_SHOW_PERCENT = "#.chord.wait.chord.show.percent";
+   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "#.chord.wait.delay.chord.show.percent";
+   private static final String sm_PREF_MARK_PERCENT = "#.chord.wait.mark.percent";
+   private static final String sm_PREF_PROGRESS_STEP_MSEC = "#.progress.step.msec";
+   private static final String sm_PREF_PROGRESS_TIMED_PERCENT = "#.chord.wait.timed.percent";
    
-   private static final String sm_PERSIST_DELAY_MSEC = "progress.delay.msec";
-   private static final String sm_PERSIST_PROGRESS_MSEC = "progress.msec";
+   private static final String sm_PERSIST_DELAY_MSEC = "#.progress.delay.msec";
+   private static final String sm_PERSIST_PROGRESS_MSEC = "#.progress.msec";
 
    private static final String sm_HIGHLIGHT_TEXT = "highlight";
    private static final String sm_PROGRESS_TEXT = "progress";

@@ -45,7 +45,7 @@ class ChordMapper extends ControlDialog
       setResizable(true);
       m_NL = null;
       m_CR = null;
-      if ("windows".equalsIgnoreCase(Pref.get("new.line"))) {
+      if ("windows".equalsIgnoreCase(Pref.get("#.new.line"))) {
          KeyPressList kpl = KeyPressList.parseText("\n");
          if (!kpl.isValid()) {
             Log.log("Using Windows new line and \n is not defined");
@@ -61,9 +61,9 @@ class ChordMapper extends ControlDialog
          }
       }
       m_Times = times;
-      m_ChordsFile = Persist.getFile("map.chords.file");
-      m_KeysFile = Persist.getFile("map.keys.file");
-      m_MappedFile = Persist.getFile("map.mapped.file");
+      m_ChordsFile = Persist.getFile("#.map.chords.file");
+      m_KeysFile = Persist.getFile("#.map.keys.file");
+      m_MappedFile = Persist.getFile("#.map.mapped.file");
       m_GotEnter = false;
       m_DuplicateKeys = false;
       m_ExistingTwiddles = (ArrayList<Integer>[])new ArrayList[Chord.sm_VALUES];
@@ -96,9 +96,9 @@ class ChordMapper extends ControlDialog
       setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      m_CheckBoxSkipDup = addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("map.skip.duplicates", true));
-      m_CheckBoxSort = addCheckBox(box, "Sort by chord frequency", Persist.getBool("map.frequency.sort", false));
-      m_CheckBoxShowAll = addCheckBox(box, "Show unmapped chords", Persist.getBool("map.show.unmapped", false));
+      m_CheckBoxSkipDup = addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("#.map.skip.duplicates", true));
+      m_CheckBoxSort = addCheckBox(box, "Sort by chord frequency", Persist.getBool("#.map.frequency.sort", false));
+      m_CheckBoxShowAll = addCheckBox(box, "Show unmapped chords", Persist.getBool("#.map.show.unmapped", false));
       addButton(createButton(sm_OK));
       addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_HELP));
@@ -144,12 +144,12 @@ class ChordMapper extends ControlDialog
             Log.warn("Mapping requires both a chords and a keystrokes files.");
             return;
          }
-         Persist.setFile("map.chords.file", m_ChordsFile);
-         Persist.setFile("map.keys.file", m_KeysFile);
-         Persist.setFile("map.mapped.file", m_MappedFile);
-         Persist.set("map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
-         Persist.set("map.frequency.sort", m_CheckBoxSort.isSelected());
-         Persist.set("map.show.unmapped", m_CheckBoxShowAll.isSelected());
+         Persist.setFile("#.map.chords.file", m_ChordsFile);
+         Persist.setFile("#.map.keys.file", m_KeysFile);
+         Persist.setFile("#.map.mapped.file", m_MappedFile);
+         Persist.set("#.map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
+         Persist.set("#.map.frequency.sort", m_CheckBoxSort.isSelected());
+         Persist.set("#.map.show.unmapped", m_CheckBoxShowAll.isSelected());
          map(m_MappedFile, m_ChordsFile, m_KeysFile);
          if (m_CheckBoxSort.isSelected()) {
             m_Assignments = orderByChordTimes(m_Assignments);
@@ -158,7 +158,7 @@ class ChordMapper extends ControlDialog
          }
          SaveChordsWindow scw = new
             SaveChordsWindow(this, "Chord Mappings", "cfg.chords");
-         scw.setPersistName("chord.list");
+         scw.setPersistName("#.chord.list");
          scw.setExtension("cfg.chords");
          scw.setVisible(true);
          if (m_DuplicateKeys) {

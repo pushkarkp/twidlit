@@ -39,11 +39,11 @@ public class TextPanel
 
    ////////////////////////////////////////////////////////////////////////////
    public TextPanel(KeyMap km) {
-      setForeground(Pref.getColor("text.color"));
-      setFont(new Font(Pref.get("text.font"), Font.BOLD, Pref.getInt("text.size")));
+      setForeground(Pref.getColor("#.text.color"));
+      setFont(new Font(Pref.get("#.text.font"), Font.BOLD, Pref.getInt("#.text.size")));
       m_KeyMap = km;
 		m_Text = "";
-	   m_SPACE = (char)Pref.getInt("text.visible.space", 0x87);
+	   m_SPACE = (char)Pref.getInt("#.text.visible.space", 0x87);
       m_Past = "";
       m_KplSource = null;
    }
@@ -172,11 +172,11 @@ public class TextPanel
 			m_Text += extend;
 		}
 		if (!m_HideText) {
-			g2.setColor(Pref.getColor("text.color"));
+			g2.setColor(Pref.getColor("#.text.color"));
 			g2.drawString(m_Past, startPast, y);
-			g2.setColor(Pref.getColor("text.color.highlight"));
+			g2.setColor(Pref.getColor("#.text.color.highlight"));
 			g2.drawString(hlight, start, y);
-			g2.setColor(Pref.getColor("text.color"));
+			g2.setColor(Pref.getColor("#.text.color"));
 			g2.drawString(m_Text.substring(m_Length), startFuture, y);
 		}
    }

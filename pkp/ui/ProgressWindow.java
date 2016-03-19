@@ -19,7 +19,7 @@ public class ProgressWindow extends ControlWindow {
          add(new JLabel(label));
       }
       m_ProgressBar = new JProgressBar(min, max);
-      m_ProgressBar.setBackground(Pref.getColor("background.color"));
+      m_ProgressBar.setBackground(Pref.getColor("#.background.color"));
       add(m_ProgressBar);
       m_Count = min;
    }

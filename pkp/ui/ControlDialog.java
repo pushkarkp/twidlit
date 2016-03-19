@@ -35,10 +35,10 @@ public class ControlDialog extends PersistentDialog {
       cp.setLayout(new BorderLayout());
       JPanel p = new JPanel();
       p.setLayout(new BorderLayout());
-      p.setBorder(BorderFactory.createLineBorder(Pref.getColor("border.color")));
+      p.setBorder(BorderFactory.createLineBorder(Pref.getColor("#.border.color")));
       cp.add(p, BorderLayout.CENTER);
       m_CenterPanel = new Box(BoxLayout.PAGE_AXIS);
-      int sp = Pref.getInt("window.border.size");
+      int sp = Pref.getInt("#.window.border.size");
       m_CenterPanel.setBorder(new EmptyBorder(sp, sp, sp, sp));
       p.add(m_CenterPanel, BorderLayout.CENTER);
       m_BottomPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));

@@ -407,7 +407,7 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       }
       case sm_TUTOR_SET_CHORD_TIME_TEXT: {
-         int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("chord.wait.timed.percent");
+         int max = ChordTimes.sm_MAX_MSEC * 100 / Pref.getInt("#.chord.wait.timed.percent");
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Chord Wait",
             String.format("The progress bar interval in milliseconds [0..%d]:", max),
@@ -901,18 +901,18 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_PREF = "pref";
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_CHORDS = "cfg.chords";
-   private static final String sm_PREF_DIR_PERSIST = "pref.dir";
-   private static final String sm_CFG_DIR_PERSIST = "cfg.dir";
-   private static final String sm_CFG_FILE_PERSIST = "cfg.file";
-   private static final String sm_CHORD_LIST_PERSIST = "chord.list";
-   private static final String sm_NGRAMS_FILE_PERSIST = "ngrams.file";
-   private static final String sm_COUNTS_DIR_PERSIST = "counts.dir";
-   private static final String sm_COUNTS_TEXT_DIR_PERSIST = "counts.text.dir";
-   private static final String sm_COUNTS_MINIMUM_PERSIST = "counts.minimum";
-   private static final String sm_COUNTS_MAXIMUM_PERSIST = "counts.maximum";
-   private static final String sm_KEY_SOURCE_FILE_PERSIST = "key.source.file";
-   private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "tutor.other.timed";
-   private static final String sm_TUTOR_OTHER_AUTOSCALE_PERSIST = "tutor.other.autoscale";
+   private static final String sm_PREF_DIR_PERSIST = "#.pref.dir";
+   private static final String sm_CFG_DIR_PERSIST = "#.cfg.dir";
+   private static final String sm_CFG_FILE_PERSIST = "#.cfg.file";
+   private static final String sm_CHORD_LIST_PERSIST = "#.chord.list";
+   private static final String sm_NGRAMS_FILE_PERSIST = "#.ngrams.file";
+   private static final String sm_COUNTS_DIR_PERSIST = "#.counts.dir";
+   private static final String sm_COUNTS_TEXT_DIR_PERSIST = "#.counts.text.dir";
+   private static final String sm_COUNTS_MINIMUM_PERSIST = "#.counts.minimum";
+   private static final String sm_COUNTS_MAXIMUM_PERSIST = "#.counts.maximum";
+   private static final String sm_KEY_SOURCE_FILE_PERSIST = "#.key.source.file";
+   private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "#.tutor.other.timed";
+   private static final String sm_TUTOR_OTHER_AUTOSCALE_PERSIST = "#.tutor.other.autoscale";
 
    // Data ///////////////////////////////////////////////////////////
    // At initialization time m_TwidlitInit is a separate object

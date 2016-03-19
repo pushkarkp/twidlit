@@ -33,7 +33,7 @@ public class SettingsWindow extends ControlWindow implements Settings  {
       b.add(new JLabel("Version "));
       b.add(new JLabel(String.format("%d.%d", m_IntCfg.MAJOR_VERSION.getValue(), m_IntCfg.MINOR_VERSION.getValue())));
       m_MinorVersion = m_IntCfg.MINOR_VERSION.getValue();
-      int sp = Pref.getInt("control.separation.size");
+      int sp = Pref.getInt("#.control.separation.size");
       cp.add(Box.createRigidArea(new Dimension(0, sp)));
       cp.add(new LabelComponentBox(m_IntCfg.MOUSE_EXIT_DELAY.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MOUSE_EXIT_DELAY.getValue())));
       cp.add(Box.createRigidArea(new Dimension(0, sp)));

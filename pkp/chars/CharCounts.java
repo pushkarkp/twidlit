@@ -24,7 +24,7 @@ class CharCounts implements SharedIndexableInts {
    
    ////////////////////////////////////////////////////////////////////////////
    CharCounts(boolean bigrams) {
-      m_MAX_REPEAT = Pref.getInt("count.repeats.max", 2);
+      m_MAX_REPEAT = Pref.getInt("#.count.repeats.max", 2);
       m_Counts = new int[bigrams
                          ? (sm_CHARS + 1) * sm_CHARS
                          : sm_CHARS];

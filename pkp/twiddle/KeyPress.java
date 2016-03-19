@@ -54,9 +54,9 @@ public class KeyPress {
    // Load the conversion tables.
    public static void init() {
       sm_Warned = false;
-      String str = Pref.get("file.format", Format.STD.name());
+      String str = Pref.get("#.file.format", Format.STD.name());
       sm_FileFormat = Format.valueOf(str.toUpperCase());
-      str = Pref.get("display.format", Format.STD.name());
+      str = Pref.get("#.display.format", Format.STD.name());
       sm_DisplayFormat = Format.valueOf(str.toUpperCase());
       final Io.StringToInts escKeyEscCharSwap = new Io.StringToInts() {
                                        public int[] cvt(String str) {
@@ -89,38 +89,38 @@ public class KeyPress {
                                        }
                                     };
       sm_KeyValueToCode = LookupTableBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "twidlit.value.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.value.keys"),
          Io.sm_MUST_EXIST,
          Duplicates.OVERWRITE,
          1, 0x7F,
          escKeyEscCharSwap);
       sm_KeyEventToCode = LookupTableBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "twidlit.event.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.event.keys"),
          Io.sm_MUST_EXIST,
          Duplicates.ERROR,
          0x10, 0x7F,
          escKeyPos0xFFFFSwap);
-      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("pref.dir", "twidlit.name.keys"), true, escKey1)).build();
+      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("#.pref.dir", "twidlit.name.keys"), true, escKey1)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "twidlit.unprintable.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.unprintable.keys"),
          Io.sm_MUST_EXIST,
          0, 0x20, 
          escChar);
       // duplicates are mostly numpad keys
       sm_Duplicate = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "twidlit.duplicate.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.duplicate.keys"),
          Io.sm_MUST_EXIST,
          0x54, 0x70, 
          escKey);
 //System.out.println(sm_Duplicate);
       sm_Lost = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("pref.dir", "twidlit.lost.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.lost.keys"),
          Io.sm_MUST_EXIST,
          0x1, 0x0,
          escKey);
 //System.out.println(sm_Lost);
-      int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("pref.dir", "twidlit.value.keys"));
+      int[] kcv = readKeyCodeValues(Persist.getExistDirJarUrl("#.pref.dir", "twidlit.value.keys"));
       sm_KeyCodeToValue = new HashMap<Integer, Character>(0x80);
       for (int i = 0; kcv[i] > 0; i += 2) {
          sm_KeyCodeToValue.put(kcv[i], (char)kcv[i + 1]);

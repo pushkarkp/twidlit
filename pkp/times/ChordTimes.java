@@ -30,7 +30,7 @@ public class ChordTimes implements Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    public ChordTimes(boolean isKeys, boolean isRightHand) {
-      this(isKeys, isRightHand, Pref.getInt("chord.times.stored", 16));
+      this(isKeys, isRightHand, Pref.getInt("#.chord.times.stored", 16));
 //System.out.println(getExtension());
    }
 
@@ -408,7 +408,7 @@ public class ChordTimes implements Persistent {
       final int LIMIT = 100;
       Log.init(Log.ExitOnError);
       Persist.init("twidlit.properties", ".", "pref");
-      Pref.init("twidlit.preferences", Persist.get("pref.dir"), "pref");
+      Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");
       int count = Integer.parseInt(args[2]);
       ChordTimes times = new ChordTimes(true, true, Integer.parseInt(args[0]));
       for (int i = 0; i < count; ++i) {

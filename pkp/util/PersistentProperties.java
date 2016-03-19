@@ -12,10 +12,19 @@ import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class PersistentProperties {
+   
+   ////////////////////////////////////////////////////////////////////////////
+   public static final String sm_TAG = "" + Io.sm_COMMENT + '.';
 
    ////////////////////////////////////////////////////////////////////////////
    public static String toTag(String name) {
-      return name.toLowerCase().replace(" ", ".");
+      if (!name.startsWith(sm_TAG)) {
+         Log.err('"' + name + "\" has no \"" + sm_TAG + "\" prefix");
+         return "";
+      }
+      String tag = name.substring(2).toLowerCase().replace(" ", ".");
+//System.out.println(tag);
+      return tag;
    }
 
    ////////////////////////////////////////////////////////////////////////////

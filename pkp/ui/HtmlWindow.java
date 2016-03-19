@@ -104,7 +104,7 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
          m_EditorPane,
          JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-      m_ScrollPane.getViewport().setBackground(Pref.getColor("background.color"));
+      m_ScrollPane.getViewport().setBackground(Pref.getColor("#.background.color"));
       getContentPane().add(m_ScrollPane);
       pack();
       goTo(startLink);
