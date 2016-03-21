@@ -44,10 +44,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_MenuItem = menuItem;
       getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 
-      m_COLOR_BACKGROUND = Pref.getColor(sm_PREF_COLOR_BACKGROUND, Color.black);
-      m_COLOR_BUTTON = Pref.getColor(sm_PREF_COLOR_BUTTON, Color.lightGray);
-      m_COLOR_LABEL = Pref.getColor(sm_PREF_COLOR_LABEL, Color.white);
-      m_COLOR_BUTTON_HIGHLIGHT = Pref.getColor(sm_PREF_COLOR_BUTTON_HIGHLIGHT, Color.red);
+      m_COLOR_BACKGROUND = Pref.getColor(sm_COLOR_BACKGROUND_PREF, Color.black);
+      m_COLOR_BUTTON = Pref.getColor(sm_COLOR_BUTTON_PREF, Color.lightGray);
+      m_COLOR_LABEL = Pref.getColor(sm_COLOR_LABEL_PREF, Color.white);
+      m_COLOR_BUTTON_HIGHLIGHT = Pref.getColor(sm_COLOR_BUTTON_HIGHLIGHT_PREF, Color.red);
 
       m_ThumbPanel = createThumbPanel();
       m_ChordPanel = createChordPanel();
@@ -64,10 +64,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_HighlightTimer = new Timer(1000, this);
       m_HighlightTimer.setActionCommand(sm_HIGHLIGHT_TEXT);
       m_HighlightTimer.stop();
-      m_ProgressTimer = new Timer(Pref.getInt(sm_PREF_PROGRESS_STEP_MSEC, sm_DEFAULT_STEP_MSEC), this);
+      m_ProgressTimer = new Timer(Pref.getInt(sm_PROGRESS_STEP_MSEC_PREF, sm_DEFAULT_STEP_MSEC), this);
       m_ProgressTimer.setActionCommand(sm_PROGRESS_TEXT);
 
-      m_ProgressPercent = Pref.getInt(sm_PREF_PROGRESS_TIMED_PERCENT);
+      m_ProgressPercent = Pref.getInt(sm_PROGRESS_TIMED_PERCENT_PREF);
       // The progress bar interval must be small enough
       // so the timed interval fits in ChordTimes storage.
       int progressMax = ChordTimes.sm_MAX_MSEC * 100 / m_ProgressPercent;
@@ -338,13 +338,13 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
       clearMark();
-      double markFactor = Pref.getInt(sm_PREF_MARK_PERCENT, sm_DEFAULT_SHOW_PERCENT) / 100.0;
+      double markFactor = Pref.getInt(sm_MARK_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) / 100.0;
       m_MarkTimer.setInitialDelay((int)(0.5 + m_ProgressMsec * markFactor));
       m_Mark = (m_MarkTimer.getInitialDelay() != 0);
 
       double factor = (m_Delay
-                      ? Pref.getInt(sm_PREF_DELAYED_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT)
-                      : Pref.getInt(sm_PREF_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT))
+                      ? Pref.getInt(sm_DELAYED_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT)
+                      : Pref.getInt(sm_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT))
                     / 100.0;
       int rest = Math.max(0, m_ProgressMsec - m_HighlightStage.DELAY.getMsec());
       // can't show for less than 0 or more than rest of progress time
@@ -441,8 +441,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private boolean isHighlight() {
       return m_ProgressMsec > 0 
           && (m_Delay
-              ? Pref.getInt(sm_PREF_DELAYED_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) > 0
-              : Pref.getInt(sm_PREF_SHOW_PERCENT, sm_DEFAULT_SHOW_PERCENT) > 0);
+              ? Pref.getInt(sm_DELAYED_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) > 0
+              : Pref.getInt(sm_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) > 0);
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -502,8 +502,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    ////////////////////////////////////////////////////////////////////////////
    enum MarkType {
       NONE("None", Color.white),
-      MATCH("Match", Pref.getColor(sm_PREF_COLOR_MARK_MATCH, Color.yellow)),
-      MISMATCH("Mismatch", Pref.getColor(sm_PREF_COLOR_MARK_MISMATCH, Color.black));
+      MATCH("Match", Pref.getColor(sm_COLOR_MARK_MATCH_PREF, Color.yellow)),
+      MISMATCH("Mismatch", Pref.getColor(sm_COLOR_MARK_MISMATCH_PREF, Color.black));
 
       boolean isMark() {
          return ordinal() != 0;
@@ -574,17 +574,17 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    // Data /////////////////////////////////////////////////////////////////////
 
-   private static final String sm_PREF_COLOR_BACKGROUND = "#.twiddler.background.color";
-   private static final String sm_PREF_COLOR_BUTTON = "#.twiddler.button.color";
-   private static final String sm_PREF_COLOR_LABEL = "#.twiddler.label.color";
-   private static final String sm_PREF_COLOR_BUTTON_HIGHLIGHT = "#.twiddler.highlight.color";
-   private static final String sm_PREF_COLOR_MARK_MATCH = "#.twiddler.mark.match.color";
-   private static final String sm_PREF_COLOR_MARK_MISMATCH = "#.twiddler.mark.mismatch.color";
-   private static final String sm_PREF_SHOW_PERCENT = "#.chord.wait.chord.show.percent";
-   private static final String sm_PREF_DELAYED_SHOW_PERCENT = "#.chord.wait.delay.chord.show.percent";
-   private static final String sm_PREF_MARK_PERCENT = "#.chord.wait.mark.percent";
-   private static final String sm_PREF_PROGRESS_STEP_MSEC = "#.progress.step.msec";
-   private static final String sm_PREF_PROGRESS_TIMED_PERCENT = "#.chord.wait.timed.percent";
+   private static final String sm_COLOR_BACKGROUND_PREF = "#.twiddler.background.color";
+   private static final String sm_COLOR_BUTTON_PREF = "#.twiddler.button.color";
+   private static final String sm_COLOR_LABEL_PREF = "#.twiddler.label.color";
+   private static final String sm_COLOR_BUTTON_HIGHLIGHT_PREF = "#.twiddler.highlight.color";
+   private static final String sm_COLOR_MARK_MATCH_PREF = "#.twiddler.mark.match.color";
+   private static final String sm_COLOR_MARK_MISMATCH_PREF = "#.twiddler.mark.mismatch.color";
+   private static final String sm_SHOW_PERCENT_PREF = "#.chord.wait.chord.show.percent";
+   private static final String sm_DELAYED_SHOW_PERCENT_PREF = "#.chord.wait.delay.chord.show.percent";
+   private static final String sm_MARK_PERCENT_PREF = "#.chord.wait.mark.percent";
+   private static final String sm_PROGRESS_STEP_MSEC_PREF = "#.progress.step.msec";
+   private static final String sm_PROGRESS_TIMED_PERCENT_PREF = "#.chord.wait.timed.percent";
    
    private static final String sm_PERSIST_DELAY_MSEC = "#.progress.delay.msec";
    private static final String sm_PERSIST_PROGRESS_MSEC = "#.progress.msec";

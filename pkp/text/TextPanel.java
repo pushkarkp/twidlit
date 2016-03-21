@@ -39,8 +39,9 @@ public class TextPanel
 
    ////////////////////////////////////////////////////////////////////////////
    public TextPanel(KeyMap km) {
-      setForeground(Pref.getColor("#.text.color"));
-      setFont(new Font(Pref.get("#.text.font"), Font.BOLD, Pref.getInt("#.text.size")));
+      // badtags.sh supports only one tag per line
+      int textSize = Pref.getInt("#.text.size");
+      setFont(new Font(Pref.get("#.text.font"), Font.BOLD, textSize));
       m_KeyMap = km;
 		m_Text = "";
 	   m_SPACE = (char)Pref.getInt("#.text.visible.space", 0x87);
@@ -174,7 +175,7 @@ public class TextPanel
 		if (!m_HideText) {
 			g2.setColor(Pref.getColor("#.text.color"));
 			g2.drawString(m_Past, startPast, y);
-			g2.setColor(Pref.getColor("#.text.color.highlight"));
+			g2.setColor(Pref.getColor("#.text.highlight.color"));
 			g2.drawString(hlight, start, y);
 			g2.setColor(Pref.getColor("#.text.color"));
 			g2.drawString(m_Text.substring(m_Length), startFuture, y);

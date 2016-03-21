@@ -57,3 +57,8 @@ classlist.txt: classes
 ./Twidlit/Twidlit.jar: Manifest.txt ${JAR_DATA} classlist.txt
 	jar cfm $@ Manifest.txt ${JAR_DATA} $(shell cat classlist.txt)
 
+code.tags: classes
+	find pkp -iname \*.java -exec grep '#\.[^"]' {} /dev/null \; > $@
+
+bad.tags: code.tags pref/twidlit.properties pref/twidlit.preferences script/badtags.sh
+	script/badtags.sh > $@

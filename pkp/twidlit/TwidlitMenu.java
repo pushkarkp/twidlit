@@ -898,6 +898,10 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
 
+   private static final String sm_TEST = "#.test.code.untargeted";
+   private static final String sm_TEST_PERSIST = "#.test.code.not.in.persist";
+   private static final String sm_TEST_PREF = "#.test.code.not.in.pref";
+
    private static final String sm_PREF = "pref";
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_CHORDS = "cfg.chords";
@@ -907,7 +911,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CHORD_LIST_PERSIST = "#.chord.list";
    private static final String sm_NGRAMS_FILE_PERSIST = "#.ngrams.file";
    private static final String sm_COUNTS_DIR_PERSIST = "#.counts.dir";
-   private static final String sm_COUNTS_TEXT_DIR_PERSIST = "#.counts.text.dir";
+   private static final String sm_COUNTS_TEXT_DIR_PERSIST = "#.counts.out.dir";
    private static final String sm_COUNTS_MINIMUM_PERSIST = "#.counts.minimum";
    private static final String sm_COUNTS_MAXIMUM_PERSIST = "#.counts.maximum";
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "#.key.source.file";
