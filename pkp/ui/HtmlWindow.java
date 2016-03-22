@@ -85,13 +85,13 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
             if (m_Width == 0) {
                m_Width = getWidth();
             }
-            if (m_PagePos != -1) {
-               m_ScrollPane.getVerticalScrollBar().setValue(m_PagePos);
-               m_PagePos = -1;
-            }
             Object title = m_EditorPane.getDocument().getProperty("title");
             if (title != null) {
                m_Title.setText(title.toString());
+            }
+            if (m_PagePos != -1) {
+               m_ScrollPane.getVerticalScrollBar().setValue(m_PagePos);
+               m_PagePos = -1;
             }
             m_EditorPane.setVisible(true);
          }
@@ -157,8 +157,8 @@ public class HtmlWindow extends PersistentFrame implements ActionListener {
          }
          return;
       }
-      // back to previous page, find page link
-      int i = m_I - 1;
+      // find page link
+      int i = m_I;
       while (i >= 0) {
          if (m_Link.get(i).charAt(0) != '#') {
             break;
