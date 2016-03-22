@@ -46,7 +46,7 @@ major minor update:
 	javac $<
 
 pref/twidlit.preferences: data/ref.html script/makePrefs.sh
-	@script/makePrefs.sh data/ref.html pref/twidlit.preferences.tmp
+	@script/makePrefs.sh data/ref.html pref/twidlit.preferences.tmp 
 	@diff pref/twidlit.preferences pref/twidlit.preferences.tmp 2> /dev/null ||:
 	@mv pref/twidlit.preferences.tmp pref/twidlit.preferences
    
@@ -62,3 +62,6 @@ code.tags: classes
 
 bad.tags: code.tags pref/twidlit.properties pref/twidlit.preferences script/badtags.sh
 	script/badtags.sh > $@
+
+cloned:
+	dos2unix.exe script/*.sh
