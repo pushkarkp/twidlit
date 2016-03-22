@@ -11,15 +11,17 @@
 <dt><a href='#keystroke'>Keystroke formats</a>
 <dt><a href='#chords'>Chord files</a>
 <dt><a href='#keys'>Keystroke files</a>
+<dt><a href='#preferences'>Preferences file</a>
 </dl>
 
 <a name='types'>
 <h2>File types</h2>
-Here's a list of the file types you are likely to come across using Twidlit. 
+Here's a list of the file types Twidlit uses. 
 <table style="width:100%">
   <tr><td><tt>*.cfg</tt></td><td><b>binary</b></td><td>chord mappings</td></tr>
   <tr><td><tt>*.chords</tt></td><td><b>text</b></td><td><a href='#chords'>chords</a></td></tr>
   <tr><td><tt>*.keys</tt></td><td><b>text</b></td><td><a href='#keys'>keystrokes</a></td></tr>
+  <tr><td><tt>*.preferences</tt></td><td><b>text</b></td><td><a href='#preferences'>preferences</a></td></tr>
   <tr><td><tt>*.properties</tt></td><td><b>text</b></td><td><a href='https://en.wikipedia.org/wiki/.properties'>properties</a></td></tr>
   <tr><td><tt>*.times</tt></td><td><b>binary</b></td><td>chord times</td></tr>
 </table>
@@ -34,7 +36,7 @@ They start with <tt>#</tt> and continue to the end of the line, for example:
 <a name='chord'>
 <h2>Chord format</h2>
 Chords are represented by an optional thumb-key sequence and a finger sequence. 
-The thumb-key sequence (if it exists) consists of <tt>0</tt> or the initials of the thumb-keys pressed, for example, <tt>CS</tt> for <tt>&lt;Ctrl>&lt;Shift></tt>. 
+The thumb-key sequence (if it exists) consists of <tt>0</tt> or the initials of the thumb-keys pressed, for example, <tt>CS</tt> for <em>ControlShift</em>. 
 This is just like in the Twiddler documentation, but the finger syntax is different. 
 <br><br>
 The finger sequence syntax (called <em>4finger</em>) has a character for each of the four fingers. 
@@ -85,7 +87,7 @@ For example,<br>
 <tt>\tThis\sisn't\b\b\b\sit</tt>
 <dt><a name='hex'><b>HEX</b>
 <dd>Keystrokes are represented by hexadecimal keycode (not ASCII) values.
-You can look them up in <tt>twidlit.name.keys</tt>. 
+You can look them up in <tt><a href='ref.html#keycode'>twidlit.name.keys</a></tt>. 
 <table style="width:100%">
   <tr><td>Keystroke as hexadecimal (<em>nnnn</em> is four hex digits)</td><td><b>\k<em>nnnn</em></b></td></tr>
 </table>
@@ -119,7 +121,7 @@ Here's how a bit of one might look:
 
 <a name='timed'>
 <h3>Timed chord files (<tt>.timed.chords</tt>)</h3>
-The menu item <tt><a href='ref.html#tutor'>Tutor</a> > List Chords By Time</tt> saves a file of (thumb-less) chords sorted by time. 
+The menu item <em><a href='ref.html#tutor'>Tutor</a> > List Chords By Time</em> saves a file of (thumb-less) chords sorted by time. 
 The first three columns are the chord, the <a href="https://en.wikipedia.org/wiki/Interquartile_mean">interquartile mean</a> time, and the interquartile range (to give an indication of how settled the mean is). 
 They are followed by all the recorded values. 
 For example:
@@ -137,9 +139,9 @@ Any <tt>keys</tt> file can be used, along with a <tt>chords</tt> file, to <a hre
 
 <a name='ngram'>
 <h3>Ngram files (<tt>.keys</tt>)</h3>
-The menu item <tt><a href='ref.html#counts'>Counts</a> > Ngrams File...</tt> allows you to select a file of ngrams. 
-Each line is an ngram. 
-Spaces count, if you add comments make sure they are hard up against the end of the ngram. 
+The menu item <em><a href='ref.html#counts'>Counts</a> > Ngrams File...</em> allows you to select a file of ngrams. 
+Each line of the file is an ngram. 
+Spaces count as themselves, so if you add comments make sure they are hard up against the end of the ngram. 
 For example:
 <pre><code># code ngrams
 ) {# there are plenty of these in my code
@@ -148,29 +150,29 @@ For example:
 
 <a name='ccount'>
 <h3>Counted character files (<tt>.count.keys</tt>)</h3>
-The menu item <tt><a href='ref.html#counts'>Counts</a> > Table Counts</tt> saves a file of character counts. 
+The menu item <em><a href='ref.html#counts'>Counts</a> > Table Counts</em> saves a file of character counts. 
 The first column is the character or ngram, the second is the count, and the third is the percentage of the total (characters, bigrams and ngrams have separate totals from which the percentages are derived). 
 For example:
 <pre><code>                           e 28855  3.8775
                            t 23760  3.1929
                           \s 20500  2.7548
 for\s(int\si\s=\s0;\si\s\<\s    42  0.8210
-</pre></code>
+</code></pre>
 
 <a name="graph">
 <h3>Graphed character files (<tt>.graph.keys</tt>)</h3>
-The menu item <tt><a href='ref.html#counts'>Counts</a> > Graph Counts</tt> saves a file of graphed character counts. 
+The menu item <em><a href='ref.html#counts'>Counts</a> > Graph Counts</em> saves a file of graphed character counts. 
 The first column is the character or ngram, the rest is the graph bar. 
 For example:
 <pre><code>\s =================================================
  e ===============================
  t ============================
-</pre></code>
+</code></pre>
 You can use <em>Counts > Set Range Displayed...</em> to focus in on a subrange of characters. 
 
 <a name="practice">
 <h3>Practice keystroke files (<tt>.keys</tt>)</h3>
-The menu item <a href='ref.html#keys'><tt>Tutor > Keystrokes</tt></a> allows you to select a file of <a href='#keys'>keystrokes</a> to chord. 
+The menu item <em><a href='ref.html#tutor'>Tutor</a> > Keystrokes</em> allows you to select a file of <a href='#keys'>keystrokes</a> to chord. 
 <br><br>
 Contiguous keystrokes will be displayed together as a group, use a space to separate independent keystrokes. 
 Use <tt>\s</tt>, <tt>\k002c</tt> or <tt>&lt;Space></tt> to represent a space keystroke. 
@@ -181,18 +183,27 @@ For example:
 <pre><code>&lt;Space> &lt;Tab>:4
 e t o i n :2
 and\s
-</pre></code>
+</code></pre>
 
 <a name='pref'>
 <h3>Preference files (<tt>.keys</tt>)</h3>
-The menu item <tt><a href='ref.html#file'>File</a> > Preferences...</tt> saves the following <a href='ref.html#pref'>preference</a> files: 
+The menu item <em><a href='ref.html#file'>File</a> > Preferences...</em> saves the following <a href='ref.html#keycode'><tt>keys</tt> preference</a> files: 
 <br><br>
 <table style="width:100%">
-  <tr><td><tt>twidlit.duplicate.keys</tt></td><td>keystroke</td></tr>
+  <tr><td><tt>twidlit.duplicate.keys</tt></td><td>keystroke (<tt>\knnnn</tt>)</td></tr>
   <tr><td><tt>twidlit.event.keys</tt></td><td>keystroke + event code (<tt>0xnn</tt>)</td></tr>
   <tr><td><tt>twidlit.lost.keys</tt></td><td>keystroke</td></tr>
   <tr><td><tt>twidlit.name.keys</tt></td><td>keystroke + name</td></tr>
   <tr><td><tt>twidlit.value.keys</tt></td><td>keystroke + character (<tt>\xnn</tt>)</td></tr>
   <tr><td><tt>twidlit.unprintable.keys</tt></td><td>character (<tt>\xnn</tt>)</td></tr>
 </table>
+
+<a name='preferences'>
+<h2>Preference file (<tt>.preferences</tt>)</h2>
+The menu item <em><a href='ref.html#file'>File</a> > Preferences...</em> also saves the <a href='ref.html#preferences'><tt>preferences</tt></a> file. 
+Each line is a tag followed by space and a value, for example:
+<pre><code>twiddler.mark.mismatch.color black
+window.border.size 8
+write.log false
+</code></pre>
 </html>

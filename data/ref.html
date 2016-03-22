@@ -37,13 +37,13 @@
 <dt><a name='allchords'><b>All Chords...</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing a list of every thumb-less chord provided with a one keystroke mapping. 
 Click the <em>Use</em> button to use this mapping, it is ideal for chording practice and timing. 
-The menu item is disabled when this is the mapping in use, you can then use <em>File > Save As...</em> if you want to view it. 
+The menu item is disabled when this is the mapping in use, you can then use <em>File > Save As...</em> to view it. 
 <dt><a name='open'><b>Open...</b>
 <dd>Opens a <em>File Open</em> dialog. 
-The selected <a href='syn.html#cfg'><tt>cfg.chords</tt> or <tt>cfg</tt> file</a> becomes the chord mapping. 
+The selected <a href='syn.html#cfg'><tt>cfg.chords</tt></a> or <tt>cfg</tt> file becomes the chord mapping. 
 <dt><a name='saveas'><b>Save As...</b>
 <dd>Opens a <a href='#stw'>Save Text window</a> showing the current chord mapping. 
-Click the <em>Save As...</em> button to save it as <tt>cfg.chords</tt> or <tt>cfg</tt>.
+Click the window <em>Save As...</em> button to save it as <tt>cfg.chords</tt> or <tt>cfg</tt>.
 <dt><b>Map Chords...</b>
 <dd>Opens the <a href="#map">Map Chords dialog</a>.
 <dt><b>Twiddler Settings...</b>
@@ -64,7 +64,7 @@ This item is disabled if no file has been selected.
 <dt><b>Ngrams File...</b>
 <dd>Allows you to select a file of <a href='syn.html#ngram'><tt>ngrams</tt><a>. 
 <dt><b>Count File...</b>
-<dd>Allows you to select a file and add the character counts to the stored counts. 
+<dd>Allows you to select a file and add its character counts to the stored counts. 
 It is up to you to check that the file really is text. 
 <dt><b>Count Files...</b>
 <dd>Allows you to select a folder and add the character counts of all contained files to the stored counts. 
@@ -92,12 +92,13 @@ Hands are timed separately.
 <dd>Sets practice to random chords. 
 The <a href='#text'>Text pane</a> will remain blank. 
 Twidlit attempts to test all chords with equal probability, but can only show chords that are mapped. 
-<dt><a name='keys'><b>Keystrokes</b>
+<dt><b>Keystrokes</b>
 <dd>Sets practice to keystrokes read from a file. 
 Clicking on this menu item displays a file chooser to open a <a href='syn.html#keys'>file of keystrokes</a>. 
 If no file is chosen then upper and lower case alphabetic keys are used. 
 <dt><b>Auto-scale</b>
 <dd>Whether the <a href='#wait'>chord wait</a> is scaled automatically from the mean of chord means. 
+This option is disabled if <em>Tutor > Timed</em> is not selected. 
 <dt><b>Set Chord Wait...</b>
 <dd>Opens the <a href='#speed'>Chord Wait dialog</a>. 
 This option is disabled if <em>Tutor > Auto-scale</em> is selected. 
@@ -124,11 +125,11 @@ If the selected files are <a href="syn.html#timed"><tt>timed.chords</tt></a> and
 <br><br>
 You can also specify a <tt>cfg.chords</tt> file of mappings you wish to preserve. 
 These mappings are added to the output as-is, and the corresponding chords in the <tt>chords</tt> file are ignored. 
-If you use a file of your chosen mnemonic mappings for less used keystrokes then the result will be the combination of these with a fastest to most frequent mapping.  
+If you use a file of your chosen mnemonic mappings for less-used keystrokes then the result will be the combination of these with a fastest to most frequent mapping.  
 <a name='countsrange'>
 <h2>Range of Counts Displayed</h2>
 This dialog adjusts the range of character frequencies displayed as a table or a graph. 
-It is particularly useful with graphs as it improves the resolution. 
+It is particularly useful with graphs to improve the resolution. 
 
 <a name='speed'>
 <h2>Chord Wait</h2>
@@ -157,7 +158,7 @@ The narrow dashed bars between them mark out the seconds.
 <br><br>
 The outer-most bar shows the mean of the mean times of all the chords, the middle bar shows the mean time for the current chord, and the inner-most (timer) bar shows the elapsed time.
 <br><br>
-If the elapsed time exceeds the chord wait the timer bar goes red for up to the chord wait, and then blank. 
+If the elapsed time exceeds the chord wait, the timer bar goes red for up to the chord wait, and then blank. 
 If the bar is blank the chord's time is ignored. 
 <br><br>
 Twidlit only attempts to record the time of a chord if it takes less than twice the chord wait.
@@ -166,11 +167,11 @@ Timing restarts with the next chord, and the chord that went untimed will be rep
 <br><br>
 The chord wait can be adjusted using <em><a href="#tutor">Tutor<a> > Set Chord Wait...</em>, and comprises the following: 
 <dl>
-<dt><b>Delay time</b>
+<dt><b>Delay</b>
 <dd>
-The delay time is not used when random chording. 
+The delay is not used when random chording. 
 It is the length of time after a keystroke is highlighted in the <a href='#text'>Text pane</a> before its chord is highlighted in the Twiddler window. 
-It can be adjusted using <em><a href="#tutor">Tutor<a> > Delay...</em> 
+It can be adjusted using <em><a href="#tutor">Tutor<a> > Set Chord Delay...</em> 
 <dt><b>Highlight time</b>
 <dd>
 The highlight time is the time a chord is highlighted in the Twiddler window. 
@@ -193,7 +194,7 @@ If there is still ambiguity it displays the chord with the least number of finge
 <h2>Text pane</h2>
 The Text pane is in the main window, underneath the menu bar. 
 It displays the upcoming keystrokes with the current keystroke highlighted. 
-It remains blank when <em><a href="#chords">Tutor > Chords<a></em> is checked. 
+It remains blank if <em><a href="#chords">Tutor > Chords<a></em> is checked. 
 
 <a name='help'>
 <h2>Help</h2>
@@ -201,7 +202,8 @@ Navigation buttons (back and forwards) appear at the top of the Help window if y
 
 <a name='stw'>
 <h2>Save Text</h2>
-The Save Text window displays text that can be selected, copied or saved, but editing is not supported. 
+The Save Text window displays text that can be selected, copied or saved. 
+Editing is not supported. 
 <br><br>
 You can use the <em>Save As...</em> button to save the contents. 
 If it contains chord mappings, the save dialog allows you to save it as <tt>cfg.chords</tt> or <tt>cfg</tt>. 
@@ -242,9 +244,9 @@ You may need to edit one or more if you use interesting characters or an OS othe
 <br><br>
 The files are stored in <em>Twidlit.jar</em>, but you can access them by using <em>File > Preferences...</em> to choose a location to store them. 
 Twidlit will copy any of them not already there to that location, and will read them from there next time it starts. 
-Just delete any that you don't edit, or want to revert to the defaults.
+Just delete any that you don't edit, or that you want to revert to the defaults.
 The syntax is described <a href='syn.html#types'>here<a>.
-<a name='pref.txt'>
+<a name='preferences'>
 <h2><tt>twidlit.preferences</tt></h2>
 <dl>
 <dt><tt>background.color 0xf5f5d5</tt><br>
@@ -314,19 +316,16 @@ Delete the whole thing if not using Windows line ends.
 <dd>Whether to write information, warning and error messages to a log file readable from the <a href="#help">Help menu</a>.
 </dl>
 
-<a name='key.txt'>
+<a name='keycode'>
 <h2><tt>twidlit.value.keys</tt>, <tt>twidlit.name.keys</tt> and <tt>twidlit.event.keys</tt></h2>
 Twidlit is set up to use the US keyboard mapping. 
 If yours is different you can probably find it in <a href="http://www.w3.org/TR/DOM-Level-3-Events-code">www.w3.org/TR/DOM-Level-3-Events-code</a> and change these files. 
-<a name='unprint.txt'>
 <h2><tt>twidlit.unprintable.keys</tt></h2>
 Some ASCII values are unprintable (<tt>Backspace</tt>, for example). 
 When every keystroke needs to be visible the values in this file are treated specially.
-<a name='dup.txt'>
 <h2><tt>twidlit.duplicate.keys</tt></h2>
 Some keys are duplicates (<tt>Numpad4</tt>, for example). 
 You can configure your Twiddler to generate them but they never appear in text.
-<a name='lost.txt'>
 <h2><tt>twidlit.lost.keys</tt></h2>
 Some keystrokes never reach an application (<em>&lt;Alt&gt;&lt;Tab&gt;&lt/Alt&gt;</em>, for example). 
 They vary with OS, Twidlit comes set up for Windows.
