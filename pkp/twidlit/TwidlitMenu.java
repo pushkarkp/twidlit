@@ -881,7 +881,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
    private static final String sm_TUTOR_AUTOSCALE_TEXT = "Auto-scale";
-   private static final String sm_TUTOR_SET_CHORD_TIME_TEXT = "Set Chord Time...";
+   private static final String sm_TUTOR_SET_CHORD_TIME_TEXT = "Set Chord Wait...";
    private static final String sm_TUTOR_SET_DELAY_TEXT = "Set Chord Delay...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
