@@ -7,10 +7,10 @@
 \k0400 Alt
 #\k0400 AltLeft
 \k4000 AltRight
-\k0051 ArrowDown
-\k0050 ArrowLeft
-\k004f ArrowRight
-\k0052 ArrowUp
+\k0051 Down
+\k0050 Left
+\k004f Right
+\k0052 Up
 \k0035 Backquote
 \k0031 Backslash
 \k002a Backspace
@@ -37,7 +37,7 @@
 \k004d End
 \k0028 Enter
 \k002e Equal
-\k0029 Escape
+\k0029 Esc
 \k003a F1
 \k0043 F10
 \k0044 F11
