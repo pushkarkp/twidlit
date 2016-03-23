@@ -24,6 +24,7 @@ class Modifiers {
    static final Modifiers sm_CTRL = new Modifiers(sm_iLEFT_CTRL);
    static final Modifiers sm_TRANSFERABLE = sm_CTRL.plus(sm_SHIFT).plus(sm_ALT);
    static final Modifiers sm_EMPTY = new Modifiers(0);
+   static final Modifiers sm_END = new Modifiers(0xFF);
 
    ////////////////////////////////////////////////////////////////////////////
    static void init(StringsInts keyCodeToName) {

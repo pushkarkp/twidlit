@@ -134,6 +134,11 @@ public class KeyPress {
    }
    
    ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress endModifiers() {
+      return new KeyPress(0, Modifiers.sm_EMPTY);
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
    public static KeyPress fromKeyCode(int keyCode) {
       return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCode(keyCode));
    }
@@ -220,7 +225,7 @@ public class KeyPress {
       } else if (closing) {
          modifiers = modifiers.minus(mod);
 			if (modifiers.isEmpty()) {
-				return new KeyPress();
+				return new KeyPress(0, Modifiers.sm_END);
 			}
       } else {
          modifiers = modifiers.plus(mod);
@@ -301,7 +306,7 @@ public class KeyPress {
          Log.log(String.format("Key event code %d has no key code.", ke.getKeyCode()));
          return new KeyPress();
       }
-     return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyEvent(ke));
+      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyEvent(ke));
    }
 
    ////////////////////////////////////////////////////////////////////////////

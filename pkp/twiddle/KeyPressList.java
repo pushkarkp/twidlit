@@ -52,18 +52,19 @@ public class KeyPressList extends java.lang.Object {
                kp = KeyPress.parseText(c, tagMod);
             } else {
 //System.out.printf("parseTextAndTags4 [%d] |%s| tagMod \\x%x%n", i, rest.substring(0, end), tagMod.toInt());
-               kp = KeyPress.parseTag(rest.substring(0, end), tagMod);
-               if (kp.isModifiers()) {
-                  tagMod = kp.getModifiers();
-               }
 					i += end + 1;
-					if (kp.getKeyCode() == 0) {
-						// this is OK, closed all modifiers
-						continue;
-					}
-				}
-			}
-			if (!kp.isValid()) {
+               kp = KeyPress.parseTag(rest.substring(0, end), tagMod);
+					if (kp.isModifiers()) {
+                  if (kp.getModifiers() == Modifiers.sm_END) {
+                     tagMod = Modifiers.sm_EMPTY;
+                     continue;
+                  } else {
+                     tagMod = kp.getModifiers();
+                  }
+               }
+            }
+         }
+         if (!kp.isValid()) {
             Log.log(String.format("Failed to find keypress for \"%c\" (%d) in \"%s\"", c, (int)c, str));
             return new KeyPressList();
          }
