@@ -142,11 +142,11 @@ Any <tt>keys</tt> file can be used, along with a <tt>chords</tt> file, to <a hre
 <h3>Ngram files (<tt>.keys</tt>)</h3>
 The menu item <em><a href='ref.html#counts'>Counts</a> > Ngrams File...</em> allows you to select a file of ngrams. 
 Each line of the file is an ngram. 
-Spaces count as themselves, so if you add comments make sure they are hard up against the end of the ngram. 
+Space acts as a separator so use <tt>\s</tt> or <em>&lt;Space></em> to represent a space in the ngram. 
 For example:
 <pre><code># code ngrams
-) {# there are plenty of these in my code
-) { # not so many of these
+for\s(int\si\s=\s0;\si\s&lt;\s # standard for
+)&lt;Space>{\n
 </code></pre> 
 
 <a name='ccount'>

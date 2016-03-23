@@ -9,6 +9,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import pkp.twiddle.KeyPress;
+import pkp.twiddle.KeyPressList;
 import pkp.lookup.LookupSet;
 import pkp.lookup.LookupSetBuilder;
 import pkp.lookup.LookupTable;
@@ -148,10 +150,17 @@ class NGrams implements SharedIndexableInts {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
-         String ng = CrLf.normalize(Io.parseEscape(line));
+         String ng = line;
+         // stop at first space
+         int end = Io.findFirstOf(ng, Io.sm_WS);
+         if (end != -1) {
+            ng = ng.substring(0, end);
+         }
+         ng = CrLf.normalize(Io.parseEscape(ng));
+         ng = KeyPressList.parseTextAndTags(ng).toString(KeyPress.Format.ESC);
 //System.out.println("|" + line + "| -> |" + ng + "|");
-         if (!NGram.isValid(ng)) {
-            Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
+         if ("empty".equals(ng) || !NGram.isValid(ng)) {
+            Log.warn(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {
             nGrams.add(ng);
          }
