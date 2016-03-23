@@ -470,6 +470,7 @@ public class Io {
       switch (c) {
       case 7: return "\\a";
       case '\b': return "\\b";
+      case 127: return "\\d";
       case 27: return "\\e";
       case '\f': return "\\f";
       case '\n': return "\\n";
@@ -490,6 +491,7 @@ public class Io {
       switch (c) {
       case 'a': return 7;
       case 'b': return '\b';
+      case 'd': return 127;
       case 'e': return 27;
       case 'f': return '\f';
       case 'n': return '\n';
