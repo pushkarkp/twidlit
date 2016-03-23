@@ -26,11 +26,7 @@ public class Counts {
    ////////////////////////////////////////////////////////////////////////////
    public Counts(File f, int lowest, int highest) {
       m_File = f;
-      if (m_File == null) {
-         m_NGrams = null;
-      } else {
-         m_NGrams = new NGrams(m_File);
-      }
+      m_NGrams = null;
       m_CharCounts = null;
       m_Index = null;
       m_LowestCount = lowest;
@@ -42,7 +38,7 @@ public class Counts {
    public Counts(Counts other) {
       m_File = other.m_File;
       m_CharCounts = other.m_CharCounts;
-      m_NGrams = other.m_NGrams;
+      m_NGrams = null;
       m_Index = other.m_Index;
       m_LowestCount = other.m_LowestCount;
       m_HighestCount = other.m_HighestCount;
@@ -56,9 +52,7 @@ public class Counts {
       }
       m_ShowBigrams = set;
       m_CharCounts = null;
-      if (m_NGrams != null) {
-         m_NGrams = new NGrams(m_File);
-      }
+      m_NGrams = null;
       return true;
    }
 
@@ -69,11 +63,7 @@ public class Counts {
       }
       m_CharCounts = null;
       m_File = f;
-      if (m_File == null) {
-         m_NGrams = null;
-      } else {
-         m_NGrams = new NGrams(m_File);
-      }
+      m_NGrams = null;
       return true;
    }
 
@@ -221,8 +211,8 @@ public class Counts {
             continue;
          }
          m_CharCounts.nextChar((char)cin);
-         if (m_NGrams != null) {
-            m_NGrams.nextChar((char)cin);
+         if (getNGrams() != null) {
+            getNGrams().nextChar((char)cin);
          }
       }
       if (ignoredSome) {
@@ -243,8 +233,8 @@ public class Counts {
       if (m_CharCounts.hasBigramCounts()) {
          sic.add(m_CharCounts.new BigramCounts());
       }
-      if (m_NGrams != null) {
-         sic.add(m_NGrams);
+      if (getNGrams() != null) {
+         sic.add(getNGrams());
       }
       return SharedIndex.create(sic, m_HighestCount, m_LowestCount);
    }
@@ -253,10 +243,21 @@ public class Counts {
    ////////////////////////////////////////////////////////////////////////////
    private int getLabelSize() {
       int labelSize = m_ShowBigrams ? 4 : 2;
-      if (m_NGrams == null) {
+      if (getNGrams() == null) {
          return labelSize;
       }
-      return Math.max(labelSize, m_NGrams.getMaxLength());
+      return Math.max(labelSize, getNGrams().getMaxLength());
+   }   
+   
+   ////////////////////////////////////////////////////////////////////////////
+   private NGrams getNGrams() {
+      if (m_NGrams == null) {
+         if (m_File == null) {
+            return null;
+         }
+         m_NGrams = new NGrams(m_File);
+      }
+      return m_NGrams;
    }
 
    // Data ////////////////////////////////////////////////////////////////////
