@@ -19,7 +19,8 @@ public class StringsInts extends java.lang.Object {
    public int getInt(String str, int fail) {
       StringInt si = new StringInt(str, -1);
       int ix = -Arrays.binarySearch(m_StringsInts, si) - 1;
-      if (m_StringsInts[ix].getString().equalsIgnoreCase(str)) {
+      if (ix >= 0 && ix < m_StringsInts.length
+       && m_StringsInts[ix].getString().equalsIgnoreCase(str)) {
          return m_StringsInts[ix].getInt();
       }
       return fail;
