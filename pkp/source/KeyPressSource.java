@@ -29,7 +29,6 @@ public class KeyPressSource implements KeyPressListSource {
          keys.add(getDefault());
       } else {
          LineReader lr = new LineReader(Io.toExistUrl(m_File), Io.sm_MUST_EXIST);
-//new KeyPressList(KeyPress.fromKeyCode(
          keys.add(getKeys(lr));
          lr.close();
       }
@@ -79,7 +78,7 @@ public class KeyPressSource implements KeyPressListSource {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   private ArrayList<KeyPressList> getKeys(LineReader lr) {
+   private static ArrayList<KeyPressList> getKeys(LineReader lr) {
       ArrayList<KeyPressList> al = new ArrayList<KeyPressList>();
       String line;
       while ((line = lr.readLine()) != null) {
@@ -105,7 +104,7 @@ public class KeyPressSource implements KeyPressListSource {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   private void add(ArrayList<KeyPressList> al, String str, int times) {
+   private static void add(ArrayList<KeyPressList> al, String str, int times) {
       ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
       List<String> strs = Io.split(str, ' ');
       for (int i = 0; i < strs.size(); ++i) {
@@ -119,15 +118,6 @@ public class KeyPressSource implements KeyPressListSource {
             al.add(kpls.get(j));
          }
       }
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   private int getInt(String str) {
-      int parsed = Io.toInt(str);
-      if (parsed == Io.sm_PARSE_FAILED || parsed < 1) {
-         return 0;
-      }
-      return parsed;
    }
 
    // Data /////////////////////////////////////////////////////////////////////
