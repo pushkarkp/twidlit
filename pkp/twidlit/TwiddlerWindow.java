@@ -185,6 +185,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       if (m_Mark && pressed != null && m_MarkTimer.getInitialDelay() > 0) {
          markNow(pressed, MarkType.MATCH);
       }
+      if (tw == null) {
+         return;
+      }
       m_Twiddle = tw;
       m_ProgressPanel.setMeans(tw, ct);
       start();

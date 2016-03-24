@@ -94,12 +94,16 @@ public class TextPanel
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle getFirstTwiddle() {
-		m_Text = getNextString();
-      Assignment asg = KeyPressList.parseTextAndTags(m_Text).findLongestPrefix(m_KeyMap);
+      Assignment asg = null;
+      for (int i = 0; i < 1000 && asg == null; ++i) {
+         m_Text = getNextString();
+         asg = KeyPressList.parseTextAndTags(m_Text).findLongestPrefix(m_KeyMap);
+      }
       if (asg == null) {
-			return null;
-		}
-		highlight(asg.getKeyPressList().toString(Format.DISPLAY).length());
+         Log.warn("No key found that maps to a chord.");
+         return null;
+      }
+      highlight(asg.getKeyPressList().toString(Format.DISPLAY).length());
       repaint();
       return asg.getTwiddle();
    }
