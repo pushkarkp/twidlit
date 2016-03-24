@@ -65,7 +65,7 @@ public class KeyPressList extends java.lang.Object {
             }
          }
          if (!kp.isValid()) {
-            Log.log(String.format("Failed to find keypress for \"%c\" (%d) in \"%s\"", c, (int)c, str));
+            Log.log(String.format("Failed to find keypress for \"%c\" [%d] in \"%s\"", c, (int)c, str));
             return new KeyPressList();
          }
 //System.out.printf("parseTextAndTags5 add: keycode 0x%x mod 0x%x%n", kp.getKeyCode(), kp.getModifiers().toInt());

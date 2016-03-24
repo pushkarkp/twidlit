@@ -297,7 +297,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       if (pressed == null) {
          // no matching twiddle
          Log.warn("Unknown key(s): \"" + m_KeysPressed
-                + String.format("\" (key.wait.msec (%d) may be too small).", m_KeyWaitMsec));
+                + String.format("\" (key.wait.msec [%d] may be too small).", m_KeyWaitMsec));
          m_KeysPressed = new KeyPressList();
          return;
       }

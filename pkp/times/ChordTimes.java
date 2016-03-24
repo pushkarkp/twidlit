@@ -229,7 +229,7 @@ public class ChordTimes implements Persistent {
             }
          }
       }
-      Log.err(String.format("chord.times.span (%d) must be one of (1, 2, 4, 8, 16, 32, 64).", span));
+      Log.err(String.format("chord.times.span [%d] must be one of [1, 2, 4, 8, 16, 32, 64].", span));
    }
 
    /////////////////////////////////////////////////////////////////////////////
