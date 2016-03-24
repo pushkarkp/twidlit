@@ -122,6 +122,14 @@ public class Twiddle extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public String toShortString() {
+      return (m_ThumbKeys.isEmpty() 
+              ? ""
+              : m_ThumbKeys.toString())
+           + m_Chord.toString();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean isValid() {
       return m_Chord != null
           && m_Chord.isValid()
