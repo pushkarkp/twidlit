@@ -51,13 +51,13 @@ public class LookupTableBuilder extends LookupBuilder {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void add(int key, int index) {
-      super.newEntry(key, Lookup.sm_NO_VALUE, index);
+   public boolean add(int key, int index) {
+      return super.newEntry(key, Lookup.sm_NO_VALUE, index);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void add(int key1, int key2, int index) {
-      super.newEntry(key1, key2, index);
+   public boolean add(int key1, int key2, int index) {
+      return super.newEntry(key1, key2, index);
    }
 
    ////////////////////////////////////////////////////////////////////////////

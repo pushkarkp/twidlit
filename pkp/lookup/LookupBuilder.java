@@ -45,7 +45,7 @@ public class LookupBuilder {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   void newEntry(int key1, int key2, int index) {
+   boolean newEntry(int key1, int key2, int index) {
       key1 -= m_Offset;
 //System.out.printf("add: %d %d: %d \n", key1, key2, index);
       ArrayList<Integer> entry = null;
@@ -69,16 +69,16 @@ public class LookupBuilder {
          }
       }
       if (entry.size() == 0) {
-//System.out.printf("add: new\n");
+//System.out.println("add: new");
          entry.add(new Integer(key1));
-      } else if (m_Duplicates != Duplicates.STORE
-              && isHandled(key1, key2, index, entry)) {
-         return;
+      } else 
+      if (isUnwantedDuplicate(key1, key2, index, entry)) {
+         return false;
       }
       entry.add(new Integer(key2));
       entry.add(new Integer(index));
       int size = entry.size();
-//System.out.printf("add: size %d\n", size);
+//System.out.printf("add: size %d%n", size);
       if (key2 == LookupTable.sm_NO_VALUE) {
          if (entry.size() == 3) {
          } else if (entry.size() == 5) {
@@ -87,14 +87,15 @@ public class LookupBuilder {
             m_ScanSize += 2;
          }
       } else {
-//System.out.printf("add: size %d\n", size);
+//System.out.printf("add: size %d%n", size);
          if (size == 3) {
             m_ScanSize += 3;
          } else {
             m_ScanSize += 2;
          }
       }
-//System.out.printf("add: m_ScanSize %d\n", m_ScanSize);
+//System.out.printf("add: m_ScanSize %d%n", m_ScanSize);
+      return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -135,8 +136,11 @@ public class LookupBuilder {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean isHandled(int key1, int key2, int index, ArrayList<Integer> entry) {
+   private boolean isUnwantedDuplicate(int key1, int key2, int index, ArrayList<Integer> entry) {
 //System.out.printf("add new: %d %d: %d (%d exist)\n", key1, key2, index, (entry.size() - 1) / 2);
+      if (m_Duplicates == Duplicates.STORE) {
+         return false;
+      }
       for (int i = 1; i < entry.size(); i += 2) {
 //System.out.printf("add exist: %d %d: %d%n", key1, entry.get(i), entry.get(i + 1));
          if (entry.get(i) == key2) {
@@ -155,19 +159,15 @@ public class LookupBuilder {
                logLevel = Log.Level.INFO;
                action = " using the latter";
                break;
-            case STORE:
-               Log.err("unexpected Duplicates.STORE");
-               return false;
             }
             String msg;
             if (key2 == LookupTable.sm_NO_VALUE) {
-               msg = String.format("Same key (%d 0x%x) found for %d 0x%x and %d 0x%x%s%s.", 
+               msg = String.format("Same key %d (0x%x) found for %d (0x%x) and %d (0x%x)%s%s", 
                                    key1, key1, entry.get(i + 1), entry.get(i + 1), index, index, action, m_Msg);
             } else {
-               msg = String.format("Same key (%d %d) found for %d and %d%s%s.", 
+               msg = String.format("Same key (%d %d) found for %d and %d%s%s", 
                                    key1, key2, entry.get(i + 1), index, action, m_Msg);
             }
-//System.out.println(msg);
             Log.log(logLevel, msg);
             if (m_Duplicates == Duplicates.OVERWRITE) {
                entry.set(i + 1, index);

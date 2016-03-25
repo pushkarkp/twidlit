@@ -122,7 +122,7 @@ public class KeyMap {
          if (asg == null) {
             Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
          } else {
-//System.out.println(asg.toString());
+//System.out.println("|" + line + "|->|" + asg.toString()+ '|');
             add(asg);
          }
       }
@@ -145,21 +145,31 @@ public class KeyMap {
    private void index() {
       // A = 0x04, NumpadEqual = 0x67
       LookupTableBuilder keyPressLtb = new LookupTableBuilder(0, 0x67);
+      keyPressLtb.setMessage(" building the keystroke table.");
       keyPressLtb.setDuplicates(Duplicates.STORE);
       LookupTableBuilder twiddleLtb = new LookupTableBuilder(1, Chord.sm_VALUES);
+      twiddleLtb.setMessage(" building the chord table.");
+      ArrayList<Twiddle> dup = new ArrayList<Twiddle>();
       for (int i = 0; i < m_Assignments.size(); ++i) {
          Assignment asg = m_Assignments.get(i);
          for (int j = 0; j < asg.getTwiddleCount(); ++j) {
             Twiddle tw = asg.getTwiddle(j);
-            twiddleLtb.add(tw.getChord().toInt(), tw.getThumbKeys().toInt(), i);
+            if (!twiddleLtb.add(tw.getChord().toInt(), tw.getThumbKeys().toInt(), i)) {
+               dup.add(tw);
+            }
          }
          KeyPress kp = asg.getKeyPressList().get(0);
          keyPressLtb.add(kp.getKeyCode(), kp.getModifiers().toInt(), i);
       }
+      if (dup.size() > 0) {
+         String str = "";
+         for (int i = 0; i < dup.size(); ++i) {
+            str += dup.get(i).toShortString() + ' ';
+         }
+         Log.warn("<html><tt>" + str + "</tt>mapped more than once.</html>");
+      }
       m_KeyPressIndex = keyPressLtb.build();
       m_TwiddleIndex = twiddleLtb.build();
-//System.out.println(m_KeyPressIndex.toString());
-//System.out.println(m_TwiddleIndex.toString());
   }
 
    // Data ////////////////////////////////////////////////////////////////////

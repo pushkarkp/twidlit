@@ -66,13 +66,13 @@ public class LookupSetBuilder extends LookupBuilder {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void add(int key) {
-      newEntry(key, LookupTable.sm_NO_VALUE, LookupImplementation.sm_TRUE);
+   public boolean add(int key) {
+      return newEntry(key, LookupTable.sm_NO_VALUE, LookupImplementation.sm_TRUE);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void add(int key1, int key2) {
-      newEntry(key1, key2, LookupImplementation.sm_TRUE);
+   public boolean add(int key1, int key2) {
+      return newEntry(key1, key2, LookupImplementation.sm_TRUE);
    }
 
    ////////////////////////////////////////////////////////////////////////////
