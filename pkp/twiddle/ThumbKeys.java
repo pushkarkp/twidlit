@@ -179,10 +179,10 @@ public class ThumbKeys extends java.lang.Object {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean isShift(int keys) { return (keys & sm_SHIFT) != 0; }
-   private boolean isCtrl(int keys) { return (keys & sm_CTRL) != 0; }
-   private boolean isNum(int keys) { return (keys & sm_NUM) != 0; }
-   private boolean isAlt(int keys) { return (keys & sm_ALT) != 0; }
+   private static boolean isShift(int keys) { return (keys & sm_SHIFT) != 0; }
+   private static boolean isCtrl(int keys) { return (keys & sm_CTRL) != 0; }
+   private static boolean isNum(int keys) { return (keys & sm_NUM) != 0; }
+   private static boolean isAlt(int keys) { return (keys & sm_ALT) != 0; }
 
    ////////////////////////////////////////////////////////////////////////////
    private Modifiers toModifiers(int keys) {
