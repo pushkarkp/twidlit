@@ -14,13 +14,17 @@ public class SortedChordTimes implements SharedIndexableInts {
    
    /////////////////////////////////////////////////////////////////////////////
    public SortedChordTimes(ChordTimes times) {
+      final int EMPTY = Integer.MAX_VALUE;
       m_Times = new int[Chord.sm_VALUES];
       m_Labels = new String[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          m_Times[i] = times.getMean(i + 1, 0);
+         if (m_Times[i] == 0) {
+            m_Times[i] = EMPTY;
+         }
          int range = times.getRange(i + 1, 0);
          m_Labels[i] = (new Chord(i + 1)).toString()
-                     + ((m_Times[i] == 0)
+                     + ((m_Times[i] == EMPTY)
                         ? "" 
                         : String.format(" %d %d (", m_Times[i], range)
                          + times.getTimes(i + 1, 0) + ")");
