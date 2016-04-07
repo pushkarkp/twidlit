@@ -13,6 +13,8 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import pkp.twiddle.Assignment;
 import pkp.twiddle.Chord;
 import pkp.twiddle.KeyMap;
@@ -239,11 +241,14 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_SAVE_AS_TITLE:
          return (new Cfg(m_SettingsWindow,
                          m_Twidlit.getKeyMap().getAssignments())).toString();
-      case sm_CHORDS_BY_TIME_TITLE:
+      case sm_CHORDS_BY_TIME_TITLE: {
          ChordTimes ct = m_Twidlit.getChordTimes();
+         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
          return "# T" + ct.getExtension().replace('.', ' ').substring(1) + '\n'
+              + "# " + df.format(Calendar.getInstance().getTime()) + '\n'
               + "#   Mean Range (Times)\n"
               + (new SortedChordTimes(ct)).listChordsByTime();
+      }
       default:
          Log.err("TwidlitMenu.getContentForTitle() bad title: " + title);
          return "";
