@@ -91,6 +91,7 @@ public class ChordTimes implements Persistent {
          return false;
       }
       int thumb = Math.min(thumbKeys, 1);
+      ++m_TotalSamples[thumb];
       addMean(false, chord, thumb);
       m_DataStatus = DataStatus.NEW;
       if ((chord & ~Chord.sm_VALUES) != 0) {
@@ -159,6 +160,11 @@ public class ChordTimes implements Persistent {
    ////////////////////////////////////////////////////////////////////////////
    public int getMeanCount(int thumbKeys) {
       return m_MeanCount[Math.min(thumbKeys, 1)];
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public int getTotalSamples(int thumbKeys) {
+      return m_TotalSamples[Math.min(thumbKeys, 1)];
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -335,6 +341,9 @@ public class ChordTimes implements Persistent {
       m_MeanCount = new int[sm_CHORD_TYPES];
       m_MeanCount[0] = 0;
       m_MeanCount[1] = 0;
+      m_TotalSamples = new int[sm_CHORD_TYPES];
+      m_TotalSamples[0] = 0;
+      m_TotalSamples[1] = 0;
       File f = Io.createFile(Persist.getFolderName(), getFileName());
       if (!f.exists() || f.isDirectory()) {
          m_DataStatus = DataStatus.NONE;
@@ -364,6 +373,7 @@ public class ChordTimes implements Persistent {
                // increment count
                addMean(false, c + 1, thumb);
                m_Counts[thumb][c] = (byte)Math.min(count, m_SPAN);
+               m_TotalSamples[thumb] += m_Counts[thumb][c];
                short[] times = m_Times[thumb][c];
                // skip olders if span < count
                int start = Math.max(0, count - m_SPAN);
@@ -400,8 +410,9 @@ public class ChordTimes implements Persistent {
    private DataStatus m_DataStatus;
    private short[][][] m_Times;
    private byte[][] m_Counts;
-   private int m_MeanSum[];
-   private int m_MeanCount[];
+   private int[] m_MeanSum;
+   private int[] m_MeanCount;
+   private int[] m_TotalSamples;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] args) {
