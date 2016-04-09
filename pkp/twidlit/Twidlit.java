@@ -166,6 +166,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    @Override // TwidlitInit
    public void setChords() {
       m_TwiddlerWindow.useDelay(false);
+      m_TwiddlerWindow.setDistinctChordCount(Chord.sm_VALUES);
       setChordTimes(false);
       m_TextPanel.setChords(m_ChordTimes.getCounts());
       start();
@@ -179,6 +180,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          setChordTimes(true);
       }
       m_TextPanel.setKeystrokes(f);
+      m_TwiddlerWindow.setDistinctChordCount(0);
       start();
    }
 
@@ -209,6 +211,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    /////////////////////////////////////////////////////////////////////////////
    void clearTimes() {
       m_ChordTimes.clear();
+      m_TwiddlerWindow.reAutoScale();
       if (m_TextPanel.isChords()) {
          setChords();
       }

@@ -30,10 +30,10 @@ import pkp.util.Pref;
 import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
-class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent/*, Lesson.Configurable*/ {
+class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent {
 
-  /////////////////////////////////////////////////////////////////////////////
-   TwiddlerWindow(boolean right, JCheckBoxMenuItem menuItem, KeyListener keyListener) {
+   /////////////////////////////////////////////////////////////////////////////
+   TwiddlerWindow(JCheckBoxMenuItem menuItem, boolean vert, boolean right, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
       setTitle("Twiddler");
@@ -42,21 +42,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       setFocusTraversalKeysEnabled(false);
       addKeyListener(keyListener);
       m_MenuItem = menuItem;
-      getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 
       m_COLOR_BACKGROUND = Pref.getColor(sm_COLOR_BACKGROUND_PREF, Color.black);
       m_COLOR_BUTTON = Pref.getColor(sm_COLOR_BUTTON_PREF, Color.lightGray);
       m_COLOR_LABEL = Pref.getColor(sm_COLOR_LABEL_PREF, Color.white);
       m_COLOR_BUTTON_HIGHLIGHT = Pref.getColor(sm_COLOR_BUTTON_HIGHLIGHT_PREF, Color.red);
-
-      m_ThumbPanel = createThumbPanel();
-      m_ChordPanel = createChordPanel();
-      m_TwiddlerPanel = createTwiddlerPanel(m_ThumbPanel, m_ChordPanel);
-      m_ProgressPanel = new ProgressPanel(6, 8, m_COLOR_BUTTON_HIGHLIGHT, m_COLOR_BUTTON, m_COLOR_BACKGROUND);
-
-      m_RightHand = !right;
-      setRightHand(right);
-      pack();
 
       m_MarkTimer = new Timer(1000, this);
       m_MarkTimer.setActionCommand(sm_CLEAR_MARK_TEXT);
@@ -67,12 +57,19 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       m_ProgressTimer = new Timer(Pref.getInt(sm_PROGRESS_STEP_MSEC_PREF, sm_DEFAULT_STEP_MSEC), this);
       m_ProgressTimer.setActionCommand(sm_PROGRESS_TEXT);
 
+      m_RightHand = right;
+      m_Vh = vert ? Vh.VERT : Vh.HORZ;
+      setPersistName(getPersistName() + '.' + m_Vh.toString());
+      m_ProgressPanel = null;
+      createPanels();
+      build();
+
       m_ProgressPercent = Pref.getInt(sm_PROGRESS_TIMED_PERCENT_PREF);
       // The progress bar interval must be small enough
       // so the timed interval fits in ChordTimes storage.
       int progressMax = ChordTimes.sm_MAX_MSEC * 100 / m_ProgressPercent;
       int progressMsec = Persist.getInt(sm_PERSIST_PROGRESS_MSEC, sm_DEFAULT_PROGRESS_MSEC);
-      m_ProgressMsec = Math.max(0, Math.min(progressMsec, progressMax));
+      m_ProgressPanel.setMaximum(Math.max(0, Math.min(progressMsec, progressMax)));
       m_DelayMsec = Math.max(0, Persist.getInt(sm_PERSIST_DELAY_MSEC, sm_DEFAULT_DELAY_MSEC));
       HighlightStage.DELAY.setMsec(m_DelayMsec);
       m_Delay = true;
@@ -83,9 +80,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    @Override // Persistent
    public void persist(String tag) {
 //System.out.printf("%s %d%n", sm_PERSIST_DELAY_MSEC, m_DelayMsec);
-//System.out.printf("%s %d%n", sm_PERSIST_PROGRESS_MSEC, m_ProgressMsec);
+//System.out.printf("%s %d%n", sm_PERSIST_PROGRESS_MSEC, m_ProgressPanel.getMaximum());
       Persist.set(sm_PERSIST_DELAY_MSEC, m_DelayMsec);
-      Persist.set(sm_PERSIST_PROGRESS_MSEC, m_ProgressMsec);
+      Persist.set(sm_PERSIST_PROGRESS_MSEC, m_ProgressPanel.getMaximum());
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -106,6 +103,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   void reAutoScale() {
+      m_ProgressPanel.reAutoScale();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    boolean isRightHand() {
       return m_RightHand;
    }
@@ -117,18 +119,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          return;
       }
       m_RightHand = right;
-      getContentPane().removeAll();
-      m_ProgressPanel.setRightHand(right);
-      if (right) {
-         getContentPane().add(m_ProgressPanel);
-         getContentPane().add(m_TwiddlerPanel);
-      } else {
-         getContentPane().add(m_TwiddlerPanel);
-         getContentPane().add(m_ProgressPanel);
-      }
-      if (isVisible()) {
-         super.setVisible(true);
-      }
+      build();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -139,16 +130,17 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    void useDelay(boolean set) {
 //System.out.printf("useDelay(%b) m_Delay %b%n", set, m_Delay);
-      if (m_Delay != set) {
-         m_Delay = set;
-         if (m_Delay) {
-            HighlightStage.DELAY.setMsec(m_DelayMsec);
-         } else {
-            m_DelayMsec = m_HighlightStage.DELAY.getMsec(); 
-            HighlightStage.DELAY.setMsec(0);
-         }
-         calculateTimes();
+      if (m_Delay == set) {
+         return;
       }
+      m_Delay = set;
+      if (m_Delay) {
+         HighlightStage.DELAY.setMsec(m_DelayMsec);
+      } else {
+         m_DelayMsec = m_HighlightStage.DELAY.getMsec(); 
+         HighlightStage.DELAY.setMsec(0);
+      }
+      calculateTimes();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -167,15 +159,42 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   int getProgressBarMsec() {
-      return m_ProgressMsec;
+   int getProgressBarMax() {
+      return m_ProgressPanel.getMaximum();
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   void setProgressBarMsec(int speed) {
+   void setProgressBarMax(int speed) {
 //System.out.printf("setProgressBarMsec(%d)%n", speed);
-      m_ProgressMsec = speed;
+      m_ProgressPanel.setMaximum(speed);
       calculateTimes();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setDistinctChordCount(int chords) {
+      m_ProgressPanel.setMaximumSamples(chords * Pref.getInt("#.chord.times.stored", 16));
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   boolean isVertical() {
+      return m_Vh == Vh.VERT;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setVertical(boolean set) {
+      if (set == (m_Vh == Vh.VERT)) {
+         return;
+      }
+      boolean visible = isVisible();
+      super.setVisible(false);
+      int rootLength = getPersistName().length() - m_Vh.toString().length() - 1;
+      m_Vh = set ? Vh.VERT : Vh.HORZ;
+      changePersistName(getPersistName().substring(0, rootLength) + '.' + m_Vh.toString());
+      createPanels();
+      build();
+      if (visible) {
+         super.setVisible(true);
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -238,6 +257,41 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    // Private //////////////////////////////////////////////////////////////////
 
+   /////////////////////////////////////////////////////////////////////////////
+   void createPanels() {
+      m_ThumbPanel = createThumbPanel();
+      m_ChordPanel = createChordPanel();
+      m_TwiddlerPanel = createTwiddlerPanel(m_ThumbPanel, m_ChordPanel);
+      if (m_ProgressPanel == null) {
+         m_ProgressPanel = new ProgressPanel(m_Vh.isV(), m_RightHand, Pref.getInt("#.chord.times.stored", 16), m_COLOR_BUTTON_HIGHLIGHT, m_COLOR_BUTTON, m_COLOR_BACKGROUND);
+      } else {
+         m_ProgressPanel = new ProgressPanel(m_Vh.isV(), m_ProgressPanel);
+      }
+      final int[] BORDER = new int[]{0, 3};
+      getRootPane().setBorder(BorderFactory.createMatteBorder(BORDER[m_Vh.i()], BORDER[1 - m_Vh.i()], BORDER[m_Vh.i()], BORDER[1 - m_Vh.i()], m_COLOR_BACKGROUND));
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void build() {
+      getContentPane().removeAll();
+      getContentPane().setLayout(new BoxLayout(getContentPane(), m_Vh.getContentLayout()));
+      m_ProgressPanel.setRightHand(m_RightHand);
+      if (m_RightHand == (m_Vh == Vh.VERT)) {
+         getContentPane().add(m_ProgressPanel);
+         getContentPane().add(m_TwiddlerPanel);
+      } else {
+         getContentPane().add(m_TwiddlerPanel);
+         getContentPane().add(m_ProgressPanel);
+      }
+      pack();
+      if (isVisible()) {
+         super.setVisible(true);
+      }
+      reAutoScale();
+//System.out.printf("PP: w %d h %d%n", m_ProgressPanel.getSize().width, m_ProgressPanel.getSize().height);
+//System.out.printf("TW: w %d h %d%n", m_TwiddlerPanel.getWidth(), m_TwiddlerPanel.getHeight()); 
+   }
+
    ////////////////////////////////////////////////////////////////////////////////
    private static class KeyPanel extends JPanel {
 
@@ -272,46 +326,119 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       private MarkType m_Mark = MarkType.NONE;
    }
 
+   ////////////////////////////////////////////////////////////////////////////////
+   private static enum Vh {
+      VERT(true,
+           new Dimension(30, 20),
+           new GridLayout(4, 3),
+           new Dimension(20, 60),
+           BoxLayout.X_AXIS,
+           BoxLayout.Y_AXIS,
+           new Dimension(135, 8),
+           new int[]{0, 1, 2, 3}
+      )
+      {
+         @Override
+         int getButton(int row, int column) {
+            return row * Chord.sm_COLUMNS + column - 1;
+         }
+      },
+      
+      HORZ(false,
+           new Dimension(20, 30),
+           new GridLayout(3, 4),
+           new Dimension(60, 20),
+           BoxLayout.Y_AXIS,
+           BoxLayout.X_AXIS,
+           new Dimension(4, 138),
+           new int[]{2, 0, 3, 1}
+      )
+      {
+         @Override
+         int getButton(int row, int column) {
+            return (Chord.sm_COLUMNS - column) * Chord.sm_ROWS + row;
+         }
+      };
+      
+      Vh(boolean isVertical,
+         Dimension thumbKeySize,
+         GridLayout chordPanelLayout,
+         Dimension chordPanelSize,
+         int contentLayout,
+         int twiddlerLayout,
+         Dimension twiddlerRigidArea,
+         int[] thumbKeyMap) {
+         m_IsVertical = isVertical;
+         m_ThumbKeySize = thumbKeySize;
+         m_ChordPanelLayout = chordPanelLayout;
+         m_ChordPanelSize = chordPanelSize;
+         m_ContentLayout = contentLayout;
+         m_TwiddlerLayout = twiddlerLayout;
+         m_TwiddlerRigidArea = twiddlerRigidArea;
+         m_ThumbKeyMap = thumbKeyMap;
+      }
+      
+      int i() { return ordinal(); }
+      boolean isV() { return m_IsVertical; }
+      Dimension getThumbKeySize() { return m_ThumbKeySize; }
+      GridLayout getChordPanelLayout() { return m_ChordPanelLayout; }
+      Dimension getChordPanelSize() { return m_ChordPanelSize; }
+      int getContentLayout() { return m_ContentLayout; }
+      int getTwiddlerLayout() { return m_TwiddlerLayout; }
+      Dimension getTwiddlerRigidArea() { return m_TwiddlerRigidArea; }
+      int[] getThumbKeyMap() { return m_ThumbKeyMap; }
+      abstract int getButton(int row, int column);
+
+      private boolean m_IsVertical;
+      private Dimension m_ThumbKeySize;
+      private GridLayout m_ChordPanelLayout;
+      private Dimension m_ChordPanelSize;
+      private int m_ContentLayout;
+      private int m_TwiddlerLayout;
+      private Dimension m_TwiddlerRigidArea;
+      private int[] m_ThumbKeyMap;
+   }
+
    /////////////////////////////////////////////////////////////////////////////
    private JPanel createThumbPanel() {
       JPanel thp = new JPanel(new GridLayout(2, 2));
       thp.setBackground(m_COLOR_BACKGROUND);
-      Dimension thumbKeySize = new Dimension(30, 20);
       for (int i = 0; i < 4; ++i) {
          KeyPanel p = new KeyPanel();
          thp.add(p);
          p.setBackground(m_COLOR_BUTTON);
-         p.setPreferredSize(thumbKeySize);
-         int left = 6;
-         int right = 6;
+         p.setPreferredSize(m_Vh.getThumbKeySize());
+         int top[] = new int[]{6, sm_THIN};
+         int bot[] = new int[]{6, sm_THIN};
+         int vhI = m_Vh.i();
          String text = "";
          if (i == 0) {
-            text = "Num";
-            right = sm_FAT;
+            text = m_Vh.isV() ? "Num" : "Shift";
+            bot[0] = sm_FAT;
          } else if (i == 1) {
-            text = "Shift";
-            left = sm_FAT;
+            text = m_Vh.isV() ? "Shift" : "Ctrl";
+            top[0] = sm_FAT;
          } else if (i == 2) {
-            text = "Alt";
-            left = sm_FAT;
+            text = m_Vh.isV() ? "Alt" : "Num";
+            top[0] = sm_FAT;
          } else if (i == 3) {
-            text = "Ctrl";
-            right = sm_FAT;
+            text = m_Vh.isV() ? "Ctrl" : "Alt";
+            bot[0] = sm_FAT;
          }
          JLabel label = new JLabel(text);
          label.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
          label.setForeground(m_COLOR_LABEL);
          p.add(label);
-         p.setBorder(BorderFactory.createMatteBorder(sm_THIN, left, sm_THIN, right, m_COLOR_BACKGROUND));
+         p.setBorder(BorderFactory.createMatteBorder(top[1 - vhI], top[vhI], bot[1 - vhI], bot[vhI], m_COLOR_BACKGROUND));
       }
       return thp;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    private JPanel createChordPanel() {
-      JPanel chp = new JPanel(new GridLayout(4, 3));
+      JPanel chp = new JPanel(m_Vh.getChordPanelLayout());
       chp.setBackground(m_COLOR_BACKGROUND);
-      Dimension size = new Dimension(20, 60);
+      Dimension size = m_Vh.getChordPanelSize();
       for (int i = 0; i < 12; ++i) {
          KeyPanel p = new KeyPanel();
          p.setPreferredSize(size);
@@ -325,41 +452,37 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    private JPanel createTwiddlerPanel(JPanel thumbPanel, JPanel chordPanel) {
       JPanel twp = new JPanel();
-      twp.setLayout(new BoxLayout(twp, BoxLayout.Y_AXIS));
+      twp.setLayout(new BoxLayout(twp, m_Vh.getTwiddlerLayout()));
       twp.setBackground(m_COLOR_BACKGROUND);
-      twp.add(Box.createRigidArea(new Dimension(0, 8)));
+      twp.add(Box.createRigidArea(m_Vh.getTwiddlerRigidArea()));
       twp.add(thumbPanel);
       twp.add(chordPanel);
       return twp;
    }
-   
-   /////////////////////////////////////////////////////////////////////////////
-   private void setChordShowRatio(int ratio) {
-      calculateTimes();
-   }
-   
+
    /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
       clearMark();
+      int progressMsec = m_ProgressPanel.getMaximum();
       double markFactor = Pref.getInt(sm_MARK_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) / 100.0;
-      m_MarkTimer.setInitialDelay((int)(0.5 + m_ProgressMsec * markFactor));
+      m_MarkTimer.setInitialDelay((int)(0.5 + progressMsec * markFactor));
       m_Mark = (m_MarkTimer.getInitialDelay() != 0);
 
       double factor = (m_Delay
                       ? Pref.getInt(sm_DELAYED_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT)
                       : Pref.getInt(sm_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT))
                     / 100.0;
-      int rest = Math.max(0, m_ProgressMsec - m_HighlightStage.DELAY.getMsec());
+      int rest = Math.max(0, progressMsec - m_HighlightStage.DELAY.getMsec());
       // can't show for less than 0 or more than rest of progress time
       int show = Math.max(0,
                           Math.min(rest,
-                                   (int)(0.5 + m_ProgressMsec * factor)));
+                                   (int)(0.5 + progressMsec * factor)));
       HighlightStage.HIGHLIGHT.setMsec(show);
       HighlightStage.HIDE.setMsec(rest - show);
       m_Highlight = show > 0;
-      m_ProgressPanel.setMaximum(m_ProgressMsec, 8);
-//System.out.printf("delay %d m_ProgressMsec %d delay %d show %d hide %d factor %g%n", 
-//         m_DelayMsec, m_ProgressMsec, 
+      m_ProgressPanel.setMaximum(progressMsec);
+//System.out.printf("delay %d progressMsec %d delay %d show %d hide %d factor %g%n", 
+//         m_DelayMsec, progressMsec, 
 //         HighlightStage.DELAY.getMsec(), 
 //         HighlightStage.HIGHLIGHT.getMsec(), 
 //         HighlightStage.HIDE.getMsec(), 
@@ -442,7 +565,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    private boolean isHighlight() {
-      return m_ProgressMsec > 0 
+      return m_ProgressPanel.getMaximum() > 0 
           && (m_Delay
               ? Pref.getInt(sm_DELAYED_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) > 0
               : Pref.getInt(sm_SHOW_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) > 0);
@@ -473,21 +596,26 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       }
       ThumbKeys thumbs = m_Twiddle.getThumbKeys();
       if (thumbs.isNum()) {
-         m_ThumbPanel.getComponent(0).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+         int tk = m_Vh.getThumbKeyMap()[0];
+         m_ThumbPanel.getComponent(tk).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
       }
       if (thumbs.isShift()) {
-         m_ThumbPanel.getComponent(1).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+         int tk = m_Vh.getThumbKeyMap()[1];
+         m_ThumbPanel.getComponent(tk).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
       }
       if (thumbs.isAlt()) {
-         m_ThumbPanel.getComponent(2).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+         int tk = m_Vh.getThumbKeyMap()[2];
+         m_ThumbPanel.getComponent(tk).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
       }
       if (thumbs.isCtrl()) {
-         m_ThumbPanel.getComponent(3).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+         int tk = m_Vh.getThumbKeyMap()[3];
+         m_ThumbPanel.getComponent(tk).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
       }
-      for (int i = 0; i < Chord.sm_ROWS; ++i) {
-         int button = m_Twiddle.getChord().getRowKey(i);
-         if (button != 0) {
-            m_ChordPanel.getComponent(i * Chord.sm_COLUMNS + button - 1).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+      for (int r = 0; r < Chord.sm_ROWS; ++r) {
+         int c = m_Twiddle.getChord().getRowKey(r);
+         if (c != 0) {
+//System.out.printf("r %d c %d button %d%n", r, c, m_Vh.getButton(r, c));
+            m_ChordPanel.getComponent(m_Vh.getButton(r, c)).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
          }
       }
    }
@@ -535,22 +663,26 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       clearMark();
       ThumbKeys thumbs = tw.getThumbKeys();
       if (thumbs.isNum()) {
-         ((KeyPanel)m_ThumbPanel.getComponent(0)).setMark(type);
+         int tk = m_Vh.getThumbKeyMap()[0];
+         ((KeyPanel)m_ThumbPanel.getComponent(tk)).setMark(type);
       }
       if (thumbs.isShift()) {
-         ((KeyPanel)m_ThumbPanel.getComponent(1)).setMark(type);
+         int tk = m_Vh.getThumbKeyMap()[1];
+         ((KeyPanel)m_ThumbPanel.getComponent(tk)).setMark(type);
       }
       if (thumbs.isAlt()) {
-         ((KeyPanel)m_ThumbPanel.getComponent(2)).setMark(type);
+         int tk = m_Vh.getThumbKeyMap()[2];
+         ((KeyPanel)m_ThumbPanel.getComponent(tk)).setMark(type);
       }
       if (thumbs.isCtrl()) {
-         ((KeyPanel)m_ThumbPanel.getComponent(3)).setMark(type);
+         int tk = m_Vh.getThumbKeyMap()[3];
+         ((KeyPanel)m_ThumbPanel.getComponent(tk)).setMark(type);
       }
       Chord ch = tw.getChord();
-      for (int i = 0; i < Chord.sm_ROWS; ++i) {
-         int button = ch.getRowKey(i);
-         if (button != 0) {
-            ((KeyPanel)m_ChordPanel.getComponent(i * Chord.sm_COLUMNS + button - 1)).setMark(type);
+      for (int r = 0; r < Chord.sm_ROWS; ++r) {
+         int c = ch.getRowKey(r);
+         if (c != 0) {
+            ((KeyPanel)m_ChordPanel.getComponent(m_Vh.getButton(r, c))).setMark(type);
          }
       }
       m_MarkTimer.restart();
@@ -565,14 +697,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       for (int i = 0; i < 12; ++i) {
          ((KeyPanel)m_ChordPanel.getComponent(i)).setMark(MarkType.NONE);
       }
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   private void addSeparator(int height) {
-      JPanel separator = new JPanel();
-      separator.setBackground(m_COLOR_BACKGROUND);
-      separator.setPreferredSize(new Dimension(60, height));
-      getContentPane().add(separator);
    }
 
    // Data /////////////////////////////////////////////////////////////////////
@@ -619,7 +743,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private long m_ProgressStart;
    private int m_ProgressPercent;
    private Button[] m_Thumb;
-   private int m_ProgressMsec;
    private boolean m_Highlight;
    private Timer m_HighlightTimer;
    private HighlightStage m_HighlightStage;
@@ -629,4 +752,5 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private Timer m_MarkTimer;
    private Twiddle m_Twiddle;
    private boolean m_RightHand;
+   private Vh m_Vh;
 }

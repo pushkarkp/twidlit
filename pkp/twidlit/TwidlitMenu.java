@@ -88,10 +88,9 @@ class TwidlitMenu extends PersistentMenuBar
       JMenu tutorMenu = new JMenu(sm_TUTOR_MENU_TEXT);
       add(tutorMenu);
       m_HandButtons = new ButtonGroup();
-      TwiddlerWindow tw = new TwiddlerWindow(
-         isRightHand(), 
-         addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT), 
-         m_Twidlit);
+      JCheckBoxMenuItem visible = addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT);
+      boolean vertical = addCheckItem(tutorMenu, sm_TUTOR_VERTICAL_TWIDDLER_TEXT).isSelected();
+      TwiddlerWindow tw = new TwiddlerWindow(visible, vertical, isRightHand(), m_Twidlit);
       m_Twidlit.setTwiddlerWindow(tw);
       tutorMenu.addSeparator();
       addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
@@ -227,6 +226,9 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_TUTOR_VISIBLE_TWIDDLER_TEXT:
          m_Twidlit.getTwiddlerWindow().setVisible(item.getState());
+         return;
+      case sm_TUTOR_VERTICAL_TWIDDLER_TEXT:
+         m_Twidlit.getTwiddlerWindow().setVertical(item.getState());
          return;
       }
    }
@@ -391,8 +393,8 @@ class TwidlitMenu extends PersistentMenuBar
          String hand = Hand.createRight(m_Twidlit.isRightHand()).toString();
          if (JOptionPane.showConfirmDialog(
                 m_Twidlit,
-                "Sure you want to clear the chord times for the "
-                + hand.toLowerCase() + "?", 
+                "<html>Sure you want to clear the chord times for the <em>"
+                + hand.toLowerCase() + "</em>?</html>", 
                 sm_TUTOR_CLEAR_TIMES_TEXT, 
                 JOptionPane.YES_NO_OPTION)
               == JOptionPane.YES_OPTION) {
@@ -416,10 +418,10 @@ class TwidlitMenu extends PersistentMenuBar
          IntegerSetter is = new IntegerSetter(
             m_Twidlit, "Chord Wait",
             String.format("The progress bar interval in milliseconds [0..%d]:", max),
-            m_Twidlit.getTwiddlerWindow().getProgressBarMsec(),
+            m_Twidlit.getTwiddlerWindow().getProgressBarMax(),
             0, max, 100);
          if (is.isOk()) {
-            m_Twidlit.getTwiddlerWindow().setProgressBarMsec(is.getValue());
+            m_Twidlit.getTwiddlerWindow().setProgressBarMax(is.getValue());
          }
          return;
       }
@@ -883,6 +885,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
    private static final String sm_TUTOR_MENU_TEXT = "Tutor";
    private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
+   private static final String sm_TUTOR_VERTICAL_TWIDDLER_TEXT = "Vertical Twiddler";
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";
    private static final String sm_TUTOR_AUTOSCALE_TEXT = "Auto-scale";
