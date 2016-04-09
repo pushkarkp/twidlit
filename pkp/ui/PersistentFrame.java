@@ -31,13 +31,7 @@ public class PersistentFrame extends JFrame {
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public void dispose() {
-      String persistName = getPersistName();
-      Rectangle r = getBounds();
-//System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", r.x);
-      Persist.set(persistName + ".x", Integer.toString(r.x));
-      Persist.set(persistName + ".y", Integer.toString(r.y));
-      Persist.set(persistName + ".w", Integer.toString(r.width));
-      Persist.set(persistName + ".h", Integer.toString(r.height));
+      save();
       super.dispose();
    }
 
@@ -46,12 +40,16 @@ public class PersistentFrame extends JFrame {
       m_PersistName = name;
    }
 
-   // Private /////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   public void changePersistName(String name) {
+      save();
+      m_PersistName = name;
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    // PersistName is converted to tag in PersistentPrperties.
    // If value is not found, try deleting twidlit.properties
-   private String getPersistName() {
+   public String getPersistName() {
 //System.out.printf("getPersistName() %s%n", m_PersistName);
       if (m_PersistName == null || "".equals(m_PersistName)) {
          m_PersistName = "#." + (("".equals(getTitle()))
@@ -61,6 +59,19 @@ public class PersistentFrame extends JFrame {
       return m_PersistName;
    }
    
+   // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void save() {
+      String persistName = getPersistName();
+      Rectangle r = getBounds();
+//System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", r.x);
+      Persist.set(persistName + ".x", Integer.toString(r.x));
+      Persist.set(persistName + ".y", Integer.toString(r.y));
+      Persist.set(persistName + ".w", Integer.toString(r.width));
+      Persist.set(persistName + ".h", Integer.toString(r.height));
+   }
+
    // Data ////////////////////////////////////////////////////////////////////
    private String m_PersistName = null;
 }
