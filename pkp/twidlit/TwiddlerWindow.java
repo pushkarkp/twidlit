@@ -68,7 +68,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       // The progress bar interval must be small enough
       // so the timed interval fits in ChordTimes storage.
       int progressMax = ChordTimes.sm_MAX_MSEC * 100 / m_ProgressPercent;
-      int progressMsec = Persist.getInt(sm_PERSIST_PROGRESS_MSEC, sm_DEFAULT_PROGRESS_MSEC);
+      int progressMsec = Persist.getInt(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], sm_DEFAULT_PROGRESS_MSEC);
       m_ProgressPanel.setMaximum(Math.max(0, Math.min(progressMsec, progressMax)));
       m_DelayMsec = Math.max(0, Persist.getInt(sm_PERSIST_DELAY_MSEC, sm_DEFAULT_DELAY_MSEC));
       HighlightStage.DELAY.setMsec(m_DelayMsec);
@@ -84,7 +84,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 //System.out.printf("%s %d%n", sm_PERSIST_DELAY_MSEC, m_DelayMsec);
 //System.out.printf("%s %d%n", sm_PERSIST_PROGRESS_MSEC, m_ProgressPanel.getMaximum());
       Persist.set(sm_PERSIST_DELAY_MSEC, m_DelayMsec);
-      Persist.set(sm_PERSIST_PROGRESS_MSEC, m_ProgressPanel.getMaximum());
+      Persist.set(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], m_ProgressPanel.getMaximum());
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       if (m_RightHand == right) {
          return;
       }
+      Persist.set(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], m_ProgressPanel.getMaximum());
       m_RightHand = right;
+      m_ProgressPanel.setMaximum(Persist.getInt(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], sm_DEFAULT_PROGRESS_MSEC));
       build();
    }
 
@@ -738,7 +740,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private static final String sm_PROGRESS_TIMED_PERCENT_PREF = "#.chord.wait.timed.percent";
    
    private static final String sm_PERSIST_DELAY_MSEC = "#.progress.delay.msec";
-   private static final String sm_PERSIST_PROGRESS_MSEC = "#.progress.msec";
+   private static final String[] sm_PERSIST_PROGRESS_MSEC = 
+      new String[]{"#.progress.left.msec", 
+                   "#.progress.right.msec"};
 
    private static final String sm_HIGHLIGHT_TEXT = "highlight";
    private static final String sm_PROGRESS_TEXT = "progress";
