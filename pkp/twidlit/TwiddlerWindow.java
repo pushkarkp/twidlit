@@ -74,6 +74,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       HighlightStage.DELAY.setMsec(m_DelayMsec);
       m_Delay = true;
       useDelay(false);
+      m_AutoScaleStep = Pref.getInt("#.chord.wait.autoscale.step", 8);
+      setAutoScale(false);
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -94,17 +96,17 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    boolean isAutoScale() {
-      return m_ProgressPanel.isAutoScale();
+      return m_AutoScaleCount > 0;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    void setAutoScale(boolean set) {
-      m_ProgressPanel.setAutoScale(set);
+      m_AutoScaleCount = set ? 1 : 0;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    void reAutoScale() {
-      m_ProgressPanel.reAutoScale();
+      setAutoScale(isAutoScale());
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -129,7 +131,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    void useDelay(boolean set) {
-//System.out.printf("useDelay(%b) m_Delay %b%n", set, m_Delay);
       if (m_Delay == set) {
          return;
       }
@@ -173,6 +174,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    void setDistinctChordCount(int chords) {
       m_ProgressPanel.setMaximumSamples(chords * Pref.getInt("#.chord.times.stored", 16));
+      reAutoScale();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -208,7 +210,12 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          return;
       }
       m_Twiddle = tw;
-      m_ProgressPanel.setMeans(tw, ct);
+      int ch = tw.getChord().toInt();
+      int tk = tw.getThumbKeys().toInt();
+      int meanMean = ct.getMeanMean(tk);
+      int totalSamples = ct.getTotalSamples(tk);
+      m_ProgressPanel.setMeans(ct.getMean(ch, tk), meanMean, totalSamples);
+      autoScale(totalSamples, meanMean);
       start();
       // don't time the first twiddle
       if (pressed != null) {
@@ -244,7 +251,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          if (elapsed <= m_ProgressPanel.getMaximum() * m_ProgressPercent / 100) {
             m_ProgressPanel.setHighlight();
             m_ProgressPanel.setProgress(2 * m_ProgressPanel.getMaximum() - elapsed);
-//System.out.printf("- %d%n", elapsed);
          } else {
             m_ProgressTimer.stop();
             m_ProgressPanel.setLowlight();
@@ -463,7 +469,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
       clearMark();
-      int progressMsec = m_ProgressPanel.getMaximum();
+      final int progressMsec = m_ProgressPanel.getMaximum();
       double markFactor = Pref.getInt(sm_MARK_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) / 100.0;
       m_MarkTimer.setInitialDelay((int)(0.5 + progressMsec * markFactor));
       m_Mark = (m_MarkTimer.getInitialDelay() != 0);
@@ -699,6 +705,24 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       }
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   private void autoScale(int totalSamples, int meanMean) {
+//System.out.printf("autoScale m_AutoScaleCount %d meanMean %d%n", m_AutoScaleCount, meanMean);
+      if (m_AutoScaleCount == 0) {
+         return;
+      }
+      ++m_AutoScaleCount;
+      if (m_AutoScaleCount % m_AutoScaleStep != 2) {
+         return;
+      }
+      if (totalSamples < m_AutoScaleStep) {
+         m_ProgressPanel.setMaximum(sm_DEFAULT_PROGRESS_MSEC);
+      } else {
+         m_ProgressPanel.autoScale(meanMean);
+      }
+      calculateTimes();
+   }
+
    // Data /////////////////////////////////////////////////////////////////////
 
    private static final String sm_COLOR_BACKGROUND_PREF = "#.twiddler.background.color";
@@ -750,6 +774,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private int m_DelayMsec;
    private boolean m_Mark;
    private Timer m_MarkTimer;
+   private int m_AutoScaleCount;
+   private int m_AutoScaleStep;
    private Twiddle m_Twiddle;
    private boolean m_RightHand;
    private Vh m_Vh;
