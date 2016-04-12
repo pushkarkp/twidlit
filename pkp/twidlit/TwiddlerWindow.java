@@ -741,8 +741,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    
    private static final String sm_PERSIST_DELAY_MSEC = "#.progress.delay.msec";
    private static final String[] sm_PERSIST_PROGRESS_MSEC = 
-      new String[]{"#.progress.left.msec", 
-                   "#.progress.right.msec"};
+      new String[]{"#.progress.left.msec",   // PERSIST
+                   "#.progress.right.msec"}; // PERSIST
 
    private static final String sm_HIGHLIGHT_TEXT = "highlight";
    private static final String sm_PROGRESS_TEXT = "progress";

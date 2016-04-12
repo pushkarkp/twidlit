@@ -63,7 +63,7 @@ code.tags: ${CLASSES}
 	find pkp -iname \*.java -exec grep '#\.[^"]' {} /dev/null \; > $@
 
 # generate a list of missing tags
-bad.tags: code.tags pref/twidlit.properties pref/twidlit.preferences script/badtags.sh
+bad.tags: code.tags pref/ui.tags pref/twidlit.properties pref/twidlit.preferences script/badtags.sh
 	script/badtags.sh > $@
 
 # after git clone, convert scripts to unix eol 
