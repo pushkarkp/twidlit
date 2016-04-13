@@ -238,7 +238,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    @Override // ActionListener
    public void actionPerformed(ActionEvent e) {
-System.out.println(e);
       switch (e.getActionCommand()) {
       case sm_HIGHLIGHT_TEXT:
          m_HighlightStage = m_HighlightStage.transition(this); 
