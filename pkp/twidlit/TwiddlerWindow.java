@@ -411,13 +411,14 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private JPanel createThumbPanel() {
       JPanel thp = new JPanel(new GridLayout(2, 2));
       thp.setBackground(m_COLOR_BACKGROUND);
+      final int sm_FAT = 24;
       for (int i = 0; i < 4; ++i) {
          KeyPanel p = new KeyPanel();
          thp.add(p);
          p.setBackground(m_COLOR_BUTTON);
          p.setPreferredSize(m_Vh.getThumbKeySize());
-         int top[] = new int[]{6, sm_THIN};
-         int bot[] = new int[]{6, sm_THIN};
+         int top[] = new int[]{10, sm_THIN + 4};
+         int bot[] = new int[]{10, sm_THIN + 4};
          int vhI = m_Vh.i();
          String text = "";
          if (i == 0) {
@@ -760,7 +761,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    private final Color m_COLOR_BUTTON_HIGHLIGHT;
 
    private static final int sm_THIN = 4;
-   private static final int sm_FAT = 16;
 
    private JCheckBoxMenuItem m_MenuItem;
    private JPanel m_ThumbPanel;
