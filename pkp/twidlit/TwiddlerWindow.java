@@ -220,7 +220,9 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       autoScale(totalSamples, meanMean);
       start();
       // don't time the first twiddle
-      if (pressed != null) {
+      if (pressed == null) {
+         m_ProgressTimer.stop();
+      } else {
          m_ProgressTimer.start();
       }
    }
@@ -236,6 +238,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    @Override // ActionListener
    public void actionPerformed(ActionEvent e) {
+System.out.println(e);
       switch (e.getActionCommand()) {
       case sm_HIGHLIGHT_TEXT:
          m_HighlightStage = m_HighlightStage.transition(this); 

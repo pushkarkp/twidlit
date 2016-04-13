@@ -146,14 +146,16 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
    public void setRightHand(boolean right) {
-      if (right != isRightHand()) {
-         m_TwiddlerWindow.setRightHand(right);
-         if (m_TextPanel.isChords()) {
-            // new times need new chords
-            setChords();
-         } else {
-            setChordTimes(!m_TextPanel.isChords());
-         }
+      if (right == isRightHand()) {
+         return;
+      }
+      m_TwiddlerWindow.setRightHand(right);
+      if (m_TextPanel.isChords()) {
+         // new times need new chords
+         setChords();
+      } else {
+         setChordTimes(!m_TextPanel.isChords());
+         start();
       }
    }
 
