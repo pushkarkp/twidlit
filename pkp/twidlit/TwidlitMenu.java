@@ -291,16 +291,18 @@ class TwidlitMenu extends PersistentMenuBar
    private void actionPerformed(String command) {
       switch (command) {
       case sm_FILE_ALL_CHORDS_TEXT:
-         SaveChordsWindow scw = new SaveChordsWindow(this, sm_ALL_CHORDS_TITLE, m_CfgDir);
-         scw.setPersistName(sm_CHORD_LIST_PERSIST);
+         m_SaveChordsWindow = new SaveChordsWindow(this, sm_ALL_CHORDS_TITLE, m_CfgDir);
+         m_SaveChordsWindow.setPersistName(sm_CHORD_LIST_PERSIST);
          JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
          b.addActionListener(this);
-         scw.setOkButton(b);
-         scw.setVisible(true);
+         m_SaveChordsWindow.setOkButton(b);
+         m_SaveChordsWindow.setVisible(true);
          return;
       case sm_USE_ALL_CHORDS_TEXT: {
          m_CfgFName = "";
          setCfg(null);
+         m_SaveChordsWindow.dispose();
+         m_SaveChordsWindow = null;
          return;
       }
       case sm_FILE_OPEN_TEXT:
@@ -935,6 +937,7 @@ class TwidlitMenu extends PersistentMenuBar
    private String m_CfgDir;
    private String m_CfgFName;
    private SettingsWindow m_SettingsWindow;
+   private SaveChordsWindow m_SaveChordsWindow;
    private JFileChooser m_FileChooser;
    private JMenuItem m_AllChordsItem;
    private JMenu m_CountsMenu;
