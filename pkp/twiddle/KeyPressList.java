@@ -194,33 +194,6 @@ public class KeyPressList extends java.lang.Object {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private Modifiers parseQuote(String str, Modifiers mod) {
-//System.out.println("parseQuote " + str);
-      String orig = str;
-      int end = 0;
-      for (;
-           !"".equals(str);
-           str = str.substring(end + 1)) {
-         KeyPress kp = null;
-         Character ch = str.charAt(0);
-         if (ch == '<' && (end = str.indexOf('>')) != -1) {
-            kp = KeyPress.parseTag(str.substring(1, end), mod);
-            if (kp.isModifiers()) {
-               mod = kp.getModifiers();
-            }
-         } else {
-            kp = KeyPress.parseText(ch, mod);
-            end = 0;
-         }
-         if (!kp.isValid()) {
-            return Modifiers.sm_EMPTY;
-         }
-         append(kp, orig);
-      }
-      return mod;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    private KeyPressList getPrefixMinusModifiers(Modifiers mod) {
 //System.out.printf("kpl getPrefixMinusModifiers: mods 0x%x kpl %s (%d)%n", mod.toInt(), toString(), size());
       KeyPressList kpl = new KeyPressList();
