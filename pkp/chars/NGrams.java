@@ -149,6 +149,7 @@ class NGrams implements SharedIndexableInts {
       }
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
+      StringBuilder err = new StringBuilder();
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
          String ng = line;
          // stop at first space
@@ -156,11 +157,14 @@ class NGrams implements SharedIndexableInts {
          if (end != -1) {
             ng = ng.substring(0, end);
          }
-         ng = CrLf.normalize(Io.parseEscape(ng));
-         ng = KeyPressList.parseTextAndTags(ng).toString(KeyPress.Format.ESC);
+         ng = Io.parseEscape(ng, err);
+         if (ng != null) {
+            ng = KeyPressList.parseTextAndTags(CrLf.normalize(ng), err).toString(KeyPress.Format.ESC);
+         }
 //System.out.println("|" + line + "| -> |" + ng + "|");
          if ("empty".equals(ng) || !NGram.isValid(ng)) {
-            Log.warn(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
+            Log.parseWarn(lr, err.toString(), line);
+            err = new StringBuilder();
          } else {
             nGrams.add(ng);
          }

@@ -16,21 +16,23 @@ import pkp.util.Log;
 public class StringsIntsBuilder extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
-   public StringsIntsBuilder(URL url, boolean singleWord) {
-      this(url, singleWord, Io.sm_parseInt);
+   public StringsIntsBuilder(URL url, Io.StringToIntErr si, boolean singleValue) {
+      this(url, si, singleValue, Log.Level.ERROR);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public StringsIntsBuilder(URL url, boolean singleWord, Io.StringToInt si) {
+   public StringsIntsBuilder(URL url, Io.StringToIntErr si, boolean singleValue, Log.Level parseFailLogLevel) {
       this();
-      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
-      spr.setSingleToken(singleWord);
+      SpacedPairReader spr = new 
+         SpacedPairReader(url, Io.sm_MUST_EXIST, parseFailLogLevel);
+      spr.setSingleToken(singleValue);
       String value;
+      StringBuilder err = new StringBuilder();
       while ((value = spr.getNextFirst()) != null) {
-         int i = si.cvt(value);
+         int i = si.cvt(value, err);
          if (i == Io.sm_PARSE_FAILED) {
-            Log.err(String.format("Failed to parse \"%s\" in line %d of \"%s\".",
-                                  value, spr.getLineNumber(), url.getPath()));
+            Log.parseErr(spr, err.toString(), value);
+            err = new StringBuilder();
          }
          add(spr.getNextSecond(), i);
       }

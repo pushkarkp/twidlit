@@ -30,7 +30,7 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static Assignment parseLine(String str) {
+   public static Assignment parseLine(String str, StringBuilder err) {
       Twiddle twiddle = new Twiddle(str);
       if (!twiddle.isValid()) {
          return null;
@@ -42,7 +42,7 @@ public class Assignment extends java.lang.Object {
       str = str.substring(eq + 1).trim();
       Assignment asg = 
          new Assignment(twiddle, 
-                        KeyPressList.parseTextAndTags(str));
+                        KeyPressList.parseTextAndTags(str, err));
       return asg;
    }
 

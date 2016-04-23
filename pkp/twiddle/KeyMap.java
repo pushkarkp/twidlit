@@ -117,10 +117,12 @@ public class KeyMap {
    private void read(URL url) {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       String line;
+      StringBuilder err = new StringBuilder();
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
-         Assignment asg = Assignment.parseLine(line);
+         Assignment asg = Assignment.parseLine(line, err);
          if (asg == null) {
-            Log.log(String.format("Failed to add line %d \"%s\" of \"%s\"", i, line, url.getPath()));
+            Log.parseErr(lr, err.toString(), line);
+            err = new StringBuilder();
          } else {
 //System.out.println("|" + line + "|->|" + asg.toString()+ '|');
             add(asg);

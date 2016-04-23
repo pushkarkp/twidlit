@@ -326,14 +326,15 @@ public class Cfg implements Settings {
 
       m_Assignments = new ArrayList<Assignment>();
       String line;
+      StringBuilder err = new StringBuilder();
       for (int i = 1; (line = spr.getNextLine()) != null; ++i) {
-         Assignment asg = Assignment.parseLine(line);
+         Assignment asg = Assignment.parseLine(line, err);
          if (asg != null && asg.getKeyPressList().isValid()) {
-            //Log.log(String.format("Cfg read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, path));
             m_Assignments.add(asg);
          } else if (asg != null || readSettings
                  || !(readSettings = readTextSettings(spr))) {
-            Log.warn(String.format("Cfg failed to read line %d \"%s\" of \"%s\".", spr.getLineNumber(), line, f.getPath()));
+            Log.parseWarn(spr, err.toString(), line);
+            err = new StringBuilder();
          }
       }
       spr.close();

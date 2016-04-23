@@ -17,6 +17,7 @@ import pkp.twiddle.KeyPressList;
 import pkp.io.LineReader;
 import pkp.io.Io;
 import pkp.util.Pref;
+import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
 public class KeyPressSource implements KeyPressListSource {
@@ -81,6 +82,7 @@ public class KeyPressSource implements KeyPressListSource {
    private static ArrayList<KeyPressList> getKeys(LineReader lr) {
       ArrayList<KeyPressList> al = new ArrayList<KeyPressList>();
       String line;
+      StringBuilder err = new StringBuilder();
       while ((line = lr.readLine()) != null) {
          line = line.trim();
          // read ":<num>" at end of line into times
@@ -90,8 +92,11 @@ public class KeyPressSource implements KeyPressListSource {
          // or has spaces after
          if (at > 0 && at < line.length() - 1
           && line.substring(at).indexOf(' ') == -1) {
-            int count = Io.toIntWarnParse(line.substring(at + 1));
-            if (count != Io.sm_PARSE_FAILED) {
+            int count = Io.toIntWarnParse(line.substring(at + 1), err);
+            if (count == Io.sm_PARSE_FAILED) {
+               Log.parseWarn(lr, err.toString(), line);
+               err = new StringBuilder();
+            } else {
                line = line.substring(0, at);
                if (count > 0) {
                   times = count;

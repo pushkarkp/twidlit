@@ -20,20 +20,21 @@ public class LookupTableBuilder extends LookupBuilder {
                                   LookupBuilder.Duplicates duplicates,
                                   int minFreq, 
                                   int maxFreq,
-                                  Io.StringToInts si) {
+                                  Io.StringToIntsErr si) {
       LookupTableBuilder ltb = new LookupTableBuilder(minFreq, maxFreq);
       ltb.setDuplicates(duplicates);
       ltb.setMessage(String.format(" in %s", url.getPath()));
       LineReader lr = new LineReader(url, mustExist);
       String line;
+      StringBuilder err = new StringBuilder();
       while ((line = lr.readLine()) != null) {
-         int[] in = si.cvt(line.trim());
+         int[] in = si.cvt(line.trim(), err);
          if (in.length < 2
           || in[0] == Io.sm_PARSE_FAILED
           || in[1] == Io.sm_PARSE_FAILED
           || (in.length >= 3 && in[2] == Io.sm_PARSE_FAILED)) {
-            Log.err(String.format("Failed to parse line %d \"%s\" of \"%s\".",
-                                  lr.getLineNumber(), line, url.getPath()));
+            Log.parseErr(lr, err.toString(), line);
+            err = new StringBuilder();
          }
          if (in.length == 2) {
             ltb.add(in[0], Lookup.sm_NO_VALUE, in[1]);

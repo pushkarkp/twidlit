@@ -331,17 +331,23 @@ class ChordMapper extends ControlDialog
    ////////////////////////////////////////////////////////////////////////////
    private void map(File mappedF, File chordF, File keysF) {
       if (mappedF != null) {
+         StringBuilder err = new StringBuilder();
          LineReader mappedLr = new LineReader(Io.toExistUrl(mappedF), Io.sm_MUST_EXIST);
          for (;;) {
             String mapped = getStr(mappedLr, Target.MAPPED);
             if (mapped == null) {
                break;
             }
-            m_Assignments.add(Assignment.parseLine(mapped));
+            m_Assignments.add(Assignment.parseLine(mapped, err));
+            if (!"".equals(err.toString())) {
+               Log.parseWarn(mappedLr, err.toString(), mapped);
+               err = new StringBuilder();
+            }
          }
          mappedLr.close();
       }
       if (chordF != null && keysF != null) {
+         StringBuilder err = new StringBuilder();
          LineReader chordLr = new LineReader(Io.toExistUrl(chordF), Io.sm_MUST_EXIST);
          LineReader keysLr = new LineReader(Io.toExistUrl(keysF), Io.sm_MUST_EXIST);
          for (;;) {
@@ -350,7 +356,11 @@ class ChordMapper extends ControlDialog
             if (chord == null || keys == null) {
                break;
             }
-            m_Assignments.add(Assignment.parseLine(chord + " = " + keys));
+            m_Assignments.add(Assignment.parseLine(chord + " = " + keys, err));
+            if (!"".equals(err.toString())) {
+               Log.parseWarn(keysLr, err.toString(), keys);
+               err = new StringBuilder();
+            }
          }
          chordLr.close();
          keysLr.close();
@@ -366,20 +376,20 @@ class ChordMapper extends ControlDialog
          }
          String str = "";
          if (target == Target.KEYS) {
-            str = getkeys(line, lr);
+            str = getKeys(line, lr);
          } else if (line.length() < 6) {
-            Log.warn(String.format("Line too short. Failed to parse \"%s\" on line %d of \"%s\"",
-                                   line, lr.getLineNumber(), lr.getPath()));
+            String msg = String.format("Failed to parse too short line \"%s\"", str);
+            Log.parseWarn(lr, msg, str);
             str = "";
          } else {
             Twiddle t = new Twiddle(line);
             if (!t.getChord().isValid()) {
-               Log.warn(String.format("Invalid twiddle. Failed to parse \"%s\" on line %d of \"%s\"",
-                                      line, lr.getLineNumber(), lr.getPath()));
+               String msg = String.format("Failed to parse invalid twiddle \"%s\"", str);
+               Log.parseWarn(lr, msg, str);
                str = "";
             } else if (!isNew(t)) {
-               Log.log(String.format("Skipped duplicate chord %s on line %d of \"%s\"",
-                                     t, lr.getLineNumber(), lr.getPath()));
+               String msg = String.format("Skipped duplicate chord %s", t);
+               Log.parseWarn(lr, msg, str);
                str = "";
             } else if (target == Target.MAPPED) {
                str = line;
@@ -394,29 +404,34 @@ class ChordMapper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private String getkeys(String line, LineReader lr) {
+   private String getKeys(String line, LineReader lr) {
       int initial = Io.findFirstNotOf(line, Io.sm_WS);
       String rest = line.substring(initial);
       int length = Io.findFirstOf(rest, Io.sm_WS);
       if (length == 0) {
          Log.log(String.format("Initial |%c|", line.charAt(initial)));
-         Log.log(String.format("Failed to parse \"%s\" on line %d of \"%s\"",
+         Log.log(String.format("Failed to parse \"%s\" on line %d of \"%s\".",
                                line, lr.getLineNumber(), lr.getPath()));
          return "";
       }
       if (length == rest.length()) {
          length = line.length() - initial;
       }
-      KeyPressList kpl = KeyPressList.parseTextAndTags(line.substring(initial, initial + length));
+      String str = line.substring(initial, initial + length);
+      StringBuilder err = new StringBuilder();
+      KeyPressList kpl = KeyPressList.parseTextAndTags(str, err);
       kpl = handleEnter(kpl);
       if (!kpl.isValid()) {
+         Log.warn(String.format("Failed to parse \"%s\" on line %d of \"%s\" (%s).",
+                                str, lr.getLineNumber(), lr.getPath(), err));
+         err = new StringBuilder();
          return "";
       }
 //System.out.printf("%d %s %s%n", m_Assignments.size(), m_Assignments.get(1).getKeyPressList().toString(KeyPress.Format.ESC), kpl.toString(KeyPress.Format.ESC));
       String action = m_CheckBoxSkipDup.isSelected() ? "Skipped" : "Found";
       for (int i = 0; i < m_Assignments.size(); ++i) {
          if (kpl.equals(m_Assignments.get(i).getKeyPressList())) {
-            Log.log(String.format(action + " repeat of '%s' on line %d of \"%s\"",
+            Log.log(String.format(action + " repeat of '%s' on line %d of \"%s\".",
                                   line.substring(initial, initial + length), lr.getLineNumber(), lr.getPath()));
             m_DuplicateKeys = true;
             if (m_CheckBoxSkipDup.isSelected()) {

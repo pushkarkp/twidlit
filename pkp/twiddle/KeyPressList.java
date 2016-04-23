@@ -18,9 +18,14 @@ public class KeyPressList extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPressList parseText(String str) {
+      return parseText(str, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPressList parseText(String str, StringBuilder err) {
       KeyPressList kpl = new KeyPressList();
       for (int i = 0; i < str.length(); ++i) {
-         KeyPress kp = KeyPress.parseText(str.charAt(i), Modifiers.sm_EMPTY);
+         KeyPress kp = KeyPress.parseText(str.charAt(i), Modifiers.sm_EMPTY, err);
          if (!kp.isValid()) {
             return new KeyPressList();
          }
@@ -31,6 +36,11 @@ public class KeyPressList extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPressList parseTextAndTags(String str) {
+      return parseTextAndTags(str, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPressList parseTextAndTags(String str, StringBuilder err) {
 //System.out.printf("parseTextAndTags() |%s| [%c] \\x%x%n", str, str.charAt(0),  (int)str.charAt(0));
       KeyPressList kpl = new KeyPressList();
       Modifiers tagMod = Modifiers.sm_EMPTY;
@@ -40,7 +50,7 @@ public class KeyPressList extends java.lang.Object {
          if (c != '<') {
 //System.out.printf("parseTextAndTags1 [%d] |%c| (%d) tagMod 0x%x%n", i, c, (int)c, tagMod.toInt());
             StringWithOffset swo = new StringWithOffset(str, i);
-            kp = KeyPress.parse(swo, tagMod);
+            kp = KeyPress.parse(swo, tagMod, err);
             // for ++i will re-add 1
             i = swo.getOffset() - 1;
          } else {
@@ -49,11 +59,11 @@ public class KeyPressList extends java.lang.Object {
             // accept unescaped < if at EOL
             if (end < 0 || rest.substring(0, end).indexOf('<') >= 0) {
 //System.out.printf("parseTextAndTags3 [%d] |%c| (%d) tagMod 0x%x%n", i, c, (int)c, tagMod.toInt());
-               kp = KeyPress.parseText(c, tagMod);
+               kp = KeyPress.parseText(c, tagMod, err);
             } else {
 //System.out.printf("parseTextAndTags4 [%d] |%s| tagMod \\x%x%n", i, rest.substring(0, end), tagMod.toInt());
 					i += end + 1;
-               kp = KeyPress.parseTag(rest.substring(0, end), tagMod);
+               kp = KeyPress.parseTag(rest.substring(0, end), tagMod, err);
 					if (kp.isModifiers()) {
                   if (kp.getModifiers() == Modifiers.sm_END) {
                      tagMod = Modifiers.sm_EMPTY;
@@ -65,7 +75,7 @@ public class KeyPressList extends java.lang.Object {
             }
          }
          if (!kp.isValid()) {
-            Log.log(String.format("Failed to find keypress for \"%c\" [%d] in \"%s\"", c, (int)c, str));
+            Log.log(String.format("Failed to find keypress for \"%c\" [%d] in \"%s\" (%s)", c, (int)c, str, err));
             return new KeyPressList();
          }
 //System.out.printf("parseTextAndTags5 add: keycode 0x%x mod 0x%x%n", kp.getKeyCode(), kp.getModifiers().toInt());
@@ -232,8 +242,13 @@ public class KeyPressList extends java.lang.Object {
       }
       Pref.init("twidlit.preferences", "pref", "pref");
       KeyPress.init();
+      StringBuilder err = new StringBuilder();
       for (String arg: args) {
-         KeyPressList kpl = KeyPressList.parseTextAndTags(arg);
+         KeyPressList kpl = KeyPressList.parseTextAndTags(arg, err);
+         if (!"".equals(err)) {
+            Log.warn("Failed to parse \"" + arg + "\" (" + err + ").");
+            err = new StringBuilder();
+         }
          System.out.println(kpl.toString());
       }
    }

@@ -15,6 +15,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import pkp.string.StringInt;
+import pkp.util.NamedOrdered;
 import pkp.ui.TextWindow;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,7 +82,11 @@ public class Log implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void log(Level level, String msg) {
-      sm_Log.log1(level, msg);
+      switch (level) {
+      case INFO: log(msg); return;
+      case WARN: warn(msg); return;
+      case ERROR: err(msg); return;
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -115,8 +121,91 @@ public class Log implements ActionListener {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static void log(StringBuilder err, String msg) {
+      log(Level.INFO, err, msg);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void warn(StringBuilder err, String msg) {
+      log(Level.WARN, err, msg);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void err(StringBuilder err, String msg) {
+      log(Level.ERROR, err, msg);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   // log parse failure
+   public static void parseLog(NamedOrdered no, String err) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.INFO, si.getInt(), si.getString(), err, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseLog(NamedOrdered no, String err, String line) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.INFO, si.getInt(), si.getString(), err, line);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseWarn(NamedOrdered no, String err) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.WARN, si.getInt(), si.getString(), err, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseWarn(NamedOrdered no, String err, String line) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.WARN, si.getInt(), si.getString(), err, line);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseErr(NamedOrdered no, String err) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.ERROR, si.getInt(), si.getString(), err, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseErr(NamedOrdered no, String err, String line) {
+      StringInt si = no.getNameAndPosition();
+      parseFail(Level.ERROR, si.getInt(), si.getString(), err, line);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseFail(Level level, int lineNumber, String fileName, String err) {
+      parseFail(level, lineNumber, fileName, err, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static void parseFail(Level level, int lineNumber, String fileName, String err, String line) {
+      if (err != null && !"".equals(err)) {
+         log(level, String.format("%s on line %d of %s", err, lineNumber, fileName));
+      } else if (line != null && !"".equals(line)) {
+         log(level, String.format("Failed to parse '%s', line %d of %s", line, lineNumber, fileName));
+         } else {
+         log(level, String.format("Failed to parse line %d of %s", lineNumber, fileName));
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void close() {
       sm_Log.close1();
+   }
+
+   // Private ///////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   // report as error or log as error
+   private static void log(Level level, StringBuilder err, String msg) {
+      if (err != null) {
+         // only show first message
+         if ("".equals(err.toString())) {
+            err.append(msg);
+         }
+         return;
+      }
+      sm_Log.log1(level, msg + ".");
    }
 
    // Instance ///////////////////////////////////////////////////////////////

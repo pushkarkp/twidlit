@@ -26,6 +26,7 @@ import pkp.util.Log;
 public class Io {
 
    public static final boolean sm_MUST_EXIST = true;
+   public static final boolean sm_SINGLE_VALUE = true;
    public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
    public static final char sm_COMMENT = '#';
    public static final String sm_WS = "   ";
@@ -337,6 +338,24 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public interface StringToIntsErr {
+      int[] cvt(String str, StringBuilder err);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public interface StringToIntErr {
+      int cvt(String str, StringBuilder err);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static final StringToIntErr sm_parseIntErr =
+      new StringToIntErr() {
+         public int cvt(String str, StringBuilder err) {
+            return toInt(str, err);
+         }
+      };
+
+   ////////////////////////////////////////////////////////////////////////////
    public interface StringToInts {
       int[] cvt(String str);
    }
@@ -350,39 +369,62 @@ public class Io {
    public static final StringToInt sm_parseInt = 
       new StringToInt() {
          public int cvt(String str) {
-            return Io.toInt(str);
+            return toInt(str);
          }
       };
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(String value) {
-      int i = toInt(value);
-      return (i >= 0) ? i : sm_PARSE_FAILED;
+      return toPosInt(value, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toPosInt(String value, StringBuilder err) {
+      int i = toInt(value, err);
+      if (i >= 0) {
+         return i;
+      }
+      Log.err(err, String.format("Expecting a positive integer, got %d", i));
+      return sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toPosInt(int max, String value) {
-      int i = Io.toInt(value);
-      return (i >= 0 && i <= max) ? i : sm_PARSE_FAILED;
+      return toPosInt(max, value, null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static int toIntWarnParse(String value) {
-      return toIntWarnParse(value, 10);
+   public static int toPosInt(int max, String value, StringBuilder err) {
+      int i = toInt(value, err);
+      if (i >= 0 && i <= max) {
+         return i;
+      }
+      Log.err(err, String.format("Expecting an integer in [0..%d], got %d", max, i));
+      return sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static int toIntWarnParse(String value, int base) {
+   public static int toIntWarnParse(String value, StringBuilder err) {
+      return toIntWarnParse(value, 10, err);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toIntWarnParse(String value, int base, StringBuilder err) {
       try {
          return Integer.parseInt(value, base);
       } catch (NumberFormatException e) {
-         Log.warn("Failed to parse \"" + value + "\" to integer.");
+         Log.warn(err, "Failed to parse \"" + value + "\" to integer");
          return sm_PARSE_FAILED;
       }
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int toInt(String value) {
+      return toInt(value, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int toInt(String value, StringBuilder err) {
       if (value != null && !"".equals(value)) {
          int neg = 1;
          if (value.length() > 0 && value.charAt(0) == '-') {
@@ -392,9 +434,9 @@ public class Io {
          try {
             int parsed;
             if (value.length() > 1 && value.substring(0,2).equals("0x")) {
-               parsed = toIntWarnParse(value.substring(2), 16);
+               parsed = toIntWarnParse(value.substring(2), 16, err);
             } else {
-               parsed = toIntWarnParse(value);
+               parsed = toIntWarnParse(value, err);
             }
             return parsed == sm_PARSE_FAILED ? parsed : neg * parsed;
          } catch (NumberFormatException e) {}
@@ -404,24 +446,34 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public static int parseInt(String value) {
-      return parseInt("", value);
+      return parseInt("", value, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int parseInt(String value, StringBuilder err) {
+      return parseInt("", value, err);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static int parseInt(String str, String value) {
-      int result = toInt(value);
+      return parseInt(str, value, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int parseInt(String str, String value, StringBuilder err) {
+      int result = toInt(value, err);
       if (result != sm_PARSE_FAILED) {
          return result;
       }
       if (value == null || "".equals(value)) {
          if ("".equals(str)) {
-            Log.err("Missing number.");
+            Log.err(err, "Missing number");
          }
-         Log.err("Missing value for \"" + str + "\".");
+         Log.err(err, "Missing value for \"" + str + "\"");
       } else if ("".equals(str)) {
-         Log.err("Failed to parse number \"" + value + "\".");
+         Log.err(err, "Failed to parse number \"" + value + "\"");
       }
-      Log.err("Failed to parse \"" + str + "\" value \"" + value + "\".");
+      Log.err(err, "Failed to parse \"" + str + "\" value \"" + value + "\"");
       return sm_PARSE_FAILED;
    }
 
@@ -506,40 +558,49 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    // returns an interpretation of the first escaped character in the string
-   public static int parseEscapeFirst(String str) {
-      CharIntPair cip = parseEscape1By1(str);
+   public static int parseEscapeFirst(String str, StringBuilder err) {
+      CharIntPair cip = parseEscape1By1(str, err);
       if (cip == null) {
-         return -1;
+         return sm_PARSE_FAILED;
       }
       return cip.m_Char;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    // returns an interpretation of the string representing one escaped character
-   public static int parseEscape1(String str) {
-      CharIntPair cip = parseEscape1By1(str);
+   public static int parseEscape1(String str, StringBuilder err) {
+      CharIntPair cip = parseEscape1By1(str, err);
+//System.out.printf("%c (%d) %d%n", cip.m_Char, (int)cip.m_Char, cip.m_Int);
       if (cip == null) {
-         return -1;
+         return sm_PARSE_FAILED;
       }
       if (cip.m_Int != str.length()) {
          char c = cip.m_Char;
-         Log.err(String.format("%s->%s (\\x%02x)", str, c, (int)c));
-         return -1;
+         Log.err(err, String.format("Expecting an escaped character, got \"%s\"", str));
+         return sm_PARSE_FAILED;
       }
       return cip.m_Char;
    }
    
    ////////////////////////////////////////////////////////////////////////////
+   public static String parseEscape(String str) {
+      return parseEscape(str, null);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    // returns an interpretation of the string of escaped characters
    // includes the form \xnn where nn is a 2 digit hex value.
-   public static String parseEscape(String str) {
+   public static String parseEscape(String str, StringBuilder err) {
       char[] buf = new char[str.length()];
       int i = 0;
       int j = 0;
       CharIntPair cip = null;
       for (;;) {
-         cip = parseEscape1By1(str.substring(j));
+         cip = parseEscape1By1(str.substring(j), err);
          if (cip == null) {
+            if (err != null && err.length() != 0) {
+               return null;
+            }
             break;
          }
          buf[i++] = cip.m_Char;
@@ -590,7 +651,8 @@ public class Io {
    }   
 
    ////////////////////////////////////////////////////////////////////////////
-   private static CharIntPair parseEscape1By1(String str) {
+   // return the character and the length of the string parsed.
+   private static CharIntPair parseEscape1By1(String str, StringBuilder err) {
       if ("".equals(str)) {
          return null;
       }
@@ -599,7 +661,7 @@ public class Io {
          return new CharIntPair(c, 1);
       }
       if (str.length() == 1) {
-         Log.warn("Unexpected '\\' at end of line");
+         Log.warn(err, "Unexpected '\\' at end of line");
          return null;
       }
       char c1 = str.charAt(1);
@@ -607,10 +669,14 @@ public class Io {
          return new CharIntPair(escapedToChar(c1), 2);
       }
       if (str.length() < 4) {
-         Log.warn("Too few digits after '\\x' at end of line");
+         Log.warn(err, "Too few digits after '\\x' at end of line");
          return null;
       }
-      return new CharIntPair((char)Integer.parseInt(str.substring(2, 4), 16), 4);
+      int c2 = toIntWarnParse(str.substring(2, 4), 16, err);
+      if (c2 == sm_PARSE_FAILED) {
+         return null;
+      }
+      return new CharIntPair((char)c2, 4);
    }
 
    // Main /////////////////////////////////////////////////////////////////////

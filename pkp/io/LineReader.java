@@ -10,11 +10,13 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.URL;
 import pkp.string.StringSource;
+import pkp.string.StringInt;
+import pkp.util.NamedOrdered;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 // uses Io.trimComment() to strip comments but does not strip spaces from line.
-public class LineReader implements StringSource {
+public class LineReader implements StringSource, NamedOrdered {
 
    ////////////////////////////////////////////////////////////////////////////
    public LineReader(URL url, boolean mustExist) {
@@ -50,6 +52,12 @@ public class LineReader implements StringSource {
          ++m_LineNumber;
       } while ("".equals(line.trim()));
       return line;
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////
+   // NamedOrdered
+   public StringInt getNameAndPosition() {
+      return new StringInt(getPath(), getLineNumber());
    }
 
    ////////////////////////////////////////////////////////////////////////////

@@ -58,34 +58,43 @@ public class KeyPress {
       sm_FileFormat = Format.valueOf(str.toUpperCase());
       str = Pref.get("#.display.format", Format.STD.name());
       sm_DisplayFormat = Format.valueOf(str.toUpperCase());
-      final Io.StringToInts escKeyEscCharSwap = new Io.StringToInts() {
-                                       public int[] cvt(String str) {
-                                          int key = escKeyToInt(str);
-                                          int value = Io.parseEscape1(str.substring(6).trim());
+      final Io.StringToIntsErr escKeyEscCharSwap = new Io.StringToIntsErr() {
+                                       public int[] cvt(String str, StringBuilder err) {
+                                          int key = escKeyToInt(str, err);
+                                          if (key == Io.sm_PARSE_FAILED) {
+                                             return new int[]{key, key};
+                                          }
+                                          int value = Io.parseEscape1(str.substring(6).trim(), err);
                                           return new int[]{value, key};
                                        }
                                     };
-      final Io.StringToInts escKeyPos0xFFFFSwap = new Io.StringToInts() {
-                                       public int[] cvt(String str) {
-                                          int key = escKeyToInt(str);
-                                          int value = Io.toPosInt(0xFFFF, str.substring(6).trim());
+      final Io.StringToIntsErr escKeyPos0xFFFFSwap = new Io.StringToIntsErr() {
+                                       public int[] cvt(String str, StringBuilder err) {
+                                          int key = escKeyToInt(str, err);
+                                          if (key == Io.sm_PARSE_FAILED) {
+                                             return new int[]{key, key};
+                                          }
+                                          int value = Io.toPosInt(0xFFFF, str.substring(6).trim(), err);
                                           return new int[]{value, key};
                                        }
                                     };
-      final Io.StringToInts escKey = new Io.StringToInts() {
-                                       public int[] cvt(String str) {
-                                          int key = escKeyToInt(str);
+      final Io.StringToIntsErr escKey = new Io.StringToIntsErr() {
+                                       public int[] cvt(String str, StringBuilder err) {
+                                          int key = escKeyToInt(str, err);
+                                          if (key == Io.sm_PARSE_FAILED) {
+                                             return new int[]{key, key};
+                                          }
                                           return new int[]{key & 255, key >> 8};
                                        }
                                     };
-      final Io.StringToInts escChar = new Io.StringToInts() {
-                                       public int[] cvt(String str) {
-                                          return new int[]{Io.parseEscape1(str)};
+      final Io.StringToIntsErr escChar = new Io.StringToIntsErr() {
+                                       public int[] cvt(String str, StringBuilder err) {
+                                          return new int[]{Io.parseEscape1(str, err)};
                                        }
                                     };
-      final Io.StringToInt escKey1 = new Io.StringToInt() {
-                                       public int cvt(String str) {
-                                          return escKeyToInt(str);
+      final Io.StringToIntErr escKey1 = new Io.StringToIntErr() {
+                                       public int cvt(String str, StringBuilder err) {
+                                          return escKeyToInt(str, err);
                                        }
                                     };
       sm_KeyValueToCode = LookupTableBuilder.read(
@@ -100,7 +109,10 @@ public class KeyPress {
          Duplicates.ERROR,
          0x10, 0x7F,
          escKeyPos0xFFFFSwap);
-      sm_KeyCodeToName = (new StringsIntsBuilder(Persist.getExistDirJarUrl("#.pref.dir", "twidlit.name.keys"), true, escKey1)).build();
+      sm_KeyCodeToName = (new StringsIntsBuilder(
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.name.keys"), 
+         escKey1, 
+         Io.sm_SINGLE_VALUE)).build();
       // unprintables are mostly < 0x20
       sm_Unprintable = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("#.pref.dir", "twidlit.unprintable.keys"),
@@ -175,26 +187,24 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress parseEscape(String str) {
-      return noModifiers(escKeyToInt(str));
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static int escKeyToInt(String str) {
+   public static int escKeyToInt(String str, StringBuilder err) {
       if (!"\\k".equals(str.substring(0, 2))) {
-         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found \"" + str + '"');
+         Log.err(err, "Expecting \"\\kxxxx\" (x is a hex digit), found \"" + str.substring(0, 6) + '"');
+         return Io.sm_PARSE_FAILED;
       }
       if (str.length() < 6) {
-         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found too short \"" + str + '"');
+         Log.err(err, '"' + str + "\" is too short");
+         return Io.sm_PARSE_FAILED;
       }
       if (Io.findFirstNotOfUpTo(str.substring(2), Io.sm_HEX_DIGIT, 4) < 4) {
-         Log.err("Expecting \"\\kxxxx\" (x is a hex digit), found non-hex digit in \"" + str + '"');
+         Log.err(err, '"' + str.substring(0, 6) + "\" contains a non-hex digit");
+         return Io.sm_PARSE_FAILED;
       }
-      return Integer.parseInt(str.substring(2, 6), 16);
+      return Io.toIntWarnParse(str.substring(2, 6), 16, err);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress parseTag(String tag, Modifiers modifiers) {
+   public static KeyPress parseTag(String tag, Modifiers modifiers, StringBuilder err) {
       if ("".equals(tag)) {
          return new KeyPress();
       }
@@ -203,9 +213,9 @@ public class KeyPress {
       if ('0' <= c0 && c0 <= '9') {
 //System.out.printf("tag %s c0 %c\n", tag, c0);
          if (tag.length() > 1 && tag.substring(0, 2).equals("0x")) {
-            return parseText((char)Integer.parseInt(tag.substring(2), 16), modifiers);
+            return parseText((char)Integer.parseInt(tag.substring(2), 16), modifiers, err);
          }
-         return parseText((char)Integer.parseInt(tag), modifiers);
+         return parseText((char)Integer.parseInt(tag), modifiers, err);
       }
       boolean closing = (c0 == '/');
       if (closing) {
@@ -216,10 +226,10 @@ public class KeyPress {
 //System.out.printf("parseTag: keyCode 0x%x modifiers 0x%x tag %s mod 0x%x\n", keyCode, modifiers.toInt(), tag, mod.toInt());
       if (mod.isEmpty()) {
          if (closing) {
-				Log.warn("Unrecognized closing modifier: \"" + tag + "\".");
+            Log.warn(err, "Unrecognized closing modifier: \"" + tag + "\".");
             return new KeyPress();
          } else if ((keyCode & sm_KEYS) == 0) {
-				Log.warn("Unrecognized tag: \"" + tag + "\".");
+            Log.warn(err, "Unrecognized tag: \"" + tag + "\".");
             return new KeyPress();
          }
       } else if (closing) {
@@ -234,11 +244,11 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress parseText(char ch, Modifiers mod) {
+   public static KeyPress parseText(char ch, Modifiers mod, StringBuilder err) {
 //System.out.println("kp parseText '" + ch + "'");
       int keyCodeWithShift = sm_KeyValueToCode.get(ch);
 		if (keyCodeWithShift < 0) {
-         Log.log("\"" + ch + "\" has no code.");
+         Log.warn(err, "\"" + ch + "\" has no code.");
          return new KeyPress();
       }
 //System.out.printf("parseText |%c| (%d) -> 0x%x (mod 0x%x)\n", ch, (int)ch, keyCodeWithShift, mod.toInt());
@@ -248,7 +258,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseText(char ch) {
-      return parseText(ch, Modifiers.fromKeyCode(0));
+      return parseText(ch, Modifiers.fromKeyCode(0), null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -261,30 +271,30 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress parse(StringWithOffset swo, Modifiers mod) {
+   public static KeyPress parse(StringWithOffset swo, Modifiers mod, StringBuilder err) {
 //System.out.printf("KeyPress parse(%s, %d, '%s')%n", swo.getString(), swo.getOffset(), mod);
       String str = swo.getString();
       int start = swo.getOffset();
       char c0 = str.charAt(start);
       if (c0 != '\\' || start >= str.length() - 1) {
          swo.setOffset(start + 1);
-         return parseText(c0, mod);
+         return parseText(c0, mod, err);
       } else {
          char c1 = str.charAt(start + 1);
          if (c1 != 'k') {
-            int ch = Io.parseEscapeFirst(str.substring(start));
-            if (ch == -1) {
+            int ch = Io.parseEscapeFirst(str.substring(start), err);
+            if (ch == Io.sm_PARSE_FAILED) {
                // error at EOL, already warned
                swo.setOffsetToEnd();
                return new KeyPress();
             }
             swo.setOffset(start + ((c1 == 'x') ? 4 : 2));
-            return KeyPress.parseText((char)ch, mod);
+            return KeyPress.parseText((char)ch, mod, err);
          } else if (start + 6 > str.length()) {
-            Log.warn('"' + str.substring(start) + "\" is too short");
+            Log.warn(err, '"' + str.substring(start) + "\" is too short");
             return new KeyPress();
          } else {   
-            int k = Io.toIntWarnParse(str.substring(start + 2, start + 6), 16);
+            int k = Io.toIntWarnParse(str.substring(start + 2, start + 6), 16, err);
 //System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(start + 2, start + 6), k);
             swo.setOffset(start + 6);
             return new KeyPress(k, mod.plus(Modifiers.fromKeyCode(k)));
@@ -441,21 +451,23 @@ public class KeyPress {
 	////////////////////////////////////////////////////////////////////////////
    private static int[] readKeyCodeValues(URL url) {
       int kv[] = new int[513];
-      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
+      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST, Log.Level.ERROR);
       String keyCode;
       int key = 0;
+      StringBuilder err = new StringBuilder();
       for (; (keyCode = spr.getNextFirst()) != null; key += 2) {
-         kv[key] = escKeyToInt(keyCode);
+         kv[key] = escKeyToInt(keyCode, err);
          if (kv[key] <= 0) {
-            Log.err(String.format("Expected a positive integer key code while parsing \"%s\" on line %d of \"%s\".",
-                                  keyCode, spr.getLineNumber(), url.getPath()));
+            Log.parseErr(spr, err.toString(), "");
+            err = new StringBuilder();
          }
          String value = spr.getNextSecond();
-         kv[key + 1] = Io.parseEscape1(value);
-         if (kv[key + 1] < 0) {
-            Log.err(String.format("Failed to parse \"%s\" on line %d of \"%s\".",
-                                  value, spr.getLineNumber(), url.getPath()));
+         int keyValue = Io.parseEscape1(value, err);
+         if (keyValue < 0) {
+            Log.parseErr(spr, err.toString(), value);
+            err = new StringBuilder();
          }
+         kv[key + 1] = keyValue;
       }
       spr.close();
       kv[key] = 0;
@@ -503,11 +515,13 @@ public class KeyPress {
          }
          return;
       }
+      StringBuilder err = new StringBuilder();
       for (int i = 0; i < args.length; ++i) {
-			char c = args[i].charAt(0);
+         char c = args[i].charAt(0);
          if (c == '<') {
-            KeyPress act = KeyPress.parseTag(args[i].substring(1, args[i].length() - 1), Modifiers.sm_EMPTY);
-            System.out.printf("'%s': '%s' '%s'\n", args[i], act.toString(), act.toTagString());
+            KeyPress act = KeyPress.parseTag(args[i].substring(1, args[i].length() - 1), Modifiers.sm_EMPTY, err);
+            System.out.printf("'%s': '%s' '%s' (%s)\n", args[i], act, act.toTagString(), err);
+            err = new StringBuilder();
          } else if (c == '-') {
             switch (args[i].charAt(1)) {
             case 'c': System.out.print(sm_KeyCodeToValue.toString()); break;
@@ -518,7 +532,7 @@ public class KeyPress {
          } else {
             for (int j = 0; j < args[i].length(); ++j) {
                char ch = args[i].charAt(j);
-               KeyPress kp = KeyPress.parseText(ch, Modifiers.sm_EMPTY);
+               KeyPress kp = KeyPress.parseText(ch, Modifiers.sm_EMPTY, null);
                System.out.printf("'%c': '%s'\n", ch, kp.toTagString());
             }
          }

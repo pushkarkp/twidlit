@@ -22,18 +22,19 @@ public class LookupSetBuilder extends LookupBuilder {
                                 boolean mustExist, 
                                 int minFreq, 
                                 int maxFreq,
-                                Io.StringToInts si) {
+                                Io.StringToIntsErr si) {
       LookupSetBuilder lsb = new LookupSetBuilder(minFreq, maxFreq);
       lsb.setMessage(String.format(" in %s", url.getPath()));
       LineReader lr = new LineReader(url, mustExist);
       String line;
+      StringBuilder err = new StringBuilder();
       while ((line = lr.readLine()) != null) {
-         int[] in = si.cvt(line.trim());
+         int[] in = si.cvt(line.trim(), err);
          if (in.length < 1
           || in[0] == Io.sm_PARSE_FAILED
           || (in.length >= 2 && in[1] == Io.sm_PARSE_FAILED)) {
-            Log.err(String.format("Failed to parse line %d \"%s\" of \"%s\".",
-                                  lr.getLineNumber(), line, url.getPath()));
+            Log.parseErr(lr, err.toString(), line);
+            err = new StringBuilder();
          }
          if (in.length == 1) {
             lsb.add(in[0]);
