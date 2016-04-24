@@ -2,7 +2,7 @@
 # Copyright 2015 Pushkar Piggott
 #
 # A list of the key event codes for all keys.
-# Key code names can be found in TwidlitKeyNames.txt.
+# Key code names can be found in twidlit.name.keys.
 #
 # Entries are of the form:
 # <key code> <event code>

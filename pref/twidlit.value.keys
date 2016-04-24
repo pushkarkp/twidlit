@@ -3,7 +3,7 @@
 #
 # A list of the ASCII values of keystrokes.
 # see www.w3.org/TR/DOM-Level-3-Events-code
-# Key code names can be found in TwidlitKeyNames.txt.
+# Key code names can be found in twidlit.name.keys.
 #
 # Entries are of the form:
 # <keystroke code> <value>
