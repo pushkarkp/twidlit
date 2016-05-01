@@ -25,6 +25,7 @@ import pkp.twiddle.Chord;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Assignment;
+import pkp.twiddle.Assignments;
 import pkp.times.SortedChordTimes;
 import pkp.io.Io;
 import pkp.io.LineReader;
@@ -65,12 +66,13 @@ class ChordMapper extends ControlDialog
       m_KeysFile = Persist.getFile("#.map.keys.file");
       m_MappedFile = Persist.getFile("#.map.mapped.file");
       m_GotEnter = false;
-      m_DuplicateKeys = false;
+      m_DuplicateKeys = 0;
+      m_DuplicateKey = "";
       m_ExistingTwiddles = (ArrayList<Integer>[])new ArrayList[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          m_ExistingTwiddles[i] = new ArrayList<Integer>();
       }
-      m_Assignments = new ArrayList<Assignment>();
+      m_Assignments = new Assignments();
       Box box = getBox();
       JLabel label = new JLabel("<html>Optionally select a file of existing mappings to include.</html>");
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -151,20 +153,16 @@ class ChordMapper extends ControlDialog
          Persist.set("#.map.frequency.sort", m_CheckBoxSort.isSelected());
          Persist.set("#.map.show.unmapped", m_CheckBoxShowAll.isSelected());
          map(m_MappedFile, m_ChordsFile, m_KeysFile);
-         if (m_CheckBoxSort.isSelected()) {
-            m_Assignments = orderByChordTimes(m_Assignments);
-         } else if (m_CheckBoxShowAll.isSelected()) {
-            m_Assignments = addUnmapped(m_Assignments);
-         }
          SaveChordsWindow scw = new
             SaveChordsWindow(this, "Chord Mappings", "cfg.chords");
          scw.setPersistName("#.chord.list");
          scw.setExtension("cfg.chords");
          scw.setVisible(true);
-         if (m_DuplicateKeys) {
+         if (m_DuplicateKeys > 0) {
             String action = m_CheckBoxSkipDup.isSelected() ? "skipped" : "found";
             String seeLog = Log.hasFile() ? " (see log for details)." : ".";
-            Log.warn("Duplicate keystrokes were " + action + seeLog);
+            Log.warn(String.format("%d duplicate keystrokes (eg %s) were ", m_DuplicateKeys, m_DuplicateKey)
+                    + action + " in " + m_KeysFile.getPath() + seeLog);
          }
          // return;
       case sm_CANCEL:
@@ -182,7 +180,10 @@ class ChordMapper extends ControlDialog
    ///////////////////////////////////////////////////////////////////
    @Override // ContentForTitle
    public String getContentForTitle(String title) {
-      return Assignment.toString(m_Assignments, KeyPress.Format.FILE);
+      return m_Assignments.toString(KeyPress.Format.FILE, false, 
+                                    m_CheckBoxShowAll.isSelected(), 
+                                    m_CheckBoxSort.isSelected()
+                                    ? m_Times : null);
    }
 
    // Private /////////////////////////////////////////////////////////////////
@@ -345,6 +346,9 @@ class ChordMapper extends ControlDialog
             }
          }
          mappedLr.close();
+         if (m_Assignments.isRemap()) {
+            Log.warn(m_Assignments.reportRemap(mappedLr.getPath()));
+         }
       }
       if (chordF != null && keysF != null) {
          StringBuilder err = new StringBuilder();
@@ -364,6 +368,9 @@ class ChordMapper extends ControlDialog
          }
          chordLr.close();
          keysLr.close();
+         if (m_Assignments.isRemap()) {
+            Log.warn(m_Assignments.reportRemap(chordLr.getPath()));
+         }
       }
    }
 
@@ -387,10 +394,6 @@ class ChordMapper extends ControlDialog
                String msg = String.format("Failed to parse invalid twiddle \"%s\"", str);
                Log.parseWarn(lr, msg, str);
                str = "";
-            } else if (!isNew(t)) {
-               String msg = String.format("Skipped duplicate chord %s", t);
-               Log.parseWarn(lr, msg, str);
-               str = "";
             } else if (target == Target.MAPPED) {
                str = line;
             } else if (target == Target.CHORD) {
@@ -410,7 +413,7 @@ class ChordMapper extends ControlDialog
       int length = Io.findFirstOf(rest, Io.sm_WS);
       if (length == 0) {
          Log.log(String.format("Initial |%c|", line.charAt(initial)));
-         Log.log(String.format("Failed to parse \"%s\" on line %d of \"%s\".",
+         Log.log(String.format("Failed to parse \"%s\" on line %d of %s.",
                                line, lr.getLineNumber(), lr.getPath()));
          return "";
       }
@@ -420,21 +423,29 @@ class ChordMapper extends ControlDialog
       String str = line.substring(initial, initial + length);
       StringBuilder err = new StringBuilder();
       KeyPressList kpl = KeyPressList.parseTextAndTags(str, err);
-      kpl = handleEnter(kpl);
       if (!kpl.isValid()) {
-         Log.warn(String.format("Failed to parse \"%s\" on line %d of \"%s\" (%s).",
+         Log.warn(String.format("Failed to parse \"%s\" on line %d of %s (%s).",
                                 str, lr.getLineNumber(), lr.getPath(), err));
          err = new StringBuilder();
+         return "";
+      }
+      kpl = handleEnter(kpl);
+      if (!kpl.isValid()) {
+         // discarded enter
          return "";
       }
 //System.out.printf("%d %s %s%n", m_Assignments.size(), m_Assignments.get(1).getKeyPressList().toString(KeyPress.Format.ESC), kpl.toString(KeyPress.Format.ESC));
       String action = m_CheckBoxSkipDup.isSelected() ? "Skipped" : "Found";
       for (int i = 0; i < m_Assignments.size(); ++i) {
          if (kpl.equals(m_Assignments.get(i).getKeyPressList())) {
-            Log.log(String.format(action + " repeat of '%s' on line %d of \"%s\".",
-                                  line.substring(initial, initial + length), lr.getLineNumber(), lr.getPath()));
-            m_DuplicateKeys = true;
+            String keys = line.substring(initial, initial + length);
+            Log.log(String.format(action + " repeat of '%s' on line %d of %s.",
+                                  keys, lr.getLineNumber(), lr.getPath()));
             if (m_CheckBoxSkipDup.isSelected()) {
+               ++m_DuplicateKeys;
+               if ("".equals(m_DuplicateKey)) {
+                  m_DuplicateKey = keys;
+               }
                return "";
             }
          }
@@ -484,64 +495,6 @@ class ChordMapper extends ControlDialog
       return c == '\r' || c == '\n';
    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   private boolean isNew(Twiddle t) {
-      ArrayList<Integer> chord = m_ExistingTwiddles[t.getChord().toInt() - 1];
-      int mods = t.getThumbKeys().toInt();
-      for (int i = 0; i < chord.size(); ++i) {
-         if (chord.get(i) == mods) {
-            return false;
-         }
-      }
-      chord.add(mods);
-      return true;
-   }
-
-   ///////////////////////////////////////////////////////////////////////////////
-   private ArrayList<Assignment> orderByChordTimes(ArrayList<Assignment> asgs) {
-      ArrayList<Assignment> sorted = new ArrayList<Assignment>();
-      for (int i = 0; i < m_Times.getSize(); ++i) {
-         String label = m_Times.getSortedLabel(i);
-         int chord = Chord.fromString(label);
-         if (chord == 0) {
-            Log.err("Badly formed chord \"" + m_Times.getSortedLabel(i) + "\".");
-            continue;
-         }
-         int a = 0;
-         for (; a < asgs.size(); ++a) {
-            Twiddle tw = asgs.get(a).getTwiddle();
-            if (tw.getThumbKeys().isEmpty() && tw.getChord().toInt() == chord) {
-               break;
-            }
-         }
-         if (a < asgs.size()) {
-            sorted.add(asgs.get(a));
-         } else if (m_CheckBoxShowAll.isSelected()) {
-            sorted.add(new Assignment(new Twiddle(chord), new KeyPressList()));
-         }
-      }
-      return sorted;
-   }
-
-   ///////////////////////////////////////////////////////////////////////////////
-   private ArrayList<Assignment> addUnmapped(ArrayList<Assignment> asgs) {
-      ArrayList<Assignment> all = new ArrayList<Assignment>(asgs);
-      for (int i = 0; i < Chord.sm_VALUES; ++i) {
-         int chord = i + 1;
-         int a = 0;
-         for (; a < asgs.size(); ++a) {
-            Twiddle tw = asgs.get(a).getTwiddle();
-            if (tw.getThumbKeys().isEmpty() && tw.getChord().toInt() == chord) {
-               break;
-            }
-         }
-         if (a == asgs.size()) {
-            all.add(new Assignment(new Twiddle(chord), new KeyPressList()));
-         }
-      }
-      return all;
-   }
-
    // Data /////////////////////////////////////////////////////////////////////
    private static final String sm_OK = "OK";
    private static final String sm_CANCEL = "Cancel";
@@ -563,10 +516,11 @@ class ChordMapper extends ControlDialog
    private JCheckBox m_CheckBoxSkipDup;
    private JCheckBox m_CheckBoxSort;
    private JCheckBox m_CheckBoxShowAll;
-   private boolean m_DuplicateKeys;
+   private int m_DuplicateKeys;
+   private String m_DuplicateKey;
    private boolean m_GotEnter;
    private ArrayList<Integer>[] m_ExistingTwiddles;
-   private ArrayList<Assignment> m_Assignments;
+   private Assignments m_Assignments;
    private SortedChordTimes m_Times;
 }
 

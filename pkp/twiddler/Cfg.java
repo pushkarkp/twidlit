@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import pkp.twiddle.Assignment;
+import pkp.twiddle.Assignments;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
@@ -45,7 +46,7 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static void write(File f, Settings tc, ArrayList<Assignment> asgs) {
+   public static void write(File f, Settings tc, Assignments asgs) {
       int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
       int startOfMulti = endOfTwiddles + sm_THUMB_SPEC_SIZE;
       byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
@@ -129,11 +130,11 @@ public class Cfg implements Settings {
    public Cfg() {
       m_EnableRepeat = false;
       m_EnableStorage = false;
-      m_Assignments = new ArrayList<Assignment>();
+      m_Assignments = new Assignments();
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Cfg(Settings set, ArrayList<Assignment> asgs) {
+   public Cfg(Settings set, Assignments asgs) {
       m_IntSettings = set.getIntSettings();
       m_EnableRepeat = isEnableRepeat();
       m_EnableStorage = isEnableStorage();
@@ -161,13 +162,13 @@ public class Cfg implements Settings {
    public boolean isEnableStorage() { return m_EnableStorage; }
 
    ////////////////////////////////////////////////////////////////////////////
-   public ArrayList<Assignment> getAssignments() {
+   public Assignments getAssignments() {
       return m_Assignments;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      String str = Assignment.toString(m_Assignments, KeyPress.Format.FILE);
+      String str = m_Assignments.toString();
       for (IntSettings is: getIntSettings().values()) {
          if (!is.isDefault()) {
             str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
@@ -205,7 +206,7 @@ public class Cfg implements Settings {
          fis.read(data, 0, data.length);
          fis.close();
       } catch (IOException e) {
-         Log.warn("Failed to read \"" + inputFile.getPath() + "\" " + e);
+         Log.warn("Failed to read " + inputFile.getPath() + " " + e);
          return false;
       }
       ByteBuffer bb = ByteBuffer.wrap(data);
@@ -229,12 +230,12 @@ public class Cfg implements Settings {
       m_EnableStorage = (bits & 2) != 0;
 
       KeyPress.clearWarned();
-      m_Assignments = new ArrayList<Assignment>();
+      m_Assignments = new Assignments();
       ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
       ArrayList<Integer> whichKpl = new ArrayList<Integer>();
       for (;;) {
          if (bb.remaining() < 2) {
-            Log.err("Cfg file is corrupt.");
+            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
          }
          short t = bb.getShort();
          short k = bb.getShort();
@@ -243,13 +244,13 @@ public class Cfg implements Settings {
             break;
          }
          if (t == 0 || k == 0) {
-            Log.err(String.format("Cfg file format error: twiddle 0x%x key 0x%x%n", t, k));
+            Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, inputFile.getPath()));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
          if (k >= 0) {
             KeyPress kp = KeyPress.fromKeyCode(k);
             if (!kp.isValid()) {
-               Log.warn(String.format("Found invalid key code %d", k));
+               Log.warn(String.format("Found invalid key code 0x%x in %s.", k, inputFile.getPath()));
                continue;
             }
             KeyPressList kpl = new KeyPressList(kp);
@@ -264,7 +265,7 @@ public class Cfg implements Settings {
       // mouse assignments
       for (;;) {
          if (bb.remaining() < 2) {
-            Log.err("Cfg file is corrupt.");
+            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
          }
          short t = bb.getShort();
          byte k = bb.get();
@@ -272,7 +273,7 @@ public class Cfg implements Settings {
             break;
          }
          if (t == 0 || k == 0) {
-            Log.err(String.format("\"%s\" has a format error: %x %x.", inputFile.getPath(), t, k));
+            Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, inputFile.getPath()));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
 //System.out.printf("3 Mouse: %s (t 0x%x) (k 0x%x)\n", tw.toString(), t, k);
@@ -280,7 +281,7 @@ public class Cfg implements Settings {
       ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
       for (;;) {
          if (bb.remaining() < 2) {
-            Log.err("Cfg file is corrupt.");
+            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
          }
          short s = bb.getShort();
          if (s == 0) {
@@ -289,7 +290,7 @@ public class Cfg implements Settings {
          KeyPressList kpl = new KeyPressList();
          int len = ((s >> 9) & 0xFF) - 1;
          if (bb.remaining() < len * 2) {
-            Log.err("Cfg file is corrupt.");
+            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
          }
 //System.out.printf("4 s 0x%x: len %d%n", s, len);
          for (int i = 0; i < len; ++i) {
@@ -301,9 +302,10 @@ public class Cfg implements Settings {
          kpls.add(kpl);
       }
       for (int i = 0; i < multi.size(); ++i) {
-         Assignment asg = new Assignment(multi.get(i), kpls.get(whichKpl.get(i)));
-         m_Assignments.add(asg);
-//System.out.println("5 " + asg);
+         m_Assignments.add(new Assignment(multi.get(i), kpls.get(whichKpl.get(i))));
+      }
+      if (m_Assignments.isRemap()) {
+         Log.warn(m_Assignments.reportRemap(inputFile.getPath()));
       }
       return true;
    }
@@ -324,7 +326,7 @@ public class Cfg implements Settings {
       SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
       boolean readSettings = false;
 
-      m_Assignments = new ArrayList<Assignment>();
+      m_Assignments = new Assignments();
       String line;
       StringBuilder err = new StringBuilder();
       for (int i = 1; (line = spr.getNextLine()) != null; ++i) {
@@ -338,6 +340,9 @@ public class Cfg implements Settings {
          }
       }
       spr.close();
+      if (m_Assignments.isRemap()) {
+         Log.warn(m_Assignments.reportRemap(url.getPath()));
+      }
       return true;
    }
 
@@ -377,7 +382,7 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static int countMulti(ArrayList<Assignment> asgs) {
+   private static int countMulti(Assignments asgs) {
       int size = 0;
       for (int i = 0; i < asgs.size(); ++i) {
          KeyPressList kpl = asgs.get(i).getKeyPressList();
@@ -431,5 +436,5 @@ public class Cfg implements Settings {
    private IntSettings m_IntSettings;
    private boolean m_EnableRepeat = false;
    private boolean m_EnableStorage = false;
-   private ArrayList<Assignment> m_Assignments = new ArrayList<Assignment>();
+   private Assignments m_Assignments = new Assignments();
 }

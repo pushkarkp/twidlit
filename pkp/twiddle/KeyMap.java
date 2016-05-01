@@ -23,7 +23,7 @@ import pkp.util.Log;
 public class KeyMap {
 
    ////////////////////////////////////////////////////////////////////////////
-   public KeyMap(ArrayList<Assignment> asgs) {
+   public KeyMap(Assignments asgs) {
       this();
       m_Assignments = asgs;
       index();
@@ -37,7 +37,7 @@ public class KeyMap {
   }
 
    ////////////////////////////////////////////////////////////////////////////
-   public ArrayList<Assignment> getAssignments() {
+   public Assignments getAssignments() {
       return m_Assignments;
    }
 
@@ -79,8 +79,8 @@ public class KeyMap {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public ArrayList<Assignment> getAssignmentsReversed() {
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+   public Assignments getAssignmentsReversed() {
+      Assignments asgs = new Assignments();
       for (int i = 0; i < m_Assignments.size(); ++i) {
          Assignment asg = m_Assignments.get(i);
          Assignment newAsg = m_Assignments.get(i);
@@ -95,20 +95,11 @@ public class KeyMap {
       return asgs;
    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   public String toString() {
-      String str = "";
-      for (int i = 0; i < m_Assignments.size(); ++i) {
-         str += m_Assignments.get(i).toString() + "\n";
-      }
-      return str;
-   }
-
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
    private KeyMap() {
-      m_Assignments = new ArrayList<Assignment>();
+      m_Assignments = new Assignments();
       m_KeyPressIndex = null;
       m_TwiddleIndex = null;
    }
@@ -125,22 +116,13 @@ public class KeyMap {
             err = new StringBuilder();
          } else {
 //System.out.println("|" + line + "|->|" + asg.toString()+ '|');
-            add(asg);
+            m_Assignments.add(asg);
          }
       }
       lr.close();
-   }
-
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void add(Assignment asg) {
-      for (int i = m_Assignments.size() - 1; i >= 0; --i) {
-         if (asg.hasSameKeys(m_Assignments.get(i))) {
-            m_Assignments.set(i, new Assignment(asg, m_Assignments.get(i)));
-            return;
-         }
+      if (m_Assignments.isRemap()) {
+         Log.warn(m_Assignments.reportRemap(lr.getPath()));
       }
-      m_Assignments.add(asg);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -175,7 +157,7 @@ public class KeyMap {
   }
 
    // Data ////////////////////////////////////////////////////////////////////
-   private ArrayList<Assignment> m_Assignments;
+   private Assignments m_Assignments;
    private LookupTable m_KeyPressIndex;
    private LookupTable m_TwiddleIndex;
 

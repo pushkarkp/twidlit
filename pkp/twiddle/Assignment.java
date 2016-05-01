@@ -16,15 +16,6 @@ public class Assignment extends java.lang.Object {
    public static Assignment sm_NO_ASSIGNMENT = new Assignment(new Twiddle(), new KeyPressList());
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String toString(ArrayList<Assignment> asgs, KeyPress.Format format) {
-      String str = "";
-      for (Assignment asg: asgs) {
-			str += asg.toString(format) + '\n';
-		}
-      return str;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public static Assignment combine(Assignment a1, Assignment a2) {
       return new Assignment(a1, a2);
    }
@@ -47,70 +38,6 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static ArrayList<Assignment> listAll() {
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-         Twiddle tw = new Twiddle(i, 0);
-         asgs.add(new Assignment(tw, KeyPressList.parseText(tw.getChord().toString() + " ")));
-      }
-      return asgs;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static ArrayList<Assignment> listAllNamedByFingerCount() {
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (int fingers = 1; fingers <= 4; ++fingers) {
-         for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-            if (Chord.countFingers(i) == fingers) {
-               Twiddle tw = new Twiddle(i, 0);
-               asgs.add(new Assignment(tw, KeyPressList.parseText(tw.getChord().toString() + " ")));
-            }
-         }
-      }
-      return asgs;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static ArrayList<Assignment> listAllByFingerCount() {
-      final int MIN_CODE = 4;
-      final int MAX_CODE = 0x52;
-      final int MODE_INC = 0x200;
-      int code = MIN_CODE;
-      int mod = 0;
-      Modifiers modifiers = Modifiers.fromKeyCode(mod);
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (int fingers = 1; fingers <= 4; ++fingers) {
-         for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-            if (Chord.countFingers(i) == fingers) {
-               Twiddle tw = new Twiddle(i, 0);
-               KeyPress kp;
-               do {
-                  kp = new KeyPress(code, modifiers);
-                  ++code;
-                  // omit keys with keyboard state etc
-                  while (code == 0x39 // CapsLock
-                      || code == 0x32 // IntlHash
-                      || code == 0x46 // PrintScreen
-                      || code == 0x47 // ScrollLock
-                      || code == 0x48 // Pause
-                      || code == 0x49 // Insert
-                      ) {
-                     ++code;
-                  }
-                  if (code > MAX_CODE) {
-                     code = MIN_CODE;
-                     mod += MODE_INC;
-                     modifiers = Modifiers.fromKeyCode(mod);
-                  }
-               } while (!kp.isValid() || kp.isDuplicate() || kp.isLost());
-               asgs.add(new Assignment(tw, new KeyPressList(kp)));
-            }
-         }
-      }
-      return asgs;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public Assignment(Twiddle tw, KeyPressList kpl) {
       m_Twiddles = new ArrayList<Twiddle>();
       m_Twiddles.add(tw);
@@ -124,17 +51,6 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Assignment(Assignment a1, Assignment a2) {
-      if (!a1.hasSameKeys(a2)) {
-         Log.err("Trying to merge assignments with different keys");
-      }
-      m_Twiddles = new ArrayList<Twiddle>(a1.m_Twiddles);
-      // define order
-      m_Twiddles.addAll(a1.m_Twiddles);
-      m_KeyPressList = a1.m_KeyPressList;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public Assignment(Assignment asg, Modifiers mod) {
       m_Twiddles = new ArrayList<Twiddle>();
       for (int i = 0; i < asg.getTwiddleCount(); ++i) {
@@ -144,30 +60,75 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean hasSameKeys(Assignment asg) {
-//System.out.printf("Assignment.hasSameKeys: %s == %s%n", m_KeyPressList.toString(), asg.m_KeyPressList.toString());
-      return asg.m_KeyPressList.equals(m_KeyPressList);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public int getTwiddleCount() { return m_Twiddles.size(); }
    public Twiddle getTwiddle(int i) { return m_Twiddles.get(i); }
    public Twiddle getTwiddle() { return getTwiddle(0); }
    public KeyPressList getKeyPressList() { return m_KeyPressList; }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString() {
-      return toString(KeyPress.Format.FILE);
+   public boolean isMap(Twiddle tw) {
+      for (int i = 0; i < m_Twiddles.size(); ++i) {
+         if (tw.equals(m_Twiddles.get(i))) {
+            return true;
+         }
+      }
+      return false;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString(KeyPress.Format format) {
+   public ArrayList<Assignment> separate() {
+      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+      for (int i = 0; i < m_Twiddles.size(); ++i) {
+         asgs.add(new Assignment(m_Twiddles.get(i), m_KeyPressList));
+      }
+      return asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean isThumbed() {
+      for (int i = 0; i < m_Twiddles.size(); ++i) {
+         if (!m_Twiddles.get(i).getThumbKeys().isEmpty()) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public String toString() {
+      return toString(KeyPress.Format.FILE, false, "\n");
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public String toString(KeyPress.Format format, boolean shortStr, String separator) {
+      if (shortStr && isThumbed()) {
+         shortStr = false;
+      }
       String keys = " = " + m_KeyPressList.toString(format);
+      String sep = "";
       String twiddles = "";
       for (int i = 0; i < m_Twiddles.size(); ++i) {
-         twiddles += m_Twiddles.get(i).toString() + keys;
+         twiddles += sep
+                   + (shortStr
+                     ? m_Twiddles.get(i).toShortString()
+                     : m_Twiddles.get(i).toString())
+                   + keys;
+         sep = separator;
       }
       return twiddles;
+   }
+
+   // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private Assignment(Assignment a1, Assignment a2) {
+      if (!a1.m_KeyPressList.equals(a2.m_KeyPressList)) {
+         Log.err("Trying to merge assignments with different keys");
+      }
+      m_Twiddles = new ArrayList<Twiddle>(a1.m_Twiddles);
+      // define order
+      m_Twiddles.addAll(a2.m_Twiddles);
+      m_KeyPressList = a1.m_KeyPressList;
    }
 
    // Data ////////////////////////////////////////////////////////////////////

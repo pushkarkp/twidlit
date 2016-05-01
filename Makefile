@@ -7,7 +7,7 @@ CHARS=pkp/chars/CharCounts.class pkp/chars/Counts.class pkp/chars/NGram.class pk
 SOURCE=pkp/source/ChordSource.class pkp/source/KeyPressListSource.class pkp/source/KeyPressSource.class pkp/source/UniformSource.class
 TEXT=pkp/text/TextPanel.class
 TIMES=pkp/times/ChordTimes.class pkp/times/SortedChordTimes.class
-TWIDDLE=pkp/twiddle/Assignment.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
+TWIDDLE=pkp/twiddle/Assignment.class pkp/twiddle/Assignments.class pkp/twiddle/Chord.class pkp/twiddle/KeyMap.class pkp/twiddle/KeyPress.class pkp/twiddle/KeyPressList.class pkp/twiddle/Modifiers.class pkp/twiddle/ThumbKeys.class pkp/twiddle/Twiddle.class 
 TWIDDLER=pkp/twiddler/Cfg.class pkp/twiddler/Settings.class pkp/twiddler/SettingsWindow.class 
 TWIDLIT=pkp/twidlit/ChordMapper.class pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/SaveChordsWindow.class pkp/twidlit/SaveTextWindow.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import pkp.twiddle.Assignment;
+import pkp.twiddle.Assignments;
 import pkp.twiddle.Chord;
 import pkp.twiddle.KeyMap;
 import pkp.twiddle.Twiddle;
@@ -239,7 +240,7 @@ class TwidlitMenu extends PersistentMenuBar
       switch (title) {
       case sm_ALL_CHORDS_TITLE:
          return (new Cfg(m_SettingsWindow, 
-                         Assignment.listAllByFingerCount())).toString();
+                         Assignments.listAllByFingerCount())).toString();
       case sm_SAVE_AS_TITLE:
          return (new Cfg(m_SettingsWindow,
                          m_Twidlit.getKeyMap().getAssignments())).toString();
@@ -563,7 +564,7 @@ class TwidlitMenu extends PersistentMenuBar
    private void setCfg(Cfg cfg) {
       m_AllChordsItem.setEnabled(cfg != null);
       if (cfg == null) {
-         cfg = new Cfg(m_SettingsWindow, Assignment.listAllByFingerCount());
+         cfg = new Cfg(m_SettingsWindow, Assignments.listAllByFingerCount());
       }
       m_TwidlitInit.setKeyMap(new KeyMap(cfg.getAssignments()));
       boolean settingsVisible = m_SettingsWindow.isVisible();
@@ -627,10 +628,11 @@ class TwidlitMenu extends PersistentMenuBar
             }             
             switch (eff.getExtension()) {
             case sm_CFG_CHORDS:
-               m_CfgDir = f.getParent();
-               m_CfgFName = f.getName();
                m_Twidlit.extendTitle(f.getAbsolutePath());
                setCfg(Cfg.readText(f));
+               // set after successful load
+               m_CfgDir = f.getParent();
+               m_CfgFName = f.getName();
                return;
             case sm_CFG:
                m_Twidlit.extendTitle(f.getAbsolutePath());
