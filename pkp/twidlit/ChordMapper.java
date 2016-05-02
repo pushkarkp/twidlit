@@ -384,16 +384,14 @@ class ChordMapper extends ControlDialog
          String str = "";
          if (target == Target.KEYS) {
             str = getKeys(line, lr);
-         } else if (line.length() < 6) {
-            String msg = String.format("Failed to parse too short line \"%s\"", str);
-            Log.parseWarn(lr, msg, str);
-            str = "";
+         } else if (line.length() < 4) {
+            String msg = String.format("Failed to parse too short line \"%s\"", line);
+            Log.parseWarn(lr, msg);
          } else {
             Twiddle t = new Twiddle(line);
             if (!t.getChord().isValid()) {
-               String msg = String.format("Failed to parse invalid twiddle \"%s\"", str);
-               Log.parseWarn(lr, msg, str);
-               str = "";
+               String msg = String.format("Failed to parse invalid twiddle \"%s\"", line);
+               Log.parseWarn(lr, msg);
             } else if (target == Target.MAPPED) {
                str = line;
             } else if (target == Target.CHORD) {
