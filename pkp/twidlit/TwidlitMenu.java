@@ -118,8 +118,8 @@ class TwidlitMenu extends PersistentMenuBar
       add(helpMenu, sm_HELP_REF_TEXT);
       add(helpMenu, sm_HELP_SYNTAX_TEXT);
       helpMenu.addSeparator();
-      JMenuItem showLog = add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
-      showLog.setEnabled(Log.hasFile());
+      addCheckItem(helpMenu, sm_HELP_WRITE_LOG_TEXT);
+      m_ShowLog = add(helpMenu, sm_HELP_SHOW_LOG_TEXT);
       helpMenu.addSeparator();
       add(helpMenu, sm_HELP_ABOUT_TEXT);
       
@@ -230,6 +230,15 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_TUTOR_VERTICAL_TWIDDLER_TEXT:
          m_Twidlit.getTwiddlerWindow().setVertical(item.getState());
+         return;
+      case sm_HELP_WRITE_LOG_TEXT:
+         if (item.getState() != Log.hasFile()) {
+            m_ShowLog.setEnabled(item.getState());
+            Log.setFile(item.getState()
+                        ? Io.createFile(m_Twidlit.getHomeDir(), 
+                                        sm_LOG_FILE_NAME)
+                        : null);
+         }
          return;
       }
    }
@@ -898,17 +907,20 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
-   private static final String sm_HELP_MENU_TEXT = "Help";
+   public static final String sm_HELP_MENU_TEXT = "Help";
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
    private static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
    private static final String sm_HELP_REF_TEXT = "Reference";
    private static final String sm_HELP_SYNTAX_TEXT = "File Types";
+   public static final String sm_HELP_WRITE_LOG_TEXT = "Log";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
    private static final String sm_SAVE_AS_TITLE = "Mapped Chords";
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
+
+   public static final String sm_LOG_FILE_NAME = "twidlit.log";
 
    private static final String sm_TEST = "#.test.code.untargeted";
    private static final String sm_TEST_PERSIST = "#.test.code.not.in.persist";
@@ -965,4 +977,5 @@ class TwidlitMenu extends PersistentMenuBar
    private File m_KeyPressFile;
    private HtmlWindow m_HelpWindow;
    private HtmlWindow m_AboutWindow;
+   private JMenuItem m_ShowLog;
 }

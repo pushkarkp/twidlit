@@ -114,8 +114,7 @@ public class PersistentMenuBar extends JMenuBar implements ActionListener, ItemL
 
    ///////////////////////////////////////////////////////////////////
    protected JCheckBoxMenuItem addCheckItem(JMenu menu, String text, boolean enabled) {
-      String persist = Persist.get("#." + menu.getText() + " " + text);
-      boolean selected = persist != null && persist.toLowerCase().equals("true");
+      boolean selected = Persist.getBool("#." + menu.getText() + '.' + text);
       JCheckBoxMenuItem item = new JCheckBoxMenuItem(text, selected);
       menu.add(item);
       item.addItemListener(this);
