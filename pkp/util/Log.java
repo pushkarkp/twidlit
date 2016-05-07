@@ -275,8 +275,8 @@ public class Log implements ActionListener {
       if (sm_BUTTON_STRING.equals(e.getActionCommand())) {
          m_TextWindow.clear();
          closeFile();
-         if (m_File.exists() && !m_File.isDirectory() && !m_File.delete()) {
-            warn("Log failed to delete \"" + m_File + "\".");
+         if (m_File != null && m_File.exists() && !m_File.isDirectory()) {
+            m_File.delete();
          }
          openFile();
       }

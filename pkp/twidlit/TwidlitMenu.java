@@ -233,12 +233,12 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_HELP_WRITE_LOG_TEXT:
          if (item.getState() != Log.hasFile()) {
-            m_ShowLog.setEnabled(item.getState());
             Log.setFile(item.getState()
                         ? Io.createFile(m_Twidlit.getHomeDir(), 
                                         sm_LOG_FILE_NAME)
                         : null);
          }
+         m_ShowLog.setEnabled(Log.hasFile());
          return;
       }
    }
