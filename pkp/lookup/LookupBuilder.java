@@ -47,7 +47,7 @@ public class LookupBuilder {
    ////////////////////////////////////////////////////////////////////////////
    boolean newEntry(int key1, int key2, int index) {
       key1 -= m_Offset;
-//System.out.printf("add: %d %d: %d \n", key1, key2, index);
+//System.out.printf("add: [%d] %d %d: %d \n", m_Offset, key1, key2, index);
       ArrayList<Integer> entry = null;
       if (key1 >= 0 && key1 < m_Lookup.size()) {
 //System.out.printf("add: table entry%n");
@@ -160,13 +160,15 @@ public class LookupBuilder {
                action = " using the latter";
                break;
             }
-            String msg;
+            // user is familiar with key + offset
+            int key = key1 + m_Offset;
+            int found = entry.get(i + 1);
+            String msg = String.format(" found for %d [0x%x] and %d [0x%x]%s%s", 
+                                       found, found, index, index, action, m_Msg);
             if (key2 == LookupTable.sm_NO_VALUE) {
-               msg = String.format("Same key %d (0x%x) found for %d (0x%x) and %d (0x%x)%s%s", 
-                                   key1, key1, entry.get(i + 1), entry.get(i + 1), index, index, action, m_Msg);
+               msg = String.format("Same key %d [0x%x]", key, key) + msg;
             } else {
-               msg = String.format("Same key (%d %d) found for %d and %d%s%s", 
-                                   key1, key2, entry.get(i + 1), index, action, m_Msg);
+               msg = String.format("Same key (%d [0x%x] %d [0x%x])", key, key, key2, key2) + msg;
             }
             Log.log(logLevel, msg);
             if (m_Duplicates == Duplicates.OVERWRITE) {
