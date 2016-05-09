@@ -84,7 +84,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_CountsInDir = Persist.get(sm_COUNTS_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CountsOutDir = Persist.get(sm_COUNTS_TEXT_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CountsMinimum = 1;
-      m_CountsMaximum = Integer.MAX_VALUE;
+      m_CountsMaximum = 2000000000;
       
       JMenu tutorMenu = new JMenu(sm_TUTOR_MENU_TEXT);
       add(tutorMenu);
@@ -936,8 +936,6 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_NGRAMS_FILE_PERSIST = "#.ngrams.file";
    private static final String sm_COUNTS_DIR_PERSIST = "#.counts.dir";
    private static final String sm_COUNTS_TEXT_DIR_PERSIST = "#.counts.out.dir";
-   private static final String sm_COUNTS_MINIMUM_PERSIST = "#.counts.minimum";
-   private static final String sm_COUNTS_MAXIMUM_PERSIST = "#.counts.maximum";
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "#.key.source.file";
    private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "#.tutor.other.timed";
    private static final String sm_TUTOR_OTHER_AUTOSCALE_PERSIST = "#.tutor.other.autoscale";
