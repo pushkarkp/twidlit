@@ -49,7 +49,7 @@ test.ui.not.in.persist
 tutor.1
 tutor.2
 tutor.auto-scale
-tutor.show.twiddler
+tutor.hide.twiddler
 tutor.vertical.twiddler
 tutor.timed
 twiddler.horz.y

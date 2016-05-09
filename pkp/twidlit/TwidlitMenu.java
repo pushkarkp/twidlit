@@ -89,9 +89,9 @@ class TwidlitMenu extends PersistentMenuBar
       JMenu tutorMenu = new JMenu(sm_TUTOR_MENU_TEXT);
       add(tutorMenu);
       m_HandButtons = new ButtonGroup();
-      JCheckBoxMenuItem visible = addCheckItem(tutorMenu, sm_TUTOR_VISIBLE_TWIDDLER_TEXT);
+      JCheckBoxMenuItem hide = addCheckItem(tutorMenu, sm_TUTOR_HIDE_TWIDDLER_TEXT);
       boolean vertical = addCheckItem(tutorMenu, sm_TUTOR_VERTICAL_TWIDDLER_TEXT).isSelected();
-      TwiddlerWindow tw = new TwiddlerWindow(visible, vertical, isRightHand(), m_Twidlit);
+      TwiddlerWindow tw = new TwiddlerWindow(hide, vertical, isRightHand(), m_Twidlit);
       m_Twidlit.setTwiddlerWindow(tw);
       tutorMenu.addSeparator();
       addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
@@ -225,8 +225,8 @@ class TwidlitMenu extends PersistentMenuBar
          }
          m_Twidlit.setTimed(item.getState());
          return;
-      case sm_TUTOR_VISIBLE_TWIDDLER_TEXT:
-         m_Twidlit.getTwiddlerWindow().setVisible(item.getState());
+      case sm_TUTOR_HIDE_TWIDDLER_TEXT:
+         m_Twidlit.getTwiddlerWindow().setVisible(!item.getState());
          return;
       case sm_TUTOR_VERTICAL_TWIDDLER_TEXT:
          m_Twidlit.getTwiddlerWindow().setVertical(item.getState());
@@ -897,7 +897,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_COUNTS_GRAPH_TEXT = "Graph Counts";
    private static final String sm_COUNTS_CLEAR_TEXT = "Clear Counts";
    private static final String sm_TUTOR_MENU_TEXT = "Tutor";
-   private static final String sm_TUTOR_VISIBLE_TWIDDLER_TEXT = "Show Twiddler";
+   private static final String sm_TUTOR_HIDE_TWIDDLER_TEXT = "Hide Twiddler";
    private static final String sm_TUTOR_VERTICAL_TWIDDLER_TEXT = "Vertical Twiddler";
    private static final String sm_TUTOR_CHORDS_TEXT = "Chords";
    private static final String sm_TUTOR_KEYS_TEXT = "Keystrokes";

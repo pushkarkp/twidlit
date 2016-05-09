@@ -33,7 +33,7 @@ import pkp.util.Log;
 class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
-   TwiddlerWindow(JCheckBoxMenuItem menuItem, boolean vert, boolean right, KeyListener keyListener) {
+   TwiddlerWindow(JCheckBoxMenuItem menuItemHide, boolean vert, boolean right, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
       setTitle("Twiddler");
@@ -41,7 +41,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
       addKeyListener(keyListener);
-      m_MenuItem = menuItem;
+      m_MenuItemHide = menuItemHide;
 
       m_COLOR_BACKGROUND = Pref.getColor(sm_COLOR_BACKGROUND_PREF, Color.black);
       m_COLOR_BUTTON = Pref.getColor(sm_COLOR_BUTTON_PREF, Color.lightGray);
@@ -90,7 +90,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    /////////////////////////////////////////////////////////////////////////////
    @Override
    public void setVisible(boolean visible) {
-      m_MenuItem.setState(visible);
+      m_MenuItemHide.setState(!visible);
       super.setVisible(visible);
    }
 
@@ -764,7 +764,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    private static final int sm_THIN = 4;
 
-   private JCheckBoxMenuItem m_MenuItem;
+   private JCheckBoxMenuItem m_MenuItemHide;
    private JPanel m_ThumbPanel;
    private JPanel m_ChordPanel;
    private JPanel m_TwiddlerPanel;
