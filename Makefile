@@ -1,3 +1,9 @@
+#
+# Copyright 2015 Pushkar Piggott
+#
+# Twidlit Makefile
+# Currently used with Cygwin.
+#
 IO=pkp/io/CrLf.class pkp/io/Io.class pkp/io/LineReader.class pkp/io/SpacedPairReader.class
 STRING=pkp/string/StringSource.class pkp/string/StringInt.class pkp/string/StringsInts.class pkp/string/StringsIntsBuilder.class
 LOOKUP=pkp/lookup/LookupBuilder.class pkp/lookup/LookupImplementation.class pkp/lookup/LookupSet.class pkp/lookup/LookupSetBuilder.class pkp/lookup/LookupTable.class pkp/lookup/LookupTableBuilder.class pkp/lookup/SharedIndex.class
