@@ -66,7 +66,17 @@ public class SettingsWindow extends ControlWindow implements Settings  {
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // Settings
-   public IntSettings getIntSettings() { return m_IntCfg; }
+   public IntSettings getIntSettings() {
+      int i = 0;
+      for (IntSettings is: m_IntCfg.values()) {
+         // skip immutable major and minor version
+         if (is.ordinal() > 1) {
+            is.setValue(getInt(i));
+            ++i;
+         }
+      }
+      return m_IntCfg;
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // Settings

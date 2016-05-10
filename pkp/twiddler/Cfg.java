@@ -136,8 +136,8 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    public Cfg(Settings set, Assignments asgs) {
       m_IntSettings = set.getIntSettings();
-      m_EnableRepeat = isEnableRepeat();
-      m_EnableStorage = isEnableStorage();
+      m_EnableRepeat = set.isEnableRepeat();
+      m_EnableStorage = set.isEnableStorage();
       m_Assignments = asgs;
    }
 
