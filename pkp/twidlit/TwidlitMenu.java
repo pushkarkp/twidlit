@@ -803,22 +803,16 @@ class TwidlitMenu extends PersistentMenuBar
 
       /////////////////////////////////////////////////////////////////////////////
       public void run() {
+         enableCountsMenu(false);
          if (!m_File.isDirectory()) {
-            enableCountsMenu(false);
             m_Counts.count(m_File);
          } else {
-            ProgressWindow pw = new ProgressWindow("Count Progress", "", 0, Io.countFiles(m_File));
+            List<File> files = Io.listAllFilesInTree(m_File);
+            ProgressWindow pw = new ProgressWindow("Count Progress", "", 0, files.size());
             pw.setVisible(true);
-            File[] files = m_File.listFiles();
-            if (files == null) {
-               return;
-            }
-            enableCountsMenu(false);
             for (File file : files) {
-               if (!file.isDirectory()) {
-                  m_Counts.count(file);
-                  pw.step();
-               }
+               m_Counts.count(file);
+               pw.step();
             }
             pw.setVisible(false);
             pw.dispose();

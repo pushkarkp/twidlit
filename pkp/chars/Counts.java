@@ -229,12 +229,14 @@ public class Counts {
    ////////////////////////////////////////////////////////////////////////////
    private SharedIndex createIndex() {
       ArrayList<SharedIndexableInts> sic = new ArrayList<SharedIndexableInts>();
-      sic.add(m_CharCounts);
-      if (m_CharCounts.hasBigramCounts()) {
-         sic.add(m_CharCounts.new BigramCounts());
-      }
-      if (getNGrams() != null) {
-         sic.add(getNGrams());
+      if (m_CharCounts != null) {
+         sic.add(m_CharCounts);
+         if (m_CharCounts.hasBigramCounts()) {
+            sic.add(m_CharCounts.new BigramCounts());
+         }
+         if (getNGrams() != null) {
+            sic.add(getNGrams());
+         }
       }
       return SharedIndex.create(sic, m_HighestCount, m_LowestCount);
    }

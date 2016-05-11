@@ -188,20 +188,23 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static int countFiles(File f) {
-      if (f == null || !f.exists() || !f.isDirectory()) {
-         return 0;
+   public static List<File> listAllFilesInTree(File f) {
+      ArrayList<File> files = new ArrayList<File>();
+      if (f == null || !f.exists()) {
+         return files;
       }
-      int count = 0;
-      File[] files = f.listFiles();
-      if (files != null) {
-         for (File file : files) {
-            if (!file.isDirectory()) {
-               ++count;;
-            }
+      if (f.isFile()) {
+         files.add(f);
+         return files;
+      }
+      for (File file : f.listFiles()) {
+         if (file.isFile()) {
+            files.add(file);
+         } else if (file.isDirectory()) {
+            files.addAll(listAllFilesInTree(file));
          }
       }
-      return count;
+      return files;
    }
 
    ////////////////////////////////////////////////////////////////////////////
