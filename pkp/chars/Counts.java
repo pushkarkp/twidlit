@@ -165,11 +165,11 @@ public class Counts {
          if (i % STEP == STEP - 1) {
             pw.step();
          }
-			int dots = (int)(m_Index.getValue(i) * scale);
-			if (dots > 0) {
-				int last = Math.min(dots, WIDTH - 1);
+         int dots = (int)(m_Index.getValue(i) * scale);
+         if (dots > 0) {
+            int last = Math.min(dots, WIDTH - 1);
             String label = m_Index.getLabel(i);
-            str += pad.substring(0, pad.length() - label.length()) + label;
+            str += pad.substring(0, Math.max(0, pad.length() - label.length())) + label;
             str += ' ' + (new String(new char[last])).replace('\0', '=');
 				str += (dots == WIDTH) ? "=\n"
                  : (dots > WIDTH) ? ">\n" : "\n";
@@ -219,10 +219,10 @@ public class Counts {
          String ig = "";
          for (int i = 0; i < ignored.length; ++i) {
             if (ignored[i]) {
-               ig += String.format(" %d", i + 128);
+               ig += String.format(" 0x%x", i + 128);
             }
          }
-         Log.log("Count ignored the following bytes in \"" + f.getName() + "\":" + ig);
+         Log.log("Count ignored the following bytes in " + f.getName() + ':' + ig);
       }
 	}
    
