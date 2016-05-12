@@ -12,12 +12,16 @@ import pkp.util.Log;
 public class NGram {
    
    ////////////////////////////////////////////////////////////////////////////
+   // n > 1
    public static boolean isValid(String chars) {
-      return chars != null && chars.length() > 0;
+      return chars != null && chars.length() > 1;
    }
    
    ////////////////////////////////////////////////////////////////////////////
    public NGram(String chars) {
+      if (chars.length() < 2) {
+         Log.err("Ngram too short \"" + chars + '"');
+      }
       m_Chars = new String(chars);
       m_Next = 1;
    }

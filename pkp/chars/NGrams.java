@@ -161,9 +161,13 @@ class NGrams implements SharedIndexableInts {
          if (ng != null) {
             ng = KeyPressList.parseTextAndTags(CrLf.normalize(ng), err).toString(KeyPress.Format.ESC);
          }
-//System.out.println("|" + line + "| -> |" + ng + "|");
+//System.out.println('|' + line + "| -> |" + ng + '|');
          if ("empty".equals(ng) || !NGram.isValid(ng)) {
-            Log.parseWarn(lr, err.toString(), line);
+            Log.parseWarn(lr, 
+                          ng == null || "empty".equals(ng) || "".equals(ng)
+                          ? err.toString()
+                          : "Invalid ngram \"" + ng + '"',
+                          line);
             err = new StringBuilder();
          } else {
             nGrams.add(ng);
