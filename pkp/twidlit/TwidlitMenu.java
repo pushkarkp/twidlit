@@ -193,6 +193,12 @@ class TwidlitMenu extends PersistentMenuBar
    protected void itemStateChanged(JCheckBoxMenuItem item) {
       switch (item.getText()) {
       case sm_COUNTS_BIGRAMS_TEXT:
+         if (m_CharCounts != null) {
+            actionPerformed(sm_COUNTS_CLEAR_TEXT);
+            if (m_CharCounts != null) {
+               return;
+            }
+         }
          m_CountsBigrams = item.isSelected();
          if (m_CharCounts != null
           && m_CharCounts.setShowBigrams(m_CountsBigrams)) {
@@ -200,6 +206,12 @@ class TwidlitMenu extends PersistentMenuBar
          }
          return;
       case sm_COUNTS_NGRAMS_TEXT:
+         if (m_CharCounts != null) {
+            actionPerformed(sm_COUNTS_CLEAR_TEXT);
+            if (m_CharCounts != null) {
+               return;
+            }
+         }
          if (m_CharCounts != null
           && m_CharCounts.setShowNGrams(item.isSelected()
                                         ? m_NGramsFile : null)) {
@@ -342,6 +354,12 @@ class TwidlitMenu extends PersistentMenuBar
          m_FileChooser = null;
          return;
       case sm_COUNTS_NGRAMS_FILE_TEXT:
+         if (m_CharCounts != null) {
+            actionPerformed(sm_COUNTS_CLEAR_TEXT);
+            if (m_CharCounts != null) {
+               return;
+            }
+         }
          m_FileChooser = makeFileChooser(new CountsFileActionListener(sm_COUNTS_NGRAM_FILE_TEXT), null);
          m_FileChooser.setDialogTitle("Select an NGrams File");
          if (m_NGramsFile != null) {
@@ -721,7 +739,7 @@ class TwidlitMenu extends PersistentMenuBar
                m_File = f;
             }
          } else if (e.getActionCommand() != "CancelSelection") {
-            Log.err("CountsFileActionListener unexpected command " + e.getActionCommand());
+            Log.err("SourceFileActionListener unexpected command " + e.getActionCommand());
          }
       }
       
