@@ -297,7 +297,7 @@ public class KeyPress {
             int k = Io.toIntWarnParse(str.substring(start + 2, start + 6), 16, err);
 //System.out.printf("parseTextAndTags2 %s, %d%n", str.substring(start + 2, start + 6), k);
             swo.setOffset(start + 6);
-            return new KeyPress(k, mod.plus(Modifiers.fromKeyCode(k)));
+            return new KeyPress(k & sm_KEYS, mod.plus(Modifiers.fromKeyCode(k)));
          }
       }
    }
