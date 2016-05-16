@@ -66,12 +66,10 @@ public class KeyPressSource implements KeyPressListSource {
    /////////////////////////////////////////////////////////////////////////////
    // upper and lower case alphabetics by default
    private ArrayList<KeyPressList> getDefault() {
-      byte[] str = new byte[2 * ('z' - 'a' + 1)];
-      int k = 0;
-      for (int i = 'A'; i <= 'a'; i += 'a' - 'A') {
-         for (int j = 0; j <= 'z' - 'a'; ++j) {
-            str[k++] = (byte)(i + j);
-         }
+      final int span = 'z' - 'a' + 1;
+      byte[] str = new byte[span];
+      for (int i = 0; i < span; ++i) {
+         str[i] = (byte)('a' + i);
       }
       ArrayList<KeyPressList> al = new ArrayList<KeyPressList>();
       add(al, new String(str), 1);
