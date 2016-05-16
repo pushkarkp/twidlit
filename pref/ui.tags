@@ -28,6 +28,10 @@ count.progress.w
 count.progress.h
 counts.include.bigrams
 counts.include.ngrams
+create.a.map.file.y
+create.a.map.file.x
+create.a.map.file.w
+create.a.map.file.h
 graph.of.character.counts.y
 graph.of.character.counts.x
 graph.of.character.counts.w
@@ -37,10 +41,6 @@ help.x
 help.w
 help.h
 help.log
-map.chords.y
-map.chords.x
-map.chords.w
-map.chords.h
 range.of.counts.displayed.y
 range.of.counts.displayed.x
 range.of.counts.displayed.w
