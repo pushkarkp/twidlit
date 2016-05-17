@@ -378,11 +378,11 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_COUNTS_FILES_TEXT:
          m_FileChooser = makeFileChooser(new CountsFileActionListener(command), m_CountsInDir);
          if (command.equals(sm_COUNTS_FILE_TEXT)) {
-            m_FileChooser.setDialogTitle("Select a Text File");
+            m_FileChooser.setDialogTitle("Select a Text File to Count");
             m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("txt"));
             m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
          } else {
-            m_FileChooser.setDialogTitle("Select a Folder of Text Files");
+            m_FileChooser.setDialogTitle("Select a Folder of Text Files to Count");
             m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          }
          m_FileChooser.showDialog(m_Twidlit, "OK");
