@@ -164,6 +164,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public KeyPress(int keyCode, Modifiers modifiers) {
+//System.out.printf("KeyPress(k 0x%x m 0x%x)%n", keyCode, modifiers.toInt());
       if (keyCode < 0) {
          m_KeyCode = 0;
          m_Modifiers = Modifiers.sm_EMPTY;
@@ -175,7 +176,6 @@ public class KeyPress {
          m_Modifiers = Modifiers.sm_EMPTY;
          return;
       }
-//System.out.printf("KeyPress k 0x%x m 0x%x%n", keyCode, modifiers.toInt());
       // don't allow modifiers in keycode
       m_KeyCode = keyCode & sm_KEYS;
       m_Modifiers = modifiers;
@@ -303,20 +303,14 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static String toString(KeyEvent ke) {
-      return String.format("key event code 0x%x ", ke.getKeyCode())
-           + Modifiers.fromKeyEvent(ke).toString();
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseEvent(KeyEvent ke) {
-//System.out.printf("java key code %d modifiers 0x%x side %d\n", ke.getKeyCode(), Modifiers.fromKeyEvent(ke).toInt(), ke.getKeyLocation());
       int keyCode = sm_KeyEventToCode.get(ke.getKeyCode());
+//System.out.printf("java key code 0x%x -> 0x%x side %d%n", ke.getKeyCode(), sm_KeyEventToCode.get(ke.getKeyCode()), ke.getKeyLocation());
       if (keyCode < 0) {
          Log.log(String.format("Key event code %d has no key code.", ke.getKeyCode()));
          return new KeyPress();
       }
-      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyEvent(ke));
+      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCodeIgnoreSide(keyCode, ke.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT));
    }
 
    ////////////////////////////////////////////////////////////////////////////

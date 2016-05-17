@@ -6,7 +6,6 @@
 
 package pkp.twiddle;
 
-import java.awt.event.KeyEvent;
 import pkp.string.StringsInts;
 import pkp.util.Pref;
 
@@ -33,7 +32,17 @@ class Modifiers {
 
    ////////////////////////////////////////////////////////////////////////////
    static Modifiers fromKeyCode(int keyCode) {
-      return new Modifiers(keyCode >> sm_BITS & sm_KEYS);
+      return fromKeyCodeIgnoreSide(keyCode, false);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   static Modifiers fromKeyCodeIgnoreSide(int keyCode, boolean right) {
+      int m = keyCode >> KeyPress.sm_KEYCODE_BITS & sm_KEYS;
+      if (right) {
+         m <<= sm_RIGHT_SHIFT;
+System.out.printf("fromKeyCode(0x%x)%n", m);
+      }
+      return new Modifiers(m);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -54,27 +63,6 @@ class Modifiers {
          sep = ", ";
       }
       return str;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   static Modifiers fromKeyEvent(KeyEvent ke) {
-      byte m = 0;
-      if (ke.isControlDown()) {
-         m |= sm_iLEFT_CTRL;
-      }
-      if (ke.isShiftDown()) {
-         m |= sm_iLEFT_SHIFT;
-      }
-      if (ke.isAltDown()) {
-         m |= sm_iLEFT_ALT;
-      }
-      if (ke.isMetaDown()) {
-         m |= sm_iLEFT_GUI;
-      }
-      if (ke.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) {
-         m <<= 4;
-      }
-      return new Modifiers(m);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -104,7 +92,7 @@ class Modifiers {
    ////////////////////////////////////////////////////////////////////////////
    // Makes side neutral.
    Modifiers onLeft() {
-      return new Modifiers((m_Value | m_Value >> 4) & sm_LEFT);
+      return new Modifiers((m_Value | m_Value >> sm_RIGHT_BIT_SHIFT) & sm_LEFT);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -153,7 +141,7 @@ class Modifiers {
    private Modifiers asButtons() {
       int value = m_Sided 
                  ? m_Value
-                 : (m_Value | m_Value >> 4);
+                 : (m_Value | m_Value >> sm_RIGHT_BIT_SHIFT);
       return new Modifiers(value & (sm_iLEFT_ALT | sm_iLEFT_SHIFT | sm_iLEFT_CTRL));
    }
 
@@ -183,10 +171,10 @@ class Modifiers {
 
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_KEYS = 0xFF;
-   private static final int sm_BITS = 8;
    private static final int sm_MAX_BIT = 0x80;
    private static final int sm_LEFT = 0x0F;
    private static final int sm_RIGHT = 0xF0;
+   private static final int sm_RIGHT_BIT_SHIFT = 4;
    private static final int sm_iBOTH_GUI = 0x88;
    private static final int sm_RIGHT_GUI = 0x80;
    private static final int sm_iBOTH_ALT = 0x44;
