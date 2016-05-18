@@ -45,14 +45,17 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          m_Right = right;
       }
       public void setChords() {
+         m_IsKeyStrokes = false;
          m_File = null;
       }
       public void setKeystrokes(File f) {
+         m_IsKeyStrokes = true;
          m_File = f;
       }
 
       private KeyMap m_KeyMap;
       private boolean m_Right;
+      private boolean m_IsKeyStrokes;
       private File m_File;
    }
    
@@ -120,10 +123,10 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       m_KeyMap = in.m_KeyMap;
       m_TextPanel = new TextPanel(m_KeyMap);
       setContentPane(m_TextPanel);
-      if (in.m_File == null) {
-         setChords();
-      } else {
+      if (in.m_IsKeyStrokes) {
          setKeystrokes(in.m_File);
+      } else {
+         setChords();
       }
    }
 
@@ -265,8 +268,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    ////////////////////////////////////////////////////////////////////////////
    @Override // KeyListener
    public void keyPressed(KeyEvent e) {
-//System.out.println("keyPressed " + KeyPress.toString(e));
       KeyPress kp = KeyPress.parseEvent(e);
+//System.out.printf("keyPressed(0x%x) %s%n", e.getKeyCode(), kp);
       // ignore invisible keys such as bare shift or control
       if (kp.isModifiers()) {
          return;
