@@ -30,14 +30,13 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public static Cfg read(File f) {
+      String path = f.getPath().toLowerCase();
       Cfg cfg = new Cfg();
-      return cfg.read1(f) ? cfg : null;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static Cfg readText(File f) {
-      Cfg cfg = new Cfg();
-      return cfg.readText1(f) ? cfg : null;
+      if (path.endsWith(".cfg")) {
+         return cfg.read1(f) ? cfg : null;
+      } else {
+         return cfg.readText1(f) ? cfg : null;
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////

@@ -134,7 +134,7 @@ class TwidlitMenu extends PersistentMenuBar
    public void start() {
       // use TwidlitInit to gather data so the source is not recreated over and over
       m_TwidlitInit = m_Twidlit.getInit();
-      setCfg(Cfg.readText(Io.createFile(m_CfgDir, m_CfgFName)));
+      setCfg(Cfg.read(Io.createFile(m_CfgDir, m_CfgFName)));
       m_TwidlitInit.setRightHand(isRightHand());
       setSource();
       // setSource() flips timed booleans so flip them back 
@@ -655,15 +655,15 @@ class TwidlitMenu extends PersistentMenuBar
             }             
             switch (eff.getExtension()) {
             case sm_CFG_CHORDS:
-               m_Twidlit.extendTitle(f.getAbsolutePath());
-               setCfg(Cfg.readText(f));
-               // set after successful load
-               m_CfgDir = f.getParent();
-               m_CfgFName = f.getName();
-               return;
             case sm_CFG:
-               m_Twidlit.extendTitle(f.getAbsolutePath());
-               setCfg(Cfg.read(f));
+               Cfg cfg = Cfg.read(f);
+               if (cfg != null) {
+                  setCfg(cfg);
+                  m_Twidlit.extendTitle(f.getAbsolutePath());
+                  // set only after success, or will fail next startup
+                  m_CfgDir = f.getParent();
+                  m_CfgFName = f.getName();
+               }
                return;
             }
             Log.err("FileOpenActionListener: unknown extension \"" + eff.getExtension() + '"');
@@ -707,6 +707,7 @@ class TwidlitMenu extends PersistentMenuBar
          }
          switch (eff.getExtension()) {
          case sm_CFG_CHORDS:
+            // 4finger or 0MRL
             Io.write(f, m_Window.getText());
             break;
          case sm_CFG:
