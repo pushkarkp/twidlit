@@ -107,7 +107,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   void initialize(TwidlitInit init) {
+   void initialize(TwidlitInit init, String chordPrompt) {
       if (!(init instanceof Init)) {
          Log.err("Bad TwidlitInit");
          return;
@@ -121,7 +121,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       Init in = (Init)init;
       m_TwiddlerWindow.setRightHand(in.m_Right);
       m_KeyMap = in.m_KeyMap;
-      m_TextPanel = new TextPanel(m_KeyMap);
+      m_TextPanel = new TextPanel(m_KeyMap, chordPrompt);
       setContentPane(m_TextPanel);
       if (in.m_IsKeyStrokes) {
          setKeystrokes(in.m_File);

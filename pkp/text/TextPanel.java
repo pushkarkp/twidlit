@@ -38,10 +38,12 @@ public class TextPanel
    implements KeyPressListSource.Message {
 
    ////////////////////////////////////////////////////////////////////////////
-   public TextPanel(KeyMap km) {
+   public TextPanel(KeyMap km, String chordsPrompt) {
       // badtags.sh supports only one tag per line
-      int textSize = Pref.getInt("#.text.size");
-      setFont(new Font(Pref.get("#.text.font"), Font.BOLD, textSize));
+      m_TextFont = new Font(Pref.get("#.text.font"), Font.BOLD, Pref.getInt("#.text.size"));
+      setFont(m_TextFont);
+      m_PromptFont = new Font(Pref.get("#.prompt.font"), Font.PLAIN, m_TextFont.getSize());
+      m_CHORDS_PROMPT = chordsPrompt;
       m_KeyMap = km;
 		m_Text = "";
 	   m_SPACE = (char)Pref.getInt("#.text.visible.space", 0x87);
@@ -149,17 +151,20 @@ public class TextPanel
    @Override
    public void paintComponent(Graphics g) {
       super.paintComponent(g);
-      // don't show chords' source text
-      if (isChords()) {
-         return;
-      }
       if (m_Past.length() + m_Text.length() == 0 || !(g instanceof Graphics2D)) {
 			return;
 		}
-		Graphics2D g2 = (Graphics2D)g;
+		int y = (int)(getHeight() * 0.75);
+      if (isChords()) {
+         // show prompt, not chords' source keys
+         int offset = setPromptFont(g);
+			g.setColor(Pref.getColor("#.text.color"));
+			g.drawString(m_CHORDS_PROMPT, offset, y);
+         g.setFont(m_TextFont);
+         return;
+      }
 		FontMetrics fm = g.getFontMetrics(getFont());
 		String hlight = m_Text.substring(0, m_Length).replace(' ', m_SPACE);
-		int y = 3 * getHeight() / 4;
 		int start = (getWidth() - fm.stringWidth(hlight.substring(0, 0))) / 3;
 		int startPast = start - fm.stringWidth(m_Past);
 		if (startPast < 0) {
@@ -177,12 +182,12 @@ public class TextPanel
 			m_Text += extend;
 		}
 		if (!m_HideText) {
-			g2.setColor(Pref.getColor("#.text.color"));
-			g2.drawString(m_Past, startPast, y);
-			g2.setColor(Pref.getColor("#.text.highlight.color"));
-			g2.drawString(hlight, start, y);
-			g2.setColor(Pref.getColor("#.text.color"));
-			g2.drawString(m_Text.substring(m_Length), startFuture, y);
+			g.setColor(Pref.getColor("#.text.color"));
+			g.drawString(m_Past, startPast, y);
+			g.setColor(Pref.getColor("#.text.highlight.color"));
+			g.drawString(hlight, start, y);
+			g.setColor(Pref.getColor("#.text.color"));
+			g.drawString(m_Text.substring(m_Length), startFuture, y);
 		}
    }
 
@@ -205,8 +210,39 @@ public class TextPanel
       return kpl.toString(Format.DISPLAY);
    }
 
+   ////////////////////////////////////////////////////////////////////////////
+   private int setPromptFont(Graphics g) {
+      final int WIDTH = (int)(getWidth() * 0.9);
+      FontMetrics fm;
+      int size = m_PromptFont.getSize();
+      for (;;) {
+         g.setFont(m_PromptFont);
+         fm = g.getFontMetrics(g.getFont());
+         if (fm.stringWidth(m_CHORDS_PROMPT) > WIDTH
+          || fm.getHeight() > getHeight()) {
+            break;
+         }
+//System.out.printf("fm.stringWidth(m_CHORDS_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORDS_PROMPT), getWidth());
+         ++size;
+         m_PromptFont = new Font(m_PromptFont.getName(), m_PromptFont.getStyle(), size);
+      }
+      for (;;) {
+         if (fm.stringWidth(m_CHORDS_PROMPT) < WIDTH
+          && fm.getHeight() < getHeight()) {
+            break;
+         }
+//System.out.printf("fm.stringWidth(m_CHORDS_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORDS_PROMPT), getWidth());
+         --size;
+         m_PromptFont = new Font(m_PromptFont.getName(), m_PromptFont.getStyle(), size);
+         g.setFont(m_PromptFont);
+         fm = g.getFontMetrics(g.getFont());
+      }
+      return (getWidth() - fm.stringWidth(m_CHORDS_PROMPT)) / 2;
+   }
+   
    // Data ////////////////////////////////////////////////////////////////////
    private final char m_SPACE;
+   private final String m_CHORDS_PROMPT;
    private KeyMap m_KeyMap;
    private KeyPressListSource m_KplSource;
    private Assignment m_Assignment;
@@ -216,4 +252,6 @@ public class TextPanel
    private int m_Length;
    private String m_Text;
    private boolean m_Hit;
+   private Font m_PromptFont;
+   private Font m_TextFont;
 }
