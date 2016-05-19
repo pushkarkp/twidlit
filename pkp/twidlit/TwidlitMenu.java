@@ -134,7 +134,12 @@ class TwidlitMenu extends PersistentMenuBar
    public void start() {
       // use TwidlitInit to gather data so the source is not recreated over and over
       m_TwidlitInit = m_Twidlit.getInit();
-      setCfg(Cfg.read(Io.createFile(m_CfgDir, m_CfgFName)));
+      File f = Io.createFile(m_CfgDir, m_CfgFName);
+      Cfg cfg = Cfg.read(f);
+      if (cfg == null) {
+         Log.warn("Failed to find " + f.getPath());
+      }
+      setCfg(cfg);
       m_TwidlitInit.setRightHand(isRightHand());
       setSource();
       // setSource() flips timed booleans so flip them back 
