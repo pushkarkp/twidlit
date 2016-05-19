@@ -40,9 +40,10 @@ public class TextPanel
    ////////////////////////////////////////////////////////////////////////////
    public TextPanel(KeyMap km, String chordsPrompt) {
       // badtags.sh supports only one tag per line
-      m_TextFont = new Font(Pref.get("#.text.font"), Font.BOLD, Pref.getInt("#.text.size"));
+      int size = Pref.getInt("#.text.size");
+      m_TextFont = new Font(Pref.get("#.text.font"), Font.BOLD, size);
       setFont(m_TextFont);
-      m_PromptFont = new Font(Pref.get("#.prompt.font"), Font.PLAIN, m_TextFont.getSize());
+      m_PromptFont = new Font(Pref.get("#.prompt.font"), Font.PLAIN, size);
       m_CHORDS_PROMPT = chordsPrompt;
       m_KeyMap = km;
 		m_Text = "";
