@@ -42,7 +42,7 @@ class ChordMapper extends ControlDialog
 
    ///////////////////////////////////////////////////////////////////
    ChordMapper(Window owner, SortedChordTimes times) {
-      super(owner, "Create A Map File");
+      super(owner, "Create Map File");
       setResizable(true);
       m_NL = null;
       m_CR = null;

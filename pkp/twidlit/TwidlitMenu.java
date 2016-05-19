@@ -894,7 +894,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_FILE_ALL_CHORDS_TEXT = "Map All Chords...";
    private static final String sm_FILE_OPEN_TEXT = "Open...";
    private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
-   private static final String sm_FILE_MAP_CHORDS_TEXT = "Create A Map File...";
+   private static final String sm_FILE_MAP_CHORDS_TEXT = "Create Map File...";
    private static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
    private static final String sm_FILE_PREF_TEXT = "Preferences...";
    private static final String sm_FILE_QUIT_TEXT = "Quit";
