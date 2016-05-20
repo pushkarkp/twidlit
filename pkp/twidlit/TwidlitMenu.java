@@ -136,7 +136,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_TwidlitInit = m_Twidlit.getInit();
       File f = Io.createFile(m_CfgDir, m_CfgFName);
       Cfg cfg = Cfg.read(f);
-      if (cfg == null) {
+      if (cfg == null && !"".equals(m_CfgFName)) {
          Log.warn("Failed to find " + f.getPath());
       }
       setCfg(cfg);
