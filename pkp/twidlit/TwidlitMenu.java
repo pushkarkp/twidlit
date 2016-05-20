@@ -146,6 +146,10 @@ class TwidlitMenu extends PersistentMenuBar
       useOtherTimed();
       // use the gathered settings to set up the source
       m_Twidlit.initialize(m_TwidlitInit, "Press the chord shown.");
+      if (!isChords() && m_Twidlit.isChords()) {
+         // set keystrokes failed
+         setChords();
+      }
       // revert to using Twidlit itself for settings
       m_TwidlitInit = m_Twidlit;
       m_Twidlit.setVisible(true);
@@ -298,22 +302,37 @@ class TwidlitMenu extends PersistentMenuBar
       if (sourceSelected == null) {
          m_DelayItem.setEnabled(false);
          m_TwidlitInit.setChords();
-      } else {
-         switch (sourceSelected.getActionCommand()) {
-         case sm_TUTOR_CHORDS_TEXT:
-            m_DelayItem.setEnabled(false);
-            m_TwidlitInit.setChords();
-            useOtherTimed();
-            break;
-         case sm_TUTOR_KEYS_TEXT:
+         return;
+      }
+      switch (sourceSelected.getActionCommand()) {
+      case sm_TUTOR_CHORDS_TEXT:
+         m_DelayItem.setEnabled(false);
+         m_TwidlitInit.setChords();
+         useOtherTimed();
+         return;
+      case sm_TUTOR_KEYS_TEXT:
+         if (m_TwidlitInit.setKeystrokes(m_KeyPressFile)) {
             m_DelayItem.setEnabled(true);
-            m_TwidlitInit.setKeystrokes(m_KeyPressFile);
             useOtherTimed();
-            break;
+            return;
          }
+         setChords();
+         return;
       }
    }
    
+   ///////////////////////////////////////////////////////////////////
+   private void setChords() {
+      AbstractButton chords = m_SourceButtons.getElements().nextElement();
+      m_SourceButtons.setSelected(chords.getModel(), true);
+      setSource();
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   private boolean isChords() {
+      return m_SourceButtons.getSelection() == m_SourceButtons.getElements().nextElement();
+   }
+
    ///////////////////////////////////////////////////////////////////
    private void actionPerformed(String command) {
       switch (command) {
@@ -664,6 +683,10 @@ class TwidlitMenu extends PersistentMenuBar
                Cfg cfg = Cfg.read(f);
                if (cfg != null) {
                   setCfg(cfg);
+                  if (!isChords() && m_Twidlit.isChords()) {
+                     // mappings no longer adequate
+                     setChords();
+                  }
                   m_Twidlit.extendTitle(f.getAbsolutePath());
                   // set only after success, or will fail next startup
                   m_CfgDir = f.getParent();

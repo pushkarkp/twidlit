@@ -16,8 +16,8 @@ import pkp.times.ChordTimes;
 // in a separate object so the source can be created once 
 // with the collected settings.
 interface TwidlitInit {
-   void setKeyMap(KeyMap km);
+   boolean setKeyMap(KeyMap km);
    void setRightHand(boolean right);
    void setChords();
-   void setKeystrokes(File f);
+   boolean setKeystrokes(File f);
 }

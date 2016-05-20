@@ -38,8 +38,9 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    ////////////////////////////////////////////////////////////////////////////////
    // Gathers initial settings so source can be created once only.
    class Init implements TwidlitInit {
-      public void setKeyMap(KeyMap km) {
+      public boolean setKeyMap(KeyMap km) {
          m_KeyMap = km;
+         return true;
       }
       public void setRightHand(boolean right) {
          m_Right = right;
@@ -48,9 +49,10 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          m_IsKeyStrokes = false;
          m_File = null;
       }
-      public void setKeystrokes(File f) {
+      public boolean setKeystrokes(File f) {
          m_IsKeyStrokes = true;
          m_File = f;
+         return true;
       }
 
       private KeyMap m_KeyMap;
@@ -132,13 +134,17 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
 
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
-   public void setKeyMap(KeyMap km) {
+   public boolean setKeyMap(KeyMap km) {
       if (km == null) {
-         return;
+         return false;
       }
       m_KeyMap = km;
       m_TextPanel.setKeyMap(m_KeyMap);
-      start();
+      if (start()) {
+         return true;
+      }
+      setChords();
+      return false;
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -179,16 +185,25 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
 
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
-   public void setKeystrokes(File f) {
+   public boolean setKeystrokes(File f) {
       if (!m_TextPanel.isKeystrokes()) {
          setChordTimes(true);
          m_TwiddlerWindow.useDelay(true);
       }
       m_TextPanel.setKeystrokes(f);
       m_TwiddlerWindow.setDistinctChordCount(0);
-      start();
+      if (start()) {
+         return true;
+      }
+      setChords();
+      return false;
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   public boolean isChords() {
+      return m_TextPanel.isChords();
+   }
+   
    /////////////////////////////////////////////////////////////////////////////
    String getHomeDir() {
       return m_HomeDir;
@@ -362,11 +377,13 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private void start() {
-      m_TwiddlerWindow.show(m_TextPanel.getFirstTwiddle(), null, m_ChordTimes);
+   private boolean start() {
+      Twiddle tw = m_TextPanel.getFirstTwiddle();
+      m_TwiddlerWindow.show(tw, null, m_ChordTimes);
       // Start the timer in the past so the resulting time is not recorded.
       m_StartTimeMs = System.currentTimeMillis() - 2 * m_TwiddlerWindow.getProgressMax();
       m_TimeMs = 0;
+      return tw != null;
    }
 
    /////////////////////////////////////////////////////////////////////////////
