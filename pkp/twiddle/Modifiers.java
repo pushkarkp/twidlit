@@ -6,8 +6,8 @@
 
 package pkp.twiddle;
 
+import java.awt.event.KeyEvent;
 import pkp.string.StringsInts;
-import pkp.util.Pref;
 
 ///////////////////////////////////////////////////////////////////////////////
 class Modifiers {
@@ -26,8 +26,9 @@ class Modifiers {
    static final Modifiers sm_END = new Modifiers(0xFF);
 
    ////////////////////////////////////////////////////////////////////////////
-   static void init(StringsInts keyCodeToName) {
+   static void init(StringsInts keyCodeToName, int osKeyCode) {
       sm_KeyCodeToName = keyCodeToName;
+      sm_OsKeyCode = osKeyCode;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ class Modifiers {
       int m = keyCode >> KeyPress.sm_KEYCODE_BITS & sm_KEYS;
       if (right) {
          m <<= sm_RIGHT_SHIFT;
-System.out.printf("fromKeyCode(0x%x)%n", m);
+//System.out.printf("fromKeyCode right shift 0x%x%n", m);
       }
       return new Modifiers(m);
    }
@@ -63,6 +64,28 @@ System.out.printf("fromKeyCode(0x%x)%n", m);
          sep = ", ";
       }
       return str;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   static Modifiers fromKeyEvent(KeyEvent ke) {
+      byte m = 0;
+      if (ke.isControlDown()) {
+         m |= sm_iLEFT_CTRL;
+      }
+      if (ke.isShiftDown()) {
+         m |= sm_iLEFT_SHIFT;
+      }
+      if (ke.isAltDown()) {
+         m |= sm_iLEFT_ALT;
+      }
+      // KeyEvent does not recognize the windows key as meta
+      if (ke.isMetaDown() || ke.getKeyCode() == sm_OsKeyCode) {
+         m |= sm_iLEFT_GUI;
+      }
+      if (ke.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT) {
+         m <<= 4;
+      }
+      return new Modifiers(m);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -195,6 +218,7 @@ System.out.printf("fromKeyCode(0x%x)%n", m);
       {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_ALT, sm_SHIFT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT), sm_ALT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT.plus(sm_CTRL))},
    };
    private static StringsInts sm_KeyCodeToName;
+   private static int sm_OsKeyCode;
    private final byte m_Value;
    private final boolean m_Sided;
 }

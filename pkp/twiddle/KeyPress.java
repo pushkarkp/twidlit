@@ -68,6 +68,16 @@ public class KeyPress {
                                           return new int[]{value, key};
                                        }
                                     };
+      final Io.StringToIntsErr escKeyPos0xFFFF = new Io.StringToIntsErr() {
+                                       public int[] cvt(String str, StringBuilder err) {
+                                          int key = escKeyToInt(str, err);
+                                          if (key == Io.sm_PARSE_FAILED) {
+                                             return new int[]{key, key};
+                                          }
+                                          int value = Io.toPosInt(0xFFFF, str.substring(6).trim(), err);
+                                          return new int[]{key, value};
+                                       }
+                                    };
       final Io.StringToIntsErr escKeyPos0xFFFFSwap = new Io.StringToIntsErr() {
                                        public int[] cvt(String str, StringBuilder err) {
                                           int key = escKeyToInt(str, err);
@@ -103,6 +113,12 @@ public class KeyPress {
          Duplicates.OVERWRITE,
          1, 0x7F,
          escKeyEscCharSwap);
+      LookupTable codeToKeyEvent = LookupTableBuilder.read(
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.event.keys"),
+         Io.sm_MUST_EXIST,
+         Duplicates.ERROR,
+         0x10, 0x7F,
+         escKeyPos0xFFFF);
       sm_KeyEventToCode = LookupTableBuilder.read(
          Persist.getExistDirJarUrl("#.pref.dir", "twidlit.event.keys"),
          Io.sm_MUST_EXIST,
@@ -137,7 +153,7 @@ public class KeyPress {
       for (int i = 0; kcv[i] > 0; i += 2) {
          sm_KeyCodeToValue.put(kcv[i], (char)kcv[i + 1]);
       }
-      Modifiers.init(sm_KeyCodeToName);
+      Modifiers.init(sm_KeyCodeToName, codeToKeyEvent.get(0x800));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -310,7 +326,7 @@ public class KeyPress {
          Log.log(String.format("Key event code %d has no key code.", ke.getKeyCode()));
          return new KeyPress();
       }
-      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCodeIgnoreSide(keyCode, ke.getKeyLocation() == KeyEvent.KEY_LOCATION_RIGHT));
+      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyEvent(ke));
    }
 
    ////////////////////////////////////////////////////////////////////////////
