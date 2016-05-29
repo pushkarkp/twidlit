@@ -6,6 +6,7 @@
 
 package pkp.twiddler;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.nio.ByteBuffer;
 import java.io.File;
@@ -21,8 +22,7 @@ import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
 import pkp.io.Io;
-import pkp.io.SpacedPairReader;
-import pkp.util.Pref;
+import pkp.io.LineReader;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -322,23 +322,20 @@ public class Cfg implements Settings {
       if (url == null) {
          return false;
       }
-      SpacedPairReader spr = new SpacedPairReader(url, Io.sm_MUST_EXIST);
-      boolean readSettings = false;
-
+      LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       m_Assignments = new Assignments();
       String line;
       StringBuilder err = new StringBuilder();
-      for (int i = 1; (line = spr.getNextLine()) != null; ++i) {
+      for (int i = 1; (line = lr.readLine()) != null; ++i) {
          Assignment asg = Assignment.parseLine(line, err);
          if (asg != null && asg.getKeyPressList().isValid()) {
             m_Assignments.add(asg);
-         } else if (asg != null || readSettings
-                 || !(readSettings = readTextSettings(spr))) {
-            Log.parseWarn(spr, err.toString(), line);
+         } else if (!readTextSetting(line)) {
+            Log.parseWarn(lr, err.toString(), line);
             err = new StringBuilder();
          }
       }
-      spr.close();
+      lr.close();
       if (m_Assignments.isRemap()) {
          Log.warn(m_Assignments.reportRemap(url.getPath()));
       }
@@ -346,38 +343,33 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean readTextSettings(SpacedPairReader spr) {
-      boolean found = true;
+   private boolean readTextSetting(String line) {
+      List<String> strs = Io.split(line, ' ');
+      if (strs.size() != 2) {
+         return false;
+      }
+      String upper = strs.get(0).toUpperCase();
       for (IntSettings is: m_IntSettings.values()) {
-         if (!spr.isMatchFirst(Io.toCamel(is.m_Name), "Cfg")) {
-            if (is == m_IntSettings.MAJOR_VERSION) {
-               found = false;
-               break;
-            } else {
-               Log.warn("Failed to read " + is);
-               //return;
+         if (upper.equals(Io.toCamel(is.name()).toUpperCase())) {
+            int value = Io.toInt(strs.get(1)); 
+            if (value == Io.sm_PARSE_FAILED) {
+               return false;
             }
+            is.setValue(value);
+            return true;
          }
-         int value = Integer.parseInt(spr.getNextSecond());
-         is.setValue(value);
       }
-
-      if (found) {
-         if (spr.isMatchFirst(Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME), "Cfg")) {
-            m_EnableRepeat = spr.getNextSecond().equals("true");
-         } else {
-            Log.warn("Failed to read " + Settings.sm_ENABLE_REPEAT_NAME);
-            return found;
+      if (Io.isBool(strs.get(1))) {
+         if (upper.equals(Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME).toUpperCase())) {
+            m_EnableRepeat = Io.parseBool(strs.get(1));
+            return true;
          }
-         if (spr.isMatchFirst(Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME), "Cfg")) {
-            m_EnableStorage = spr.getNextSecond().equals("true");
-         } else {
-            Log.warn("Failed to read " + Settings.sm_ENABLE_STORAGE_NAME);
-            return found;
+         if (upper.equals(Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME).toUpperCase())) {
+            m_EnableStorage = Io.parseBool(strs.get(1));
+            return true;
          }
-         spr.getNextLine();
       }
-      return found;
+      return false;
    }
 
    ////////////////////////////////////////////////////////////////////////////

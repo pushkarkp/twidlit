@@ -59,19 +59,6 @@ public class SpacedPairReader implements NamedOrdered {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isMatchFirst(String expected, String module) {
-      String first = getNextFirst();
-      if (first.equals(expected)) {
-         return true;
-      }
-      if (module != null) {
-         Log.log(String.format("%s expecting '%s', found '%s' on line %d of \"%s\"\n",
-                               module, expected, first, getLineNumber(), m_In.getPath()));
-      }
-      return false;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public int getLineNumber() {
       return m_In.getLineNumber();
    }
