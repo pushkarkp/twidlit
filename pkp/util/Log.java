@@ -182,8 +182,8 @@ public class Log implements ActionListener {
       if (err != null && !"".equals(err)) {
          log(level, String.format("%s on line %d of %s", err, lineNumber, fileName));
       } else if (line != null && !"".equals(line)) {
-         log(level, String.format("Failed to parse '%s', line %d of %s", line, lineNumber, fileName));
-         } else {
+         log(level, String.format("Failed to parse \"%s\", line %d of %s", line, lineNumber, fileName));
+      } else {
          log(level, String.format("Failed to parse line %d of %s", lineNumber, fileName));
       }
    }
