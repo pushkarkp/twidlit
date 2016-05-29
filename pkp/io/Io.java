@@ -469,20 +469,26 @@ public class Io {
          return result;
       }
       if (value == null || "".equals(value)) {
-         if ("".equals(str)) {
-            Log.err(err, "Missing number");
-         }
-         Log.err(err, "Missing value for \"" + str + "\"");
-      } else if ("".equals(str)) {
-         Log.err(err, "Failed to parse number \"" + value + "\"");
+         Log.err(err, "Missing " + ("".equals(str)
+                    ? "number"
+                    : "value for \"" + str + '"'));
+      } else {
+         Log.err(err, "Failed to parse " + ("".equals(str)
+                    ? "number \"" + value + '"'
+                    : '"' + str + "\" value \"" + value + '"'));
       }
-      Log.err(err, "Failed to parse \"" + str + "\" value \"" + value + "\"");
       return sm_PARSE_FAILED;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static boolean parseBool(String str) {
-      return parseBool("", str);
+   public static boolean isBool(String value) {
+      return "true".equalsIgnoreCase(value)
+          || "false".equalsIgnoreCase(value);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static boolean parseBool(String value) {
+      return parseBool("", value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -491,24 +497,18 @@ public class Io {
          return false;
       }
       if ("".equals(value)) {
-         if ("".equals(str)) {
-            Log.err("Missing boolean.");
-         } else {
-            Log.err("Missing boolean value for \"" + str + "\".");
-         }
-      }
-      if ("true".equalsIgnoreCase(value)) {
-         return true;
-      }
-      if ("false".equalsIgnoreCase(value)) {
+         Log.err("Missing boolean" + ("".equals(str)
+               ? "."
+               : " value for \"" + str + '"'));
          return false;
       }
-      if ("".equals(str)) {
-         Log.err("Failed to parse boolean \"" + str + "\".");
-      } else {
-         Log.err("Failed to parse \"" + str + "\" boolean value \"" + value + "\".");
+      if (!isBool(value)) {
+         Log.err("Failed to parse " + ("".equals(str)
+               ? "boolean \"" + value + '"'
+               : '"' + str + "\" boolean value \"" + value + '"'));
+         return false;
       }
-      return false;
+      return "true".equalsIgnoreCase(value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -628,12 +628,14 @@ public class Io {
       boolean initial = false;
       for (int i = 0; i < str.length(); ++i) {
          char c = str.charAt(i);
-         if (c == ' ') {
+         if (c == ' ' || c == '_') {
             initial = true;
          } else {
             if (initial) {
                initial = false;
                c = Character.toUpperCase(c);
+            } else {
+               c = Character.toLowerCase(c);
             }
             out += c;
          }
