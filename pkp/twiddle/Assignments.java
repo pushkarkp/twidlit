@@ -6,6 +6,7 @@
 
 package pkp.twiddle;
 
+import java.util.List;
 import java.util.ArrayList;
 import pkp.times.SortedChordTimes;
 import pkp.util.Log;
@@ -85,6 +86,17 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(Assignments asgs) {
       super(asgs);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   // An assignment maps one OR MORE chords to a keypress list.
+   // Return a list of 1 to 1 mappings.
+   public List<Assignment> toList() {
+      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+      for (Assignment a : this) {
+         asgs.addAll(a.separate());
+      }
+      return asgs;
    }
 
    ////////////////////////////////////////////////////////////////////////////

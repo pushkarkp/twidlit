@@ -45,12 +45,14 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static void write(File f, Settings tc, Assignments asgs) {
+   public static void write(File f, Settings tc, Assignments a) {
+      List<Assignment> asgs = a.toList();
       int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
-      int startOfMulti = endOfTwiddles + sm_THUMB_SPEC_SIZE;
-      byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
+      int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
+      byte[] data = new byte[startOfMulti + countMulti(asgs)];
       ByteBuffer bb = ByteBuffer.wrap(data);
 
+      // settings
       IntSettings is = tc.getIntSettings();
       bb.put((byte)is.MAJOR_VERSION.getValue());
       bb.putShort(otherEndian((short)is.MINOR_VERSION.getValue()));
@@ -64,6 +66,7 @@ public class Cfg implements Settings {
       bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
       bb.put((byte)(4 | (tc.isEnableRepeat() ? 1 : 0) | (tc.isEnableStorage() ? 2 : 0)));
 
+      // assignments
       int k = 0;
       for (int i = 0; i < asgs.size(); ++i) {
          Assignment asg = asgs.get(i);
@@ -83,7 +86,7 @@ public class Cfg implements Settings {
       }
       bb.putInt(0);
 
-      // mouse assignments here
+      // mouse assignments
       byte mouseBytes[] = new byte[] {
       0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
       0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
@@ -92,6 +95,7 @@ public class Cfg implements Settings {
       };
       bb.put(mouseBytes);
 
+      // multikey table
       for (int i = 0; i < asgs.size(); ++i) {
          KeyPressList kpl = asgs.get(i).getKeyPressList();
          if (kpl.size() > 1) {
@@ -101,9 +105,12 @@ public class Cfg implements Settings {
             }
          }
       }
-//System.out.printf("bb.position() %d 0x%x%n", (bb.position() - 1), (bb.position() - 1));
+//System.out.printf("asgs.size() %d sm_CONFIG_SIZE %d sm_MOUSE_SPEC_SIZE %d%n", sm_CONFIG_SIZE, asgs.size(), sm_MOUSE_SPEC_SIZE);
+//System.out.printf("endOfTwiddles %d startOfMulti %d countMulti(asgs) %d: %d%n", endOfTwiddles, startOfMulti, countMulti(asgs), startOfMulti + countMulti(asgs));
+//System.out.printf("bb.capacity() %d bb.position() %d%n", bb.capacity(), bb.position());
+
+      // sanity check
       if ((bb.position() - 1) % 4 != 0) {
-//System.out.printf("(bb.position() - 1) %% 4 %d%n", (bb.position() - 1) % 4);
          if ((bb.position() - 1) % 2 != 0) {
             Log.warn("Wrote an odd number of bytes");
          }
@@ -373,7 +380,7 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static int countMulti(Assignments asgs) {
+   private static int countMulti(List<Assignment> asgs) {
       int size = 0;
       for (int i = 0; i < asgs.size(); ++i) {
          KeyPressList kpl = asgs.get(i).getKeyPressList();
@@ -423,7 +430,7 @@ public class Cfg implements Settings {
 
    // Data ////////////////////////////////////////////////////////////////////
    private static final int sm_CONFIG_SIZE = 16;
-   private static final int sm_THUMB_SPEC_SIZE = 39;
+   private static final int sm_MOUSE_SPEC_SIZE = 39;
    private IntSettings m_IntSettings;
    private boolean m_EnableRepeat = false;
    private boolean m_EnableStorage = false;
