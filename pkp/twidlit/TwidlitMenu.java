@@ -124,7 +124,6 @@ class TwidlitMenu extends PersistentMenuBar
       add(helpMenu, sm_HELP_ABOUT_TEXT);
       
       enableCountsMenuItems(false);
-      setStateFromCheckItems();
       // after setStateFromCheckItems()
       m_TutorAutoScale = Persist.getBool(sm_TUTOR_OTHER_AUTOSCALE_PERSIST);
    }
@@ -153,6 +152,7 @@ class TwidlitMenu extends PersistentMenuBar
       // revert to using Twidlit itself for settings
       m_TwidlitInit = m_Twidlit;
       m_Twidlit.setVisible(true);
+      setStateFromCheckItems();
    }
    
    ///////////////////////////////////////////////////////////////////
