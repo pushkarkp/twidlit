@@ -47,9 +47,11 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    public static void write(File f, Settings tc, Assignments a) {
       List<Assignment> asgs = a.toList();
+      // assignments plus 1 terminating 0 int
       int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
       int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
-      byte[] data = new byte[startOfMulti + countMulti(asgs)];
+      // plus 1 table-terminating 0 short
+      byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       // settings
@@ -84,14 +86,15 @@ public class Cfg implements Settings {
             ++k;
          }
       }
+      // terminating 0 int
       bb.putInt(0);
 
       // mouse assignments
       byte mouseBytes[] = new byte[] {
-      0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
-      0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
-      0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09,
-      0x0, 0x0, 0x0,
+         0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
+         0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
+         0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09,
+         0x0, 0x0, 0x0,
       };
       bb.put(mouseBytes);
 
@@ -105,22 +108,18 @@ public class Cfg implements Settings {
             }
          }
       }
-//System.out.printf("asgs.size() %d sm_CONFIG_SIZE %d sm_MOUSE_SPEC_SIZE %d%n", sm_CONFIG_SIZE, asgs.size(), sm_MOUSE_SPEC_SIZE);
-//System.out.printf("endOfTwiddles %d startOfMulti %d countMulti(asgs) %d: %d%n", endOfTwiddles, startOfMulti, countMulti(asgs), startOfMulti + countMulti(asgs));
-//System.out.printf("bb.capacity() %d bb.position() %d%n", bb.capacity(), bb.position());
+      // table-terminating 0 short
+      bb.putShort((short)0);
 
-      // sanity check
-      if ((bb.position() - 1) % 4 != 0) {
-         if ((bb.position() - 1) % 2 != 0) {
-            Log.warn("Wrote an odd number of bytes");
-         }
-      }
+//System.out.printf("a.size() %d asgs.size() %d sm_CONFIG_SIZE %d sm_MOUSE_SPEC_SIZE %d%n", a.size(), asgs.size(), sm_CONFIG_SIZE, sm_MOUSE_SPEC_SIZE);
+//System.out.printf("endOfTwiddles %d startOfMulti %d countMulti(asgs) %d: %d%n", endOfTwiddles, startOfMulti, countMulti(asgs), startOfMulti + countMulti(asgs) + 2);
+//System.out.printf("bb.capacity() %d bb.position() %d%n", bb.capacity(), bb.position());
 
       FileOutputStream fos = null;
       try {
          fos = new FileOutputStream(f);
       } catch (FileNotFoundException e) {
-         Log.warn("failed to open: \"" + f.getPath() + "\".");
+         Log.warn("Failed to open: \"" + f.getPath() + "\".");
 			return;
       }
       try {
@@ -128,7 +127,7 @@ public class Cfg implements Settings {
          fos.flush();
          fos.close();
       } catch (IOException e) {
-         Log.warn("failed to write: \"" + f.getPath() + "\".");
+         Log.warn("Failed to write: \"" + f.getPath() + "\".");
       }
    }
 
@@ -245,7 +244,6 @@ public class Cfg implements Settings {
          }
          short t = bb.getShort();
          short k = bb.getShort();
-//System.out.printf("t %d k %d%n", t, k);
          if (t == 0 && k == 0) {
             break;
          }
@@ -261,11 +259,11 @@ public class Cfg implements Settings {
             }
             KeyPressList kpl = new KeyPressList(kp);
             m_Assignments.add(new Assignment(tw, kpl));
-//System.out.printf("1 %s (t 0x%x) %s (k 0x%x)\n", tw.toString(), t, kpl.toString(), k);
+//System.out.printf("1 0x%x: %s (t 0x%x) %s%n", bb.position(), tw.toString(), t, kpl.toString());
          } else {
             multi.add(tw);
             whichKpl.add(k & 0xFF);
-//System.out.printf("2 Multi: %s (t 0x%x) (k 0x%x)\n", tw.toString(), t, k & 0xFF);
+//System.out.printf("2 0x%x: Multi: %s (t 0x%x) (k 0x%x)%n", bb.position(), tw.toString(), t, k & 0xFF);
          }
       }
       // mouse assignments
@@ -282,7 +280,7 @@ public class Cfg implements Settings {
             Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, inputFile.getPath()));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
-//System.out.printf("3 Mouse: %s (t 0x%x) (k 0x%x)\n", tw.toString(), t, k);
+//System.out.printf("3 0x%x: Mouse: %s (t 0x%x) (k 0x%x)%n", bb.position(), tw.toString(), t, k);
       }
       ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
       for (;;) {
@@ -298,11 +296,11 @@ public class Cfg implements Settings {
          if (bb.remaining() < len * 2) {
             Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
          }
-//System.out.printf("4 s 0x%x: len %d%n", s, len);
+//System.out.printf("4 0x%x: s 0x%x: len %d%n", bb.position(), s, len);
          for (int i = 0; i < len; ++i) {
             short k = bb.getShort();
             KeyPress kp = KeyPress.fromKeyCode(k);
-//System.out.printf("4 %d: %s (k 0x%x)%n", i, kp.toTagString(), k);
+//System.out.printf("4 0x%x: %d: %s (k 0x%x)%n", bb.position(), i, kp.toTagString(), k);
             kpl.add(kp);
          }
          kpls.add(kpl);
