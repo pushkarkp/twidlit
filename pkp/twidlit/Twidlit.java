@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.JFrame;
 import java.io.File;
 import java.util.ArrayList;
 import pkp.text.TextPanel;
@@ -26,6 +27,7 @@ import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
 import pkp.times.ChordTimes;
+import pkp.ui.Splash;
 import pkp.ui.PersistentFrame;
 import pkp.util.Persist;
 import pkp.util.Pref;
@@ -62,7 +64,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   Twidlit() {
+   Twidlit(JFrame splash) {
       super();
       Color bg = Pref.getColor("#.background.color");
       UIManager.put("OptionPane.background", bg);
@@ -99,7 +101,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       m_ProgressFactor = Pref.getInt("#.chord.wait.timed.percent") / 100.0;
       
       pack();
-      // uses Init and calls initilize()
+      splash.dispose();
+      // uses Init and calls initialize()
       mb.start();
    }
 
@@ -412,6 +415,10 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
       m_HomeDir = argv.length == 0 ? "." : argv[0];
+      String text = "<html>"
+                  + Io.readFromCodeJar("/data/about.html", 3, 3).get(0)
+                  + "</html>";
+      Splash splash = new Splash(text, 300, 150, new Color(0xf5f5d5));
       Log.init(Log.ExitOnError);
       Persist.init("twidlit.properties", m_HomeDir, "pref");
       Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");
@@ -421,6 +428,6 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          Log.setFile(Io.createFile(m_HomeDir, TwidlitMenu.sm_LOG_FILE_NAME));
       }
       KeyPress.init();
-      Twidlit twidlit = new Twidlit();
+      Twidlit twidlit = new Twidlit(splash);
    }
 }

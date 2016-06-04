@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.net.URL;
@@ -114,6 +116,29 @@ public class Io {
       } catch (IOException e) {
          Log.err("Failed to get jar resources: " + e);
       }
+      return strs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static List<String> readFromCodeJar(String jarPath) {
+      return readFromCodeJar(jarPath, 0, Integer.MAX_VALUE);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static List<String> readFromCodeJar(String jarPath, int from, int to) {
+      InputStream in = Io.class.getResourceAsStream(jarPath);
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+      ArrayList<String> strs = new ArrayList<String>();
+      try {
+         String line;
+         for (int i = 0;
+              i <= to && (line = reader.readLine()) != null;
+              ++i) {
+            if (i >= from) {
+               strs.add(line);
+            }
+         }
+      } catch (IOException e) {}
       return strs;
    }
 
