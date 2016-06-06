@@ -120,13 +120,12 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static List<String> readFromCodeJar(String jarPath) {
-      return readFromCodeJar(jarPath, 0, Integer.MAX_VALUE);
+   public static String readLineFromCodeJar(int line, String jarPath) {
+      return read(line, line, Io.class.getResourceAsStream(jarPath)).get(0);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static List<String> readFromCodeJar(String jarPath, int from, int to) {
-      InputStream in = Io.class.getResourceAsStream(jarPath);
+   public static List<String> read(int from, int to, InputStream in) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(in));
       ArrayList<String> strs = new ArrayList<String>();
       try {

@@ -101,9 +101,9 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       m_ProgressFactor = Pref.getInt("#.chord.wait.timed.percent") / 100.0;
       
       pack();
-      splash.dispose();
       // uses Init and calls initialize()
       mb.start();
+      splash.dispose();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -415,10 +415,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
       m_HomeDir = argv.length == 0 ? "." : argv[0];
-      String text = "<html>"
-                  + Io.readFromCodeJar("/data/about.html", 3, 3).get(0)
-                  + "</html>";
-      Splash splash = new Splash(text, 300, 150, new Color(0xf5f5d5));
+      String text = Io.readLineFromCodeJar(4, "/data/about.html");
+      Splash splash = new Splash(300, 150, text, 32, new Color(0xf5f5d5));
       Log.init(Log.ExitOnError);
       Persist.init("twidlit.properties", m_HomeDir, "pref");
       Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");

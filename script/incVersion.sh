@@ -1,4 +1,4 @@
-PAT='^\(.*<b>Twidlit \)\([0-9]*\)\.\([0-9]*\)\.\([0-9]\)\(.*\)$'
+PAT='^\(Twidlit v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]\)\(.*\)$'
 LINE=`grep "$PAT" $2`
 BEFORE=`echo $LINE | sed -n "s/$PAT/\1/p"`
 MAJOR=`echo $LINE | sed -n "s/$PAT/\2/p"`

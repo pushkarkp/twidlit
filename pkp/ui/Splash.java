@@ -14,6 +14,7 @@ import java.awt.Toolkit;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Color;
+import java.awt.Font;
 // no dependence on pkp initialized
 //import pkp.util.Persist;
 //import pkp.util.Pref;
@@ -23,15 +24,16 @@ import java.awt.Color;
 public class Splash extends JFrame {
    
    ////////////////////////////////////////////////////////////////////////////
-   public Splash(String text, int width, int height, Color bg) {
-      JLabel lb = new JLabel(text, SwingConstants.CENTER);
-      lb.setBorder(new EmptyBorder(0, 20, 10, 20));
-      getContentPane().add(lb);
-      setBackground(bg);
+   public Splash(int width, int height, String text, int fontSize, Color bg) {
       Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
       int x = (int)((ss.getWidth() - width + 0.5) / 2.0);
       int y = (int)((ss.getHeight() - height + 0.5) / 2.0);
       setBounds(new Rectangle(x, y, width, height));
+      JLabel lb = new JLabel(text, SwingConstants.CENTER);
+      lb.setBorder(new EmptyBorder(0, 20, 10, 20));
+      lb.setFont(new Font(lb.getFont().getFontName(), Font.PLAIN, fontSize));
+      getContentPane().add(lb);
+      getContentPane().setBackground(bg);
       setUndecorated(true);
       setVisible(true);
    }      
