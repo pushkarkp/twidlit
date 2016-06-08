@@ -135,7 +135,9 @@ class TwidlitMenu extends PersistentMenuBar
       m_TwidlitInit = m_Twidlit.getInit();
       File f = Io.createFile(m_CfgDir, m_CfgFName);
       Cfg cfg = Cfg.read(f);
+      String cfgFileName = m_CfgFName;
       if (cfg == null && !"".equals(m_CfgFName)) {
+         cfgFileName = "";
          Log.warn("Failed to find " + f.getPath());
       }
       setCfg(cfg);
@@ -145,6 +147,7 @@ class TwidlitMenu extends PersistentMenuBar
       useOtherTimed();
       // use the gathered settings to set up the source
       m_Twidlit.initialize(m_TwidlitInit, "Press the chord shown.");
+      m_Twidlit.extendTitle(cfgFileName);
       if (!isChords() && m_Twidlit.isChords()) {
          // set keystrokes failed
          setChords();
@@ -345,8 +348,9 @@ class TwidlitMenu extends PersistentMenuBar
          m_SaveChordsWindow.setVisible(true);
          return;
       case sm_USE_ALL_CHORDS_TEXT: {
-         m_CfgFName = "";
          setCfg(null);
+         m_CfgFName = "";
+         m_Twidlit.extendTitle(m_CfgFName);
          m_SaveChordsWindow.dispose();
          m_SaveChordsWindow = null;
          return;
@@ -527,7 +531,6 @@ class TwidlitMenu extends PersistentMenuBar
             Hand hand = Hand.create(command);
             if (hand.isRight() != m_Twidlit.isRightHand()) {
                m_TwidlitInit.setRightHand(hand.isRight());
-               m_Twidlit.extendTitle(hand.getSmallName());
             }
             return;
          }
@@ -687,10 +690,10 @@ class TwidlitMenu extends PersistentMenuBar
                      // mappings no longer adequate
                      setChords();
                   }
-                  m_Twidlit.extendTitle(f.getAbsolutePath());
                   // set only after success, or will fail next startup
                   m_CfgDir = f.getParent();
                   m_CfgFName = f.getName();
+                  m_Twidlit.extendTitle(m_CfgFName);
                }
                return;
             }
