@@ -81,6 +81,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_CountsGraphItem = add(m_CountsMenu, sm_COUNTS_GRAPH_TEXT);
       m_CountsMenu.addSeparator();
       m_ClearCountsItem = add(m_CountsMenu, sm_COUNTS_CLEAR_TEXT);
+      m_CountsAllFiles = false;
       m_CountsInDir = Persist.get(sm_COUNTS_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CountsOutDir = Persist.get(sm_COUNTS_TEXT_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CountsMinimum = 1;
@@ -409,11 +410,15 @@ class TwidlitMenu extends PersistentMenuBar
             m_FileChooser.setDialogTitle("Select a Text File to Count");
             m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("txt"));
             m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
+            if (m_CountsAllFiles) {
+               m_FileChooser.setFileFilter(m_FileChooser.getAcceptAllFileFilter());
+            }
          } else {
             m_FileChooser.setDialogTitle("Select a Folder of Text Files to Count");
             m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          }
          m_FileChooser.showDialog(m_Twidlit, "OK");
+         m_CountsAllFiles = m_FileChooser.getFileFilter() == m_FileChooser.getAcceptAllFileFilter();
          m_FileChooser = null;
          return;
       case sm_FILE_TWIDDLER_SETTINGS_TEXT:
@@ -1005,6 +1010,7 @@ class TwidlitMenu extends PersistentMenuBar
    private JCheckBoxMenuItem m_TutorTimedItem;
    private JCheckBoxMenuItem m_TutorAutoScaleItem;
    private Counts m_CharCounts;
+   private boolean m_CountsAllFiles;
    private String m_CountsInDir;
    private String m_CountsOutDir;
    private int m_CountsMinimum; 
