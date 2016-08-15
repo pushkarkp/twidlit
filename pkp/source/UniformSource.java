@@ -26,8 +26,10 @@ class UniformSource<T> {
    /////////////////////////////////////////////////////////////////////////////
    UniformSource(ArrayList<ArrayList<T>> items, int pool) {
       m_Random = new Random();
-      add(items);
-      m_POOL_SIZE = Math.max(pool, m_Items.size() / 16);
+      int size = size(items);
+      m_POOL_SIZE = Math.max(pool, size / 16);
+//System.out.printf("size %d pool %d pool size %d%n", size, pool, m_POOL_SIZE);
+      add(items, size);
       m_First = 0;
       m_Next = 0;
    }
@@ -70,15 +72,21 @@ class UniformSource<T> {
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
-   private void add(ArrayList<ArrayList<T>> allItems) {
+   private int size(ArrayList<ArrayList<T>> allItems) {
       int size = 0;
       for (int j = 0; j < allItems.size(); ++j) {
          size += allItems.get(j).size();
       }
+      return size;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void add(ArrayList<ArrayList<T>> allItems, int size) {
       int times = 1;
       while (size * times < m_POOL_SIZE) {
          ++times;
-      }         
+      } 
+//System.out.printf("size %d m_POOL_SIZE %d times %d%n", size, m_POOL_SIZE, times);
       m_Items = new ArrayList<T>(size);
       int base = 0;
       for (int j = 0; j < allItems.size(); ++j) {
@@ -99,13 +107,14 @@ class UniformSource<T> {
          base += items.size();
       }
 //System.out.println(this);
+//System.out.printf("m_Items.size() %d pool %d%n", m_Items.size(), m_POOL_SIZE);
    }
    
    /////////////////////////////////////////////////////////////////////////////
    private T get(int pool) {
       int ix = (m_Next + m_Random.nextInt(pool)) % m_Items.size();
-//System.out.printf("pool %d ix %d%n", pool, ix);
       T swap = m_Items.get(ix);
+//System.out.printf("%d %s %s%n", ix, swap, this);
       m_Items.set(ix, m_Items.get(m_Next));
       m_Items.set(m_Next, swap);
       m_Next = (m_Next + 1) % m_Items.size();
