@@ -38,7 +38,7 @@ public class Counts {
    public Counts(Counts other) {
       m_File = other.m_File;
       m_CharCounts = other.m_CharCounts;
-      m_NGrams = null;
+      m_NGrams = other.m_NGrams;
       m_Index = other.m_Index;
       m_LowestCount = other.m_LowestCount;
       m_HighestCount = other.m_HighestCount;

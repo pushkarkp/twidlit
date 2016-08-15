@@ -77,6 +77,7 @@ class NGrams implements SharedIndexableInts {
    ////////////////////////////////////////////////////////////////////////////
    @Override // SharedIndexableInts
    public int getCount(int i) {
+//System.out.printf("getCount(%d) %d%n", i, m_Counts.get(i));
       return m_Counts.get(i);
    }
 
@@ -99,15 +100,17 @@ class NGrams implements SharedIndexableInts {
       for (int i = m_Current.size() - 1; i >= 0; --i) {
          if (!m_Current.get(i).nextChar(c)) {
 // mismatch - remove it
-//System.out.println("->" + m_Current.get(i).getChars() + "<");
+//System.out.printf(">%c<->%s<%n", c, m_Current.get(i).getChars());
             m_Current.remove(i);
             m_CurrentIndex.remove(i);
          } else if (m_Current.get(i).matched()) {
 // match complete
-//System.out.printf("!>%c< i %d >%s<%n", c, i, m_Current.get(i).getChars());
             m_Counts.set(m_CurrentIndex.get(i), m_Counts.get(m_CurrentIndex.get(i)) + 1);
+//System.out.printf(">%c<!>%s< x%d%n", c, m_Current.get(i).getChars(), m_Counts.get(m_CurrentIndex.get(i)));
             m_Current.remove(i);
             m_CurrentIndex.remove(i);
+         } else {
+//System.out.printf(">%c<+>%s<%n", c, m_Current.get(i).getChars());
          }
       }
       int[] indexes = m_START.getAll((int)c, LookupTable.sm_NO_VALUE);
@@ -159,7 +162,7 @@ class NGrams implements SharedIndexableInts {
          }
          ng = Io.parseEscape(ng, err);
          if (ng != null) {
-            ng = KeyPressList.parseTextAndTags(CrLf.normalize(ng), err).toString(KeyPress.Format.ESC);
+            ng = KeyPressList.parseTextAndTags(CrLf.normalize(ng), err).toString(KeyPress.Format.TXT);
          }
 //System.out.println('|' + line + "| -> |" + ng + '|');
          if ("empty".equals(ng) || !NGram.isValid(ng)) {
