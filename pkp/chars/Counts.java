@@ -248,7 +248,7 @@ public class Counts {
       if (getNGrams() == null) {
          return labelSize;
       }
-      return Math.max(labelSize, getNGrams().getMaxLength());
+      return Math.max(labelSize, getNGrams().findMaxLength(m_LowestCount, m_HighestCount));
    }   
    
    ////////////////////////////////////////////////////////////////////////////

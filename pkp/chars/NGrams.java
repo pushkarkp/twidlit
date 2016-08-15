@@ -33,10 +33,6 @@ class NGrams implements SharedIndexableInts {
       m_CurrentIndex = new ArrayList<Integer>();
       m_Current = new ArrayList<NGram>();
       m_NGRAMS = read(f);
-      m_MaxLength = 0;
-      for (int i = 0; i < m_NGRAMS.size(); ++i) {
-         m_MaxLength = Math.max(m_MaxLength, Io.toEscape(m_NGRAMS.get(i)).length());
-      }
       m_Counts = new ArrayList<Integer>(m_NGRAMS.size());
       for (int i = 0; i < m_NGRAMS.size(); ++i) {
          m_Counts.add(0);
@@ -132,8 +128,17 @@ class NGrams implements SharedIndexableInts {
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   int getMaxLength() {
-      return m_MaxLength;
+   int findMaxLength(int min, int max) {
+      int maxLen = 0;
+      for (int i = 0; i < getSize(); ++i) {
+         int len = Io.toEscape(m_NGRAMS.get(i)).length();
+         if (len > maxLen
+          && m_Counts.get(i) >= min
+          && m_Counts.get(i) <= max) {
+            maxLen = len;
+         }
+      }
+      return maxLen;
    }
    
    // Private /////////////////////////////////////////////////////////////////
@@ -188,7 +193,6 @@ class NGrams implements SharedIndexableInts {
    private ArrayList<Integer> m_CurrentIndex;
    private ArrayList<Integer> m_Counts;
    private CrLf m_CrLf;
-   private int m_MaxLength;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
@@ -196,7 +200,7 @@ class NGrams implements SharedIndexableInts {
       Pref.setIconPath("/data/icon.gif");
       Log.init(Io.createFile(".", "log.txt"), Log.ExitOnError);
       NGrams nGrams = new NGrams(new File(argv[0]));
-      System.out.printf("maxLength %d%n", nGrams.getMaxLength());
+      System.out.printf("maxLength %d%n", nGrams.findMaxLength(0, 100));
       URL url = null;
       try {
          url = (new File(argv[1])).toURI().toURL();
