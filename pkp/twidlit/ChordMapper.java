@@ -32,6 +32,7 @@ import pkp.io.LineReader;
 import pkp.ui.HtmlWindow;
 import pkp.ui.ControlDialog;
 import pkp.ui.ExtensionFileFilter;
+import pkp.string.StringInt;
 import pkp.util.Persist;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -368,9 +369,6 @@ class ChordMapper extends ControlDialog
          }
          chordLr.close();
          keysLr.close();
-         if (m_Assignments.isRemap()) {
-            Log.warn(m_Assignments.reportRemap(chordLr.getPath()));
-         }
       }
    }
 
@@ -390,12 +388,19 @@ class ChordMapper extends ControlDialog
          } else {
             Twiddle t = new Twiddle(line);
             if (!t.getChord().isValid()) {
-               String msg = String.format("Failed to parse invalid twiddle \"%s\"", line);
+               String msg = String.format("Failed to parse invalid chord \"%s\"", line);
                Log.parseWarn(lr, msg);
             } else if (target == Target.MAPPED) {
                str = line;
             } else if (target == Target.CHORD) {
-               str = t.toString();
+               // ignore duplicate chords
+               if (m_Assignments.isUsed(t)) {
+                  StringInt si = lr.getNameAndPosition();
+                  Log.log(String.format("Skipped duplicate chord \"%s\" in line %d of %s", t, si.getInt(), si.getString()));
+                  str = "";
+               } else {
+                  str = t.toString();
+               }
             }
          }
          if (str != "") {
