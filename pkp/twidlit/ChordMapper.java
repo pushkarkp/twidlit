@@ -19,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.ArrayList;
 import pkp.twiddle.Twiddle;
 import pkp.twiddle.Chord;
@@ -36,14 +38,115 @@ import pkp.string.StringInt;
 import pkp.util.Persist;
 import pkp.util.Pref;
 import pkp.util.Log;
+import pkp.util.Util;
 
 //////////////////////////////////////////////////////////////////////
 class ChordMapper extends ControlDialog 
    implements ActionListener, SaveChordsWindow.ContentForTitle {
 
+   /////////////////////////////////////////////////////////////////////////
+   public enum Action {
+      CREATE() {
+         @Override
+         String getTitle() {
+            return "Create Map File";
+         }
+         @Override
+         String getCfgExplanation() {
+            return "<html>Optionally select a file of existing mappings to include.</html>";
+         }
+         @Override
+         String getChordsKeysExplanation() {
+            return "<html>Select a file of chords and a file of keystrokes to combine.</html>";
+         }
+         @Override
+         boolean isFileOk(File chordsFile, File keysFile, File mappedFile) {
+            if ((chordsFile == null || keysFile == null)
+             && (mappedFile == null || chordsFile != null || keysFile != null)) {
+               Log.warn("Mapping requires both a chords and a keystrokes files.");
+               return false;
+            }
+            return true;
+         }
+         @Override
+         JCheckBox getCheckbox(int which, ChordMapper mapper, Box box) {
+            switch (which) {
+            case 0: return mapper.addCheckBox(box, "Sort by chord frequency", Persist.getBool("#.map.frequency.sort", false));
+            case 1: return mapper.addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("#.map.skip.duplicates", true));
+            case 2: return mapper.addCheckBox(box, "Show unmapped chords", Persist.getBool("#.map.show.unmapped", false));
+            default: return null;
+            }
+         }
+         @Override
+         void persist(JCheckBox check0, JCheckBox check1, JCheckBox check2) {
+            Persist.set("#.map.frequency.sort", check0.isSelected());
+            Persist.set("#.map.skip.duplicates", check1.isSelected());
+            Persist.set("#.map.show.unmapped", check2.isSelected());
+         }
+         @Override
+         void act(ChordMapper mapper, File mappedF, File chordF, File keysF) {
+            mapper.map(mappedF, chordF, keysF);
+         }
+         @Override
+         String getSaveDialogTitle() {
+            return "Chord Mappings";
+         }
+      },
+      ASSESS() {
+         @Override
+         String getTitle() {
+            return "Assess Map File";
+         }
+         @Override
+         String getCfgExplanation() {
+            return "<html>Select a map file to assess.</html>";
+         }
+         @Override
+         String getChordsKeysExplanation() {
+            return "<html>Select a file of chords and a file of keystrokes.</html>";
+         }
+         @Override
+         boolean isFileOk(File chordsFile, File keysFile, File mappedFile) {
+            if (chordsFile == null || keysFile == null || mappedFile == null) {
+               Log.warn("Assessment requires all files.");
+               return false;
+            }
+            return true;
+         }
+         @Override
+         JCheckBox getCheckbox(int which, ChordMapper mapper, Box box) {
+            switch (which) {
+            case 0: return mapper.addCheckBox(box, "Sort by chord frequency", false);
+            case 1: return mapper.addCheckBox(box, "More detail", Persist.getBool("#.assess.more.detail", false));
+            default: return null;
+            }
+         }
+         @Override
+         void persist(JCheckBox check0, JCheckBox check1, JCheckBox check2) {
+            Persist.set("#.assess.more.detail", check1.isSelected());
+         }
+         @Override
+         void act(ChordMapper mapper, File mappedF, File chordF, File keysF) {
+            mapper.assess(mappedF, chordF, keysF);
+         }
+         @Override
+         String getSaveDialogTitle() {
+            return "Chord Mappings Assessment";
+         }
+      };
+      abstract String getTitle();
+      abstract String getCfgExplanation();
+      abstract String getChordsKeysExplanation();
+      abstract boolean isFileOk(File chordsFile, File keysFile, File mappedFile);
+      abstract JCheckBox getCheckbox(int which, ChordMapper mapper, Box box);
+      abstract void persist(JCheckBox check0, JCheckBox check1, JCheckBox check2);
+      abstract void act(ChordMapper mapper, File mappedF, File chordF, File keysF);
+      abstract String getSaveDialogTitle();
+   }
+
    ///////////////////////////////////////////////////////////////////
-   ChordMapper(Window owner, SortedChordTimes times) {
-      super(owner, "Create Map File");
+   ChordMapper(Window owner, SortedChordTimes times, Action action) {
+      super(owner, action.getTitle());
       setResizable(true);
       m_NL = null;
       m_CR = null;
@@ -63,9 +166,10 @@ class ChordMapper extends ControlDialog
          }
       }
       m_Times = times;
+      m_Action = action;
       m_ChordsFile = Persist.getFile("#.map.chords.file");
       m_KeysFile = Persist.getFile("#.map.keys.file");
-      m_MappedFile = Persist.getFile("#.map.mapped.file");
+      m_MapFile = Persist.getFile("#.map.mapped.file");
       m_GotEnter = false;
       m_DuplicateKeys = 0;
       m_DuplicateKey = "";
@@ -75,17 +179,17 @@ class ChordMapper extends ControlDialog
       }
       m_Assignments = new Assignments();
       Box box = getBox();
-      JLabel label = new JLabel("<html>Optionally select a file of existing mappings to include.</html>");
+      JLabel label = new JLabel(m_Action.getCfgExplanation());
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
       Box fileBox = createButtonLabelBox(sm_MAPPED);
-      m_MappedFileLabel = (JLabel)fileBox.getComponent(2);
-      setLabel(m_MappedFileLabel, m_MappedFile);
+      m_MapFileLabel = (JLabel)fileBox.getComponent(2);
+      setLabel(m_MapFileLabel, m_MapFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
       box.add(Box.createVerticalGlue());
-      label = new JLabel("<html>Select a file of chords and a file of keystrokes to combine.</html>");
+      label = new JLabel(m_Action.getChordsKeysExplanation());
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
@@ -99,9 +203,11 @@ class ChordMapper extends ControlDialog
       setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      m_CheckBoxSkipDup = addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("#.map.skip.duplicates", true));
-      m_CheckBoxSort = addCheckBox(box, "Sort by chord frequency", Persist.getBool("#.map.frequency.sort", false));
-      m_CheckBoxShowAll = addCheckBox(box, "Show unmapped chords", Persist.getBool("#.map.show.unmapped", false));
+      m_CheckBoxSort = m_Action.getCheckbox(0, this, box);
+      m_CheckBoxSkipDup = m_Action.getCheckbox(1, this, box);
+      // alias for assess
+      m_CheckBoxMore = m_CheckBoxSkipDup;
+      m_CheckBoxShowAll = m_Action.getCheckbox(2, this, box);
       addButton(createButton(sm_OK));
       addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_HELP));
@@ -133,29 +239,25 @@ class ChordMapper extends ControlDialog
          return;
       }
       case sm_MAPPED: {
-         File f = chooseFile("mapped", m_MappedFile, "cfg.chords");
+         File f = chooseFile("mapped", m_MapFile, "cfg.chords");
          if (f != null && !f.isDirectory()) {
-            m_MappedFile = Io.asRelative(f);
+            m_MapFile = Io.asRelative(f);
          }
-         setLabel(m_MappedFileLabel, m_MappedFile);
+         setLabel(m_MapFileLabel, m_MapFile);
          return;
       }
       case sm_OK:
          // require both chords and keys or mapped with neither
-         if ((m_ChordsFile == null || m_KeysFile == null)
-          && (m_MappedFile == null || m_ChordsFile != null || m_KeysFile != null)) {
-            Log.warn("Mapping requires both a chords and a keystrokes files.");
+         if (!m_Action.isFileOk(m_ChordsFile, m_KeysFile, m_MapFile)) {
             return;
          }
          Persist.setFile("#.map.chords.file", m_ChordsFile);
          Persist.setFile("#.map.keys.file", m_KeysFile);
-         Persist.setFile("#.map.mapped.file", m_MappedFile);
-         Persist.set("#.map.skip.duplicates", m_CheckBoxSkipDup.isSelected());
-         Persist.set("#.map.frequency.sort", m_CheckBoxSort.isSelected());
-         Persist.set("#.map.show.unmapped", m_CheckBoxShowAll.isSelected());
-         map(m_MappedFile, m_ChordsFile, m_KeysFile);
+         Persist.setFile("#.map.mapped.file", m_MapFile);
+         m_Action.persist(m_CheckBoxSort, m_CheckBoxSkipDup, m_CheckBoxShowAll);
+         m_Action.act(this, m_MapFile, m_ChordsFile, m_KeysFile);
          SaveChordsWindow scw = new
-            SaveChordsWindow(this, "Chord Mappings", "cfg.chords");
+            SaveChordsWindow(this, m_Action.getSaveDialogTitle(), "cfg.chords");
          scw.setPersistName("#.chord.list");
          scw.setExtension("cfg.chords");
          scw.setVisible(true);
@@ -181,10 +283,18 @@ class ChordMapper extends ControlDialog
    ///////////////////////////////////////////////////////////////////
    @Override // ContentForTitle
    public String getContentForTitle(String title) {
-      return m_Assignments.toString(KeyPress.Format.FILE, false, 
-                                    m_CheckBoxShowAll.isSelected(), 
-                                    m_CheckBoxSort.isSelected()
-                                    ? m_Times : null);
+      if (Action.CREATE.getSaveDialogTitle().equals(title)) {
+         return m_Assignments.toString(KeyPress.Format.FILE, false, 
+                                       m_CheckBoxMore.isSelected(), 
+                                       m_CheckBoxSort.isSelected()
+                                       ? m_Times : null);
+      } else 
+      if (Action.ASSESS.getSaveDialogTitle().equals(title)) {
+         return getAssessment();
+      } else {
+         Log.err(getClass().getSimpleName() + " unknown title: " + title);
+         return "";
+      }
    }
 
    // Private /////////////////////////////////////////////////////////////////
@@ -317,8 +427,8 @@ class ChordMapper extends ControlDialog
          if (m_Label == m_KeysFileLabel) {
             m_KeysFile = null;
          }
-         if (m_Label == m_MappedFileLabel) {
-            m_MappedFile = null;
+         if (m_Label == m_MapFileLabel) {
+            m_MapFile = null;
          }
          setLabel(m_Label, null);
       }
@@ -329,6 +439,169 @@ class ChordMapper extends ControlDialog
 
    ////////////////////////////////////////////////////////////////////////////
    private enum Target { MAPPED, CHORD, KEYS };
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void assess(File mappedF, File chordF, File keysF) {
+      StringBuilder err = new StringBuilder();
+      m_SortedTwiddles = new ArrayList<Twiddle>();
+      m_SortedTwiddleTimes = new ArrayList<Integer>();
+      LineReader chordLr = new LineReader(Io.toExistUrl(chordF), Io.sm_MUST_EXIST);
+      for (;;) {
+         String line = chordLr.readLine();
+         if ("".equals(line)) {
+            continue;
+         }
+         if (line == null) {
+            break;
+         }
+         Twiddle t = new Twiddle(line);
+         if (!t.getChord().isValid()) {
+            Log.parseWarn(chordLr, String.format("Failed to parse invalid chord \"%s\"", line));
+         } else if (!t.getThumbKeys().isEmpty()) {
+            Log.parseWarn(chordLr, String.format("Ignored chord with thumb keys \"%s\"", line));
+         } else {
+            m_SortedTwiddles.add(t);
+            m_SortedTwiddleTimes.add(getInt(line, chordLr));
+         }
+      }
+      chordLr.close();
+      Util.sortAscending(m_SortedTwiddleTimes, m_SortedTwiddles);
+
+      m_SortedKpls = new ArrayList<KeyPressList>();
+      m_SortedKplFrequencies = new ArrayList<Integer>();
+      m_GotFreq = false;
+      LineReader keysLr = new LineReader(Io.toExistUrl(keysF), Io.sm_MUST_EXIST);
+      for (;;) {
+         String line = keysLr.readLine();
+         if ("".equals(line)) {
+            continue;
+         }
+         if (line == null) {
+            break;
+         }
+         int offset = Io.findFirstNotOf(line, Io.sm_WS);
+         int end = Io.findFirstOf(line.substring(offset), Io.sm_WS);
+         KeyPressList kpl = KeyPressList.parseTextAndTags(line.substring(offset, offset + end), err);
+         if (!"".equals(err.toString())) {
+            Log.parseWarn(keysLr, err.toString(), line);
+            err = new StringBuilder();
+         } else {
+            m_SortedKpls.add(kpl);
+            m_SortedKplFrequencies.add(getInt(line.substring(offset + end), keysLr));
+            if (!m_GotFreq && m_SortedKplFrequencies.get(m_SortedKplFrequencies.size() - 1) > 0) {
+               m_GotFreq = true;
+            }
+         }
+      }
+      keysLr.close();
+      Util.sortDescending(m_SortedKplFrequencies, m_SortedKpls);
+
+      m_Assigns = new ArrayList<Assignment>();
+      m_MaxAssignLength = 0;
+      m_Assessments = new ArrayList<String>();
+      LineReader mappedLr = new LineReader(Io.toExistUrl(mappedF), Io.sm_MUST_EXIST);
+      for (;;) {
+         String line = mappedLr.readLine();
+         if ("".equals(line)) {
+            continue;
+         }
+         if (line == null) {
+            break;
+         }
+         Assignment asg = Assignment.parseLine(line, err);
+         if (!"".equals(err.toString())) {
+            Log.parseWarn(mappedLr, err.toString(), line);
+            err = new StringBuilder();
+         }
+         int chordPos = Util.find(asg.getTwiddle(), m_SortedTwiddles);
+         if (chordPos == -1) {
+            Log.log("Failed to find '" + asg.getTwiddle() + "' in " + chordF.getPath());
+         } else {
+            int keyPos = Util.find(asg.getKeyPressList(), m_SortedKpls);
+            if (keyPos == -1) {
+               Log.log("Failed to find '" + asg.getKeyPressList() + "' in " + keysF.getPath());
+            } else {
+               m_Assigns.add(asg);
+               m_MaxAssignLength = Math.max(m_MaxAssignLength, asg.toString().length());
+               final String blank = "----";
+               String diffs = String.format("%4d ", chordPos - keyPos);
+               String details = String.format("%5d %5d ", keyPos, chordPos);
+               int chordTime = m_SortedTwiddleTimes.get(chordPos);
+               int keyTime = keyPos < m_SortedTwiddleTimes.size()  
+                           ? m_SortedTwiddleTimes.get(keyPos)
+                           : 0;
+               if (keyTime == 0) {
+                  diffs += String.format("%6s ", blank);
+                  details += String.format("%5s %5d ", blank, chordTime);
+               } else {
+                  diffs += String.format("%6d ", keyTime * 100 / chordTime);
+                  details += String.format("%5d %5d ", keyTime, chordTime);
+               }
+               if (m_GotFreq) {
+                  int keyOccur = m_SortedKplFrequencies.get(keyPos);
+                  int chordOccur = chordPos < m_SortedKplFrequencies.size()  
+                                 ? m_SortedKplFrequencies.get(chordPos)
+                                 : 0;
+                  if (chordOccur == 0) {
+                     diffs += String.format("%6s ", blank);
+                     details += String.format("%8d %8s ", keyOccur, blank);
+                  } else {
+                     diffs += String.format("%6d ", chordOccur * 100 / keyOccur);
+                     details += String.format("%8d %8d ", keyOccur, chordOccur);
+                  }
+               }
+               if (m_CheckBoxMore.isSelected()) {
+                  diffs += details;
+               }
+               m_Assessments.add(diffs);
+            }
+         }
+      }
+      mappedLr.close();
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   private String getAssessment() {
+      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+      String str = "";
+      str += "# Twidlit Assessment at " + df.format(Calendar.getInstance().getTime()) + '\n';
+      str += "# Map    " + m_MapFile.getPath() + "\n";
+      str += "# Chords " + m_ChordsFile.getPath() + "\n";
+      str += "# Keys   " + m_KeysFile.getPath() + "\n";
+      String freq1 = m_GotFreq ? "  Change %" : "Speed";
+      String freq2 = m_GotFreq ? "Speed   Freq" : "    %";
+      String freq3 = m_GotFreq ? "  " : " ";
+      String freq4 = m_GotFreq ? "    Key Occurrence" : "";
+      String freq5 = m_GotFreq ? "     From       To" : "";
+      String format = String.format("%%-%ds # ", m_MaxAssignLength);
+      String l1 = String.format(format, " ") + "Moved " + freq1;
+      String l2 = String.format(format, " ") + "      " + freq2;
+      if (m_CheckBoxMore.isSelected()) {
+         l1 += freq3;
+         l1 += "     Moved    Chord Time" + freq4;
+         l2 += "  From    To  From    To" + freq5;
+      }
+      str += l1 + '\n' + l2 + '\n';
+      for (int i = 0; i < m_Assigns.size(); ++i) {
+         str += String.format(format, m_Assigns.get(i)) + m_Assessments.get(i) + '\n';
+      }
+      return str;
+   }
+   
+   ////////////////////////////////////////////////////////////////////////////
+   private int getInt(String line, LineReader lr) {
+      int offset = Io.findFirstOf(line, Io.sm_DIGIT);
+      int len = Io.findFirstOf(line.substring(offset), Io.sm_WS);
+      if (len > 0) {
+         StringBuilder err = new StringBuilder();
+         int val = Io.parseInt(line.substring(offset, offset + len), err);
+         if ("".equals(err.toString())) {
+            return val;
+         }
+         Log.parseWarn(lr, err.toString(), line);
+      }
+      return 0;
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    private void map(File mappedF, File chordF, File keysF) {
@@ -383,13 +656,11 @@ class ChordMapper extends ControlDialog
          if (target == Target.KEYS) {
             str = getKeys(line, lr);
          } else if (line.length() < 4) {
-            String msg = String.format("Failed to parse too short line \"%s\"", line);
-            Log.parseWarn(lr, msg);
+            Log.parseWarn(lr, String.format("Failed to parse too short line \"%s\"", line));
          } else {
             Twiddle t = new Twiddle(line);
             if (!t.getChord().isValid()) {
-               String msg = String.format("Failed to parse invalid chord \"%s\"", line);
-               Log.parseWarn(lr, msg);
+               Log.parseWarn(lr, String.format("Failed to parse invalid chord \"%s\"", line));
             } else if (target == Target.MAPPED) {
                str = line;
             } else if (target == Target.CHORD) {
@@ -509,21 +780,31 @@ class ChordMapper extends ControlDialog
 
    private KeyPress m_NL;
    private KeyPress m_CR;
+   private Action m_Action;
    private JFileChooser m_FileChooser;
    private JLabel m_ChordsFileLabel;
    private JLabel m_KeysFileLabel;
-   private JLabel m_MappedFileLabel;
+   private JLabel m_MapFileLabel;
    private File m_ChordsFile;
    private File m_KeysFile;
-   private File m_MappedFile;
-   private JCheckBox m_CheckBoxSkipDup;
+   private File m_MapFile;
    private JCheckBox m_CheckBoxSort;
+   private JCheckBox m_CheckBoxSkipDup;
+   private JCheckBox m_CheckBoxMore;
    private JCheckBox m_CheckBoxShowAll;
    private int m_DuplicateKeys;
    private String m_DuplicateKey;
    private boolean m_GotEnter;
    private ArrayList<Integer>[] m_ExistingTwiddles;
    private Assignments m_Assignments;
+   private ArrayList<Assignment> m_Assigns;
+   private int m_MaxAssignLength;
+   private ArrayList<String> m_Assessments;
    private SortedChordTimes m_Times;
+   private ArrayList<Twiddle> m_SortedTwiddles;
+   private ArrayList<Integer> m_SortedTwiddleTimes;
+   private ArrayList<KeyPressList> m_SortedKpls;
+   private ArrayList<Integer> m_SortedKplFrequencies;
+   private boolean m_GotFreq;
 }
 

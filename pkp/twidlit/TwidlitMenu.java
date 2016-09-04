@@ -50,6 +50,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(fileMenu, sm_FILE_SAVE_AS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_MAP_CHORDS_TEXT);
+      add(fileMenu, sm_FILE_ASSESS_MAP_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_TWIDDLER_SETTINGS_TEXT);
       m_SettingsWindow = new SettingsWindow(new Cfg());
@@ -365,14 +366,18 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
          return;
-      case sm_FILE_MAP_CHORDS_TEXT: {
+      case sm_FILE_MAP_CHORDS_TEXT:
+      case sm_FILE_ASSESS_MAP_TEXT: {
          ChordTimes ct = m_Twidlit.getChordTimes();
          // don't use the keystroke-prompted chord times
          if (ct.isKeystrokes()) {
             ct = new ChordTimes(false, isRightHand());
          }
          new ChordMapper(m_Twidlit, 
-                         new SortedChordTimes(ct));
+                         new SortedChordTimes(ct),
+                         command == sm_FILE_MAP_CHORDS_TEXT
+                           ? ChordMapper.Action.CREATE
+                           : ChordMapper.Action.ASSESS);
          return;
       }
       case sm_FILE_PREF_TEXT:
@@ -931,6 +936,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_FILE_OPEN_TEXT = "Open...";
    private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
    private static final String sm_FILE_MAP_CHORDS_TEXT = "Create Map File...";
+   private static final String sm_FILE_ASSESS_MAP_TEXT = "Assess Map File...";
    private static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
    private static final String sm_FILE_PREF_TEXT = "Preferences...";
    private static final String sm_FILE_QUIT_TEXT = "Quit";
