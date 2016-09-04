@@ -32,6 +32,7 @@ public class Io {
    public static final int sm_PARSE_FAILED = Integer.MIN_VALUE;
    public static final char sm_COMMENT = '#';
    public static final String sm_WS = "   ";
+   public static final String sm_DIGIT = "0123456789";
    public static final String sm_HEX_DIGIT = "0123456789abcdefABCDEF";
 
    ////////////////////////////////////////////////////////////////////////////
@@ -300,13 +301,13 @@ public class Io {
    ////////////////////////////////////////////////////////////////////////////
    public static int findFirstOfUpTo(String str, String chars, int upTo) {
       upTo = Math.min(upTo, str.length());
-//System.out.printf("\"%s\" '%s' %d%n", str, chars, upTo);
       for (int i = 0; i < chars.length(); ++i) {
          int p = str.indexOf(chars.charAt(i));
-         if (p < upTo) {
+         if (p != -1 && p < upTo) {
             upTo = p;
          }
       }
+//System.out.printf("\"%s\" '%s' %d%n", str, chars, upTo);
       return upTo == -1 ? str.length() : upTo;
    }
 
