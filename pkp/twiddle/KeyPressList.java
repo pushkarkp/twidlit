@@ -97,6 +97,15 @@ public class KeyPressList extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   @Override
+   public boolean equals(Object rhs) {
+      if (rhs instanceof KeyPressList) {
+         return equals((KeyPressList)rhs);
+      }
+      return false;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean equals(KeyPressList rhs) {
 //System.out.printf("%d == %d%n", size(), rhs.size());
       int size = size();
