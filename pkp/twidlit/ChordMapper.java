@@ -203,11 +203,11 @@ class ChordMapper extends ControlDialog
       setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      m_CheckBoxSort = m_Action.getCheckbox(0, this, box);
-      m_CheckBoxSkipDup = m_Action.getCheckbox(1, this, box);
+      m_CheckBoxSortChords = m_Action.getCheckbox(0, this, box);
+      m_CheckBoxSkipDupKeys = m_Action.getCheckbox(1, this, box);
       // alias for assess
-      m_CheckBoxMore = m_CheckBoxSkipDup;
-      m_CheckBoxShowAll = m_Action.getCheckbox(2, this, box);
+      m_CheckBoxMoreDetail = m_CheckBoxSkipDupKeys;
+      m_CheckBoxShowEmpty = m_Action.getCheckbox(2, this, box);
       addButton(createButton(sm_OK));
       addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_HELP));
@@ -254,7 +254,7 @@ class ChordMapper extends ControlDialog
          Persist.setFile("#.map.chords.file", m_ChordsFile);
          Persist.setFile("#.map.keys.file", m_KeysFile);
          Persist.setFile("#.map.mapped.file", m_MapFile);
-         m_Action.persist(m_CheckBoxSort, m_CheckBoxSkipDup, m_CheckBoxShowAll);
+         m_Action.persist(m_CheckBoxSortChords, m_CheckBoxSkipDupKeys, m_CheckBoxShowEmpty);
          m_Action.act(this, m_MapFile, m_ChordsFile, m_KeysFile);
          SaveChordsWindow scw = new
             SaveChordsWindow(this, m_Action.getSaveDialogTitle(), "cfg.chords");
@@ -262,7 +262,7 @@ class ChordMapper extends ControlDialog
          scw.setExtension("cfg.chords");
          scw.setVisible(true);
          if (m_DuplicateKeys > 0) {
-            String action = m_CheckBoxSkipDup.isSelected() ? "skipped" : "found";
+            String action = m_CheckBoxSkipDupKeys.isSelected() ? "skipped" : "found";
             String seeLog = Log.hasFile() ? " (see log for details)." : ".";
             Log.warn(String.format("%d duplicate keystrokes (eg %s) were ", m_DuplicateKeys, m_DuplicateKey)
                     + action + " in " + m_KeysFile.getPath() + seeLog);
@@ -285,8 +285,8 @@ class ChordMapper extends ControlDialog
    public String getContentForTitle(String title) {
       if (Action.CREATE.getSaveDialogTitle().equals(title)) {
          return m_Assignments.toString(KeyPress.Format.FILE, false, 
-                                       m_CheckBoxMore.isSelected(), 
-                                       m_CheckBoxSort.isSelected()
+                                       m_CheckBoxShowEmpty.isSelected(), 
+                                       m_CheckBoxSortChords.isSelected()
                                        ? m_Times : null);
       } else 
       if (Action.ASSESS.getSaveDialogTitle().equals(title)) {
@@ -550,7 +550,7 @@ class ChordMapper extends ControlDialog
                      details += String.format("%8d %8d ", keyOccur, chordOccur);
                   }
                }
-               if (m_CheckBoxMore.isSelected()) {
+               if (m_CheckBoxMoreDetail.isSelected()) {
                   diffs += details;
                }
                m_Assessments.add(diffs);
@@ -576,7 +576,7 @@ class ChordMapper extends ControlDialog
       String format = String.format("%%-%ds # ", m_MaxAssignLength);
       String l1 = String.format(format, " ") + "Moved " + freq1;
       String l2 = String.format(format, " ") + "      " + freq2;
-      if (m_CheckBoxMore.isSelected()) {
+      if (m_CheckBoxMoreDetail.isSelected()) {
          l1 += freq3;
          l1 += "     Moved    Chord Time" + freq4;
          l2 += "  From    To  From    To" + freq5;
@@ -709,13 +709,13 @@ class ChordMapper extends ControlDialog
          return "";
       }
 //System.out.printf("%d %s %s%n", m_Assignments.size(), m_Assignments.get(1).getKeyPressList().toString(KeyPress.Format.ESC), kpl.toString(KeyPress.Format.ESC));
-      String action = m_CheckBoxSkipDup.isSelected() ? "Skipped" : "Found";
+      String action = m_CheckBoxSkipDupKeys.isSelected() ? "Skipped" : "Found";
       for (int i = 0; i < m_Assignments.size(); ++i) {
          if (kpl.equals(m_Assignments.get(i).getKeyPressList())) {
             String keys = line.substring(initial, initial + length);
             Log.log(String.format(action + " repeat of '%s' on line %d of %s.",
                                   keys, lr.getLineNumber(), lr.getPath()));
-            if (m_CheckBoxSkipDup.isSelected()) {
+            if (m_CheckBoxSkipDupKeys.isSelected()) {
                ++m_DuplicateKeys;
                if ("".equals(m_DuplicateKey)) {
                   m_DuplicateKey = keys;
@@ -788,10 +788,10 @@ class ChordMapper extends ControlDialog
    private File m_ChordsFile;
    private File m_KeysFile;
    private File m_MapFile;
-   private JCheckBox m_CheckBoxSort;
-   private JCheckBox m_CheckBoxSkipDup;
-   private JCheckBox m_CheckBoxMore;
-   private JCheckBox m_CheckBoxShowAll;
+   private JCheckBox m_CheckBoxSortChords;
+   private JCheckBox m_CheckBoxSkipDupKeys;
+   private JCheckBox m_CheckBoxMoreDetail;
+   private JCheckBox m_CheckBoxShowEmpty;
    private int m_DuplicateKeys;
    private String m_DuplicateKey;
    private boolean m_GotEnter;
