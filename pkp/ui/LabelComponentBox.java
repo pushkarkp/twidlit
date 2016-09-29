@@ -5,6 +5,7 @@
  */
 package pkp.ui;
 
+import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -15,11 +16,18 @@ public class LabelComponentBox extends Box {
 
    ////////////////////////////////////////////////////////////////////////////
    public LabelComponentBox(String label, JComponent component) {
+      this(label, component, 0);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public LabelComponentBox(String label, JComponent component, int height) {
       super(BoxLayout.LINE_AXIS);
       setOpaque(false);
       m_Label = new JLabel(label);
       add(m_Label);
-      add(Box.createHorizontalGlue());
+      if (height != 0) {
+         add(Box.createRigidArea(new Dimension(0, height)));
+      }
       m_Component = component;
       add(m_Component);
    }

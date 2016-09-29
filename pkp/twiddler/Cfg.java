@@ -40,12 +40,7 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void writeText(File f) {
-      Io.write(f, toString());
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public static void write(File f, Settings tc, Assignments a) {
+   public static void write(File f, Assignments a, Settings s, int version) {
       List<Assignment> asgs = a.toList();
       // assignments plus 1 terminating 0 int
       int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
@@ -55,19 +50,17 @@ public class Cfg implements Settings {
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       // settings
-      IntSettings is = tc.getIntSettings();
+      IntSettings is = s.getIntSettings();
       bb.put((byte)is.MAJOR_VERSION.getValue());
       bb.putShort(otherEndian((short)is.MINOR_VERSION.getValue()));
       bb.putShort(otherEndian((short)endOfTwiddles));
       bb.putShort(otherEndian((short)startOfMulti));
-      bb.putShort(otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
-      bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getValue()));
-      bb.put((byte)is.START_SPEED.getValue());
-      bb.put((byte)is.FAST_SPEED.getValue());
-      bb.put((byte)is.MOUSE_ACCELERATION.getValue());
-      bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
-      bb.put((byte)(4 | (tc.isEnableRepeat() ? 1 : 0) | (tc.isEnableStorage() ? 2 : 0)));
-
+      if (version == 1) {
+         write1(s, bb);
+      } else {
+         write2(s, bb);
+      }
+      
       // assignments
       int k = 0;
       for (int i = 0; i < asgs.size(); ++i) {
@@ -133,22 +126,20 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public Cfg() {
-      m_EnableRepeat = false;
-      m_EnableStorage = false;
       m_Assignments = new Assignments();
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Cfg(Settings set, Assignments asgs) {
       m_IntSettings = set.getIntSettings();
-      m_EnableRepeat = set.isEnableRepeat();
-      m_EnableStorage = set.isEnableStorage();
+      m_BoolSettings = set.getBoolSettings();
+      m_Version = set.getVersion();
       m_Assignments = asgs;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void write(File f) {
-      write(f, this, getAssignments());
+   public void write(File f, int version) {
+      write(f, getAssignments(), this, version);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -159,12 +150,11 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    @Override // Settings
    public IntSettings getIntSettings() { return m_IntSettings; }
+   @Override // Settings
+   public BoolSettings getBoolSettings() { return m_BoolSettings; }
+   @Override // Settings
+   public int getVersion() { return m_Version; }
 
-   ////////////////////////////////////////////////////////////////////////////
-   @Override // Settings
-   public boolean isEnableRepeat() { return m_EnableRepeat; }
-   @Override // Settings
-   public boolean isEnableStorage() { return m_EnableStorage; }
 
    ////////////////////////////////////////////////////////////////////////////
    public Assignments getAssignments() {
@@ -175,24 +165,56 @@ public class Cfg implements Settings {
    public String toString() {
       String str = m_Assignments.toString();
       for (IntSettings is: getIntSettings().values()) {
-         if (!is.isDefault()) {
-            str += Io.toCamel(is.m_Name) + " " + is.getValue() + '\n';
+         if (!is.isDefault() && is.isCurrent(m_Version)) {
+            str += Io.toCamel(is.getName()) + " " + is.getValue() + '\n';
          }
       }
-      if (isEnableRepeat()) {
-         str += String.format("%s %s",
-                              Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME),
-                              Boolean.toString(isEnableRepeat())) + '\n';
-      }
-      if (isEnableStorage()) {
-         str += String.format("%s %s",
-                              Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME),
-                              Boolean.toString(isEnableStorage())) + '\n';
+      for (BoolSettings bs: getBoolSettings().values()) {
+         if (!bs.isDefault() && bs.isCurrent(m_Version)) {
+            str += Io.toCamel(bs.getName()) + " " + bs.is() + '\n';
+         }
       }
       return str;
    }
 
    // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static void write1(Settings s, ByteBuffer bb) {
+      IntSettings is = s.getIntSettings();
+      bb.putShort(otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
+      bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getValue()));
+      bb.put((byte)is.START_SPEED.getValue());
+      bb.put((byte)is.FAST_SPEED.getValue());
+      bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
+      bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
+
+      BoolSettings bs = s.getBoolSettings();
+      bb.put((byte)(4
+         | (bs.ENABLE_REPEAT.is() ? 1 : 0) 
+         | (bs.ENABLE_STORAGE.is() ? 2 : 0)
+      ));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static void write2(Settings s, ByteBuffer bb) {
+      IntSettings is = s.getIntSettings();
+      bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
+      bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getDefault()));
+      bb.put((byte)is.START_SPEED.getDefault());
+      bb.put((byte)is.FAST_SPEED.getDefault());
+      bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
+      bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
+
+      BoolSettings bs = s.getBoolSettings();
+      bb.put((byte)(4
+         | (bs.ENABLE_REPEAT.is() ? 1 : 0) 
+         | (bs.ENABLE_STORAGE.is() ? 2 : 0)
+         | (bs.NO_BLUETOOTH.is() ? 8 : 0)
+         | (bs.STICKY_NUM.is() ? 16 : 0)
+         | (bs.STICKY_SHIFT.is() ? 128 : 0)
+      ));
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    private boolean read1(File inputFile) {
@@ -217,22 +239,27 @@ public class Cfg implements Settings {
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       m_IntSettings.MAJOR_VERSION.setValue(bb.get() & 0xFF);
-      m_IntSettings.MINOR_VERSION.setValue(otherEndian(bb.getShort()));
-      int endOfTwiddles = otherEndian(bb.getShort());
-      int startOfMulti = otherEndian(bb.getShort());
+      m_IntSettings.MINOR_VERSION.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+      int endOfTwiddles = otherEndian(bb.getShort()) & 0xFFFF;
+      int startOfMulti = otherEndian(bb.getShort()) & 0xFFFF;
 //System.out.printf("endOfTwiddles %d 0x%x startOfMulti %d 0x%x sum %d 0x%x diff %d 0x%x%n",
 //                  endOfTwiddles, endOfTwiddles, startOfMulti, startOfMulti,
 //                  endOfTwiddles + startOfMulti, endOfTwiddles + startOfMulti,
 //                  endOfTwiddles - startOfMulti, endOfTwiddles - startOfMulti);
-      m_IntSettings.MOUSE_EXIT_DELAY.setValue(otherEndian(bb.getShort()));
-      m_IntSettings.MS_BETWEEN_TWIDDLES.setValue((int)otherEndian(bb.getShort()));
+      m_IntSettings.MOUSE_EXIT_DELAY.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+      m_IntSettings.IDLE_LIMIT.setValue(m_IntSettings.MOUSE_EXIT_DELAY.getValue());
+      m_IntSettings.MS_BETWEEN_TWIDDLES.setValue(otherEndian(bb.getShort()) & 0xFFFF);
       m_IntSettings.START_SPEED.setValue(bb.get() & 0xFF);
       m_IntSettings.FAST_SPEED.setValue(bb.get() & 0xFF);
-      m_IntSettings.MOUSE_ACCELERATION.setValue(bb.get() & 0xFF);
+      m_IntSettings.MOUSE_SENSITIVITY.setValue(bb.get() & 0xFF);
       m_IntSettings.MS_REPEAT_DELAY.setValue((bb.get() & 0xFF) * 10);
       int bits = bb.get() & 0xFF;
-      m_EnableRepeat = (bits & 1) != 0;
-      m_EnableStorage = (bits & 2) != 0;
+//System.out.printf("bits %d%n", bits);
+      m_BoolSettings.ENABLE_REPEAT.setValue((bits & 1) != 0);
+      m_BoolSettings.ENABLE_STORAGE.setValue((bits & 2) != 0);
+      m_BoolSettings.NO_BLUETOOTH.setValue((bits & 8) != 0);
+      m_BoolSettings.STICKY_NUM.setValue((bits & 16) != 0);
+      m_BoolSettings.STICKY_SHIFT.setValue((bits & 128) != 0);
 
       KeyPress.clearWarned();
       m_Assignments = new Assignments();
@@ -355,7 +382,7 @@ public class Cfg implements Settings {
       }
       String upper = strs.get(0).toUpperCase();
       for (IntSettings is: m_IntSettings.values()) {
-         if (upper.equals(Io.toCamel(is.name()).toUpperCase())) {
+         if (upper.equals(Io.toCamel(is.getName()).toUpperCase())) {
             int value = Io.toInt(strs.get(1)); 
             if (value == Io.sm_PARSE_FAILED) {
                return false;
@@ -364,13 +391,12 @@ public class Cfg implements Settings {
             return true;
          }
       }
-      if (Io.isBool(strs.get(1))) {
-         if (upper.equals(Io.toCamel(Settings.sm_ENABLE_REPEAT_NAME).toUpperCase())) {
-            m_EnableRepeat = Io.parseBool(strs.get(1));
-            return true;
-         }
-         if (upper.equals(Io.toCamel(Settings.sm_ENABLE_STORAGE_NAME).toUpperCase())) {
-            m_EnableStorage = Io.parseBool(strs.get(1));
+      for (BoolSettings bs: m_BoolSettings.values()) {
+         if (upper.equals(Io.toCamel(bs.getName()).toUpperCase())) {
+            if (!Io.isBool(strs.get(1))) {
+               return false;
+            }
+            bs.setValue(Io.parseBool(strs.get(1)));
             return true;
          }
       }
@@ -430,7 +456,7 @@ public class Cfg implements Settings {
    private static final int sm_CONFIG_SIZE = 16;
    private static final int sm_MOUSE_SPEC_SIZE = 39;
    private IntSettings m_IntSettings;
-   private boolean m_EnableRepeat = false;
-   private boolean m_EnableStorage = false;
+   private BoolSettings m_BoolSettings;
+   private int m_Version;
    private Assignments m_Assignments = new Assignments();
 }

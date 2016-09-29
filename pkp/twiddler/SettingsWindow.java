@@ -7,61 +7,56 @@
 package pkp.twiddler;
 
 import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import javax.swing.JComponent;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 import pkp.ui.ControlWindow;
-import pkp.ui.SliderBuilder;
-import pkp.ui.LabelComponentBox;
+import pkp.util.Persist;
+import pkp.util.Persistent;
 import pkp.util.Pref;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class SettingsWindow extends ControlWindow implements Settings  {
+public class SettingsWindow 
+   extends ControlWindow
+   implements Settings, Persistent, ActionListener  {
 
    ////////////////////////////////////////////////////////////////////////////
    public SettingsWindow(Settings cfg) {
       super("Twiddler Settings");
+      m_SliderHeight = Pref.getInt("#.slider.height");
+      m_SliderStepWidth = Pref.getInt("#.slider.step.width");
+      m_Version = getVersion(Persist.get(sm_VERSION_PERSIST, "2"));
       m_IntCfg = cfg.getIntSettings();
+      m_BoolCfg = cfg.getBoolSettings();
       JPanel cp = (JPanel)getContentPane();
       Box b = new Box(BoxLayout.LINE_AXIS);
       cp.add(b);
       b.add(Box.createHorizontalGlue());
-      b.add(new JLabel("Version "));
-      b.add(new JLabel(String.format("%d.%d", m_IntCfg.MAJOR_VERSION.getValue(), m_IntCfg.MINOR_VERSION.getValue())));
-      m_MinorVersion = m_IntCfg.MINOR_VERSION.getValue();
-      int sp = Pref.getInt("#.control.separation.size");
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.MOUSE_EXIT_DELAY.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MOUSE_EXIT_DELAY.getValue())));
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.MS_BETWEEN_TWIDDLES.m_Name, SliderBuilder.build(0, 5000, 1000, m_IntCfg.MS_BETWEEN_TWIDDLES.getValue())));
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.START_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.START_SPEED.getValue())));
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.FAST_SPEED.m_Name, SliderBuilder.build(0, 10, 1, m_IntCfg.FAST_SPEED.getValue())));
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.MOUSE_ACCELERATION.m_Name, SliderBuilder.build(0, 255, 50, m_IntCfg.MOUSE_ACCELERATION.getValue())));
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      cp.add(new LabelComponentBox(m_IntCfg.MS_REPEAT_DELAY.m_Name, SliderBuilder.build(0, 2500, 500, m_IntCfg.MS_REPEAT_DELAY.getValue())));
-      Dimension size = new Dimension(40, 10);
-      for (int i = 2; i < cp.getComponentCount(); i += 2) {
-         LabelComponentBox vsb = (LabelComponentBox)cp.getComponent(i);
-         ((JSlider)vsb.getComponent()).setSnapToTicks(false);
-//         vsb.setTextPreferredSize(size);
-      }
-      cp.add(Box.createRigidArea(new Dimension(0, sp)));
-      b = new Box(BoxLayout.LINE_AXIS);
-      cp.add(b);
-      b.add(new JCheckBox("Mass storage enabled", cfg.isEnableStorage()));
+      JLabel twiddler = new JLabel("Twiddler ");
+      twiddler.setFont(twiddler.getFont().deriveFont(20.0f));
+      b.add(twiddler);
+      m_Button = new JButton(getVersionName(m_Version));
+      m_Button.setFont(m_Button.getFont().deriveFont(20.0f));
+      m_Button.setMargin(new Insets(0, 2, 0, 2));
+      m_Button.addActionListener(this);
+      b.add(m_Button);
+      b.add(Box.createRigidArea(new Dimension(0, m_SliderHeight)));
       b.add(Box.createHorizontalGlue());
-      b.add(new JCheckBox("Key repeat enabled", cfg.isEnableRepeat()));
-      for (int i = 0; i < b.getComponentCount(); i += 2) {
-         ((JComponent)b.getComponent(i)).setOpaque(false);
-      }
-      pack();
+      b.add(new JLabel("File Version "));
+      b.add(new JLabel(String.format("%d.%d", m_IntCfg.MAJOR_VERSION.getValue(), m_IntCfg.MINOR_VERSION.getValue())));
+      m_MinorFileVersion = m_IntCfg.MINOR_VERSION.getValue();
+      m_SettingsPanel = new JPanel();
+      m_SettingsPanel.setLayout(new BoxLayout(m_SettingsPanel, BoxLayout.PAGE_AXIS));
+      cp.add(m_SettingsPanel);
+      showSettings(m_SettingsPanel);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -70,7 +65,7 @@ public class SettingsWindow extends ControlWindow implements Settings  {
       int i = 0;
       for (IntSettings is: m_IntCfg.values()) {
          // skip immutable major and minor version
-         if (is.ordinal() > 1) {
+         if (is.ordinal() > 1 && is.isCurrent(m_Version)) {
             is.setValue(getInt(i));
             ++i;
          }
@@ -80,29 +75,123 @@ public class SettingsWindow extends ControlWindow implements Settings  {
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // Settings
-   public boolean isEnableRepeat() { return getBool(1); }
+   public BoolSettings getBoolSettings() {
+      int i = 0;
+      for (BoolSettings bs: m_BoolCfg.values()) {
+         if (bs.isCurrent(m_Version)) {
+           bs.setValue(getBool(i));
+           ++i;
+         }
+      }
+      return m_BoolCfg;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    @Override // Settings
-   public boolean isEnableStorage() { return getBool(0); }
+   public int getVersion() {
+      return m_Version;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   @Override // ActionListener
+   public void actionPerformed(ActionEvent e) {
+      getIntSettings();
+      getBoolSettings();
+      switch (e.getActionCommand()) {
+      case "2":
+         m_Version = getVersion("3");
+         break;
+      case "3":
+         m_Version = getVersion("2");
+         break;
+      }
+      m_Button.setText(getVersionName(m_Version));
+      showSettings(m_SettingsPanel);
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   @Override // Persistent
+   public void persist(String tag) {
+      Persist.set(sm_VERSION_PERSIST, getVersionName(m_Version));
+   }
 
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private int getVersion() {
-      return Integer.parseInt(((JLabel)((Box)getContentPane().getComponent(0)).getComponent(2)).getText());
+   private void showSettings(JPanel sp) {
+      sp.removeAll();
+      addIntSettings(m_SettingsPanel);
+      addBoolSettings(m_SettingsPanel);
+      for (int i = 0; i < m_SettingsPanel.getComponentCount(); ++i) {
+         ((JComponent)m_SettingsPanel.getComponent(i)).setOpaque(false);
+      }
+      getContentPane().revalidate();
+      pack();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void addIntSettings(JPanel sp) {
+      m_BoolOffset = 0;
+      for (IntSettings is: m_IntCfg.values()) {
+         // skip immutable major and minor version
+         if (is.ordinal() > 1 && is.isCurrent(m_Version)) {
+            sp.add(new IntSettingBox(is.getName() + is.getUnits() + "  ", m_SliderStepWidth, m_SliderHeight, is.getMin(), is.getMax(), is.getStep(), is.getDefault(), is.getValue()));
+            m_BoolOffset += 1;
+         }
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void addBoolSettings(JPanel sp) {
+      sp.add(Box.createRigidArea(new Dimension(0, m_SliderHeight / 4)));
+      m_BoolOffset += 1;
+      for (BoolSettings bs: m_BoolCfg.values()) {
+         if (bs.isCurrent(m_Version)) {
+            sp.add(new JCheckBox(bs.getName(), bs.is()));
+         }
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
    private int getInt(int i) {
-      return ((JSlider)((LabelComponentBox)getContentPane().getComponent((i + 1) * 2)).getComponent()).getValue();
+      return ((IntSettingBox)m_SettingsPanel.getComponent(i)).getValue();
    }
 
    ////////////////////////////////////////////////////////////////////////////
    private boolean getBool(int i) {
-      return ((JCheckBox)((Box)getContentPane().getComponent(sm_BOOL_BOX)).getComponent(i * 2)).isSelected();
+      int offset = i + m_BoolOffset;
+      return ((JCheckBox)(m_SettingsPanel.getComponent(offset))).isSelected();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private int getVersion(String v) {
+      for (int i = 0; i < sm_VERSION_NAMES.length; ++i) {
+         if (v.equals(sm_VERSION_NAMES[i])) {
+            return i + 1;
+         }
+      }
+      return 0;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private String getVersionName(int v) {
+      if (v < 1 || v > sm_VERSION_NAMES.length) {
+         return "";
+      }
+      return sm_VERSION_NAMES[v - 1];
    }
 
    // Data ////////////////////////////////////////////////////////////////////
-   private static final int sm_BOOL_BOX = 14;
+   private static final String sm_VERSION_PERSIST = "#.twiddler.version";
+   private static final String sm_VERSION_NAMES[] = new String[]{"2", "3"};
+   private final int m_SliderHeight;
+   private final int m_SliderStepWidth;
+   private int m_Version;
+   private int m_BoolOffset;
+   private JButton m_Button;
+   private JPanel m_SettingsPanel;
+   private JPanel m_BoolPanel;
    private IntSettings m_IntCfg;
-   private int m_MinorVersion;
+   private BoolSettings m_BoolCfg;
+   private int m_MinorFileVersion;
 }

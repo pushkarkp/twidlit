@@ -16,6 +16,7 @@
 <dd><dl>
 <dt><a href='#map'>Create Map File</a>
 <dt><a href='#assess'>Assess Map File</a>
+<dt><a href='#settings'>Twiddler Settings</a>
 <dt><a href='#countsrange'>Range of Counts Displayed</a>
 <dt><a href='#speed'>Chord Wait</a>
 <dt><a href='#delay'>Chord Delay</a>
@@ -51,8 +52,7 @@ Click the window <em>Save As...</em> button to save it as <tt>cfg.chords</tt> or
 <dt><b>Assess Map File...</b>
 <dd>Opens the <a href="#assess">Assess Map File dialog</a>.
 <dt><b>Twiddler Settings...</b>
-<dd>Opens a dialog that allows you to modify the current configuration's Twiddler settings. 
-Only <em>Mass storage</em> and <em>Key repeat</em> are <a href='http://twiddler.tekgear.com/doc/static/config_format_v4_rev0.pdf'>used by Twiddler 3</a>. 
+<dd>Opens the <a href='#settings'>Twiddler Settings dialog</a> that allows you to modify the current configuration's Twiddler settings. 
 <dt><b>Preferences...</b>
 <dd>Allows you to select a location for the <a href="#pref">preference</a> text files. 
 </dl>
@@ -160,6 +160,16 @@ The assessment creates a file that annotates each mapping with three values.
 1. How many positions the keystroke has moved from its ideal location. 
 2. The percentage change of chord delay between the keystroke's ideal and actual positions. 
 3. The percentage change of keystroke occurrence between the keystroke's ideal and actual positions. 
+
+<a name='settings'>
+<h2>Twiddler Settings</h2>
+Use the sliders and checkboxes to change the Twiddler settings in the current configuration. 
+They will come into effect next time you save the configuration to the Twiddler. 
+Use the button to the right to reset to the default value. 
+Any setting not at its default will also appear in the <a href='syn.html#cfg'><tt>cfg.chords</tt></a> file. 
+<br><br>
+Click on the version number to change between Twiddler versions 2 and 3. 
+Be sure the correct version is showing when you close the dialog.
 
 <a name='countsrange'>
 <h2>Range of Counts Displayed</h2>
@@ -336,6 +346,10 @@ Delete this setting if not using Windows line ends.
 <dd>The font used for the prompt in the Text pane. 
 <dt><tt>progress.step.msec 150</tt><br>
 <dd>The milliseconds between updates of the Twiddler window progress bar.
+<dt><tt>slider.height 50</tt><br>
+<dd>The height of a slider in the Settings window. 
+<dt><tt>slider.step.width 50</tt><br>
+<dd>The width of a step in the slider in the Settings window. 
 <dt><tt>text.color lightGray</tt><br>
 <dd>The color of text in the Text pane. 
 <dt><tt>text.highlight.color black</tt><br>

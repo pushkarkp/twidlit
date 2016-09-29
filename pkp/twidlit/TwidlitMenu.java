@@ -170,6 +170,7 @@ class TwidlitMenu extends PersistentMenuBar
    @Override // Persistent
    public void persist(String tag) {
       m_Twidlit.getTwiddlerWindow().persist(tag);
+      m_SettingsWindow.persist(tag);
       Persist.set(sm_PREF_DIR_PERSIST, Io.getRelativePath(m_PrefDir));
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_CFG_FILE_PERSIST, m_CfgFName);
@@ -753,7 +754,7 @@ class TwidlitMenu extends PersistentMenuBar
             break;
          case sm_CFG:
             (new Cfg(m_SettingsWindow, 
-                     m_Twidlit.getKeyMap().getAssignments())).write(f);
+                     m_Twidlit.getKeyMap().getAssignments())).write(f, m_SettingsWindow.getVersion());
             break;
          default:
             Log.err("CfgSaver: unknown extension \"" + eff.getExtension() + '"');
