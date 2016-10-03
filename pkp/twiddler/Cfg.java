@@ -163,7 +163,7 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      String str = m_Assignments.toString();
+      String str = "";
       for (IntSettings is: getIntSettings().values()) {
          if (!is.isDefault() && is.isCurrent(m_Version)) {
             str += Io.toCamel(is.getName()) + " " + is.getValue() + '\n';
@@ -174,7 +174,7 @@ public class Cfg implements Settings {
             str += Io.toCamel(bs.getName()) + " " + bs.is() + '\n';
          }
       }
-      return str;
+      return str + m_Assignments.toString();
    }
 
    // Private /////////////////////////////////////////////////////////////////
