@@ -25,6 +25,7 @@ public class LabelComponentBox extends Box {
       setOpaque(false);
       m_Label = new JLabel(label);
       add(m_Label);
+      add(Box.createHorizontalGlue());
       if (height != 0) {
          add(Box.createRigidArea(new Dimension(0, height)));
       }
