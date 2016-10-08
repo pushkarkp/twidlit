@@ -135,17 +135,17 @@ public class Persist {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static File getFile(String name, String defaultValue) {
-      String fileName = get(name, defaultValue);
+   public static File getFile(String name, File defaultFile) {
+      String fileName = get(name, null);
       if (fileName == null || fileName == "") {
-         return null;
+         return defaultFile;
       }
       File f = new File(fileName);
       while (!f.exists() && f.getParent() != null) {
          f = new File(f.getParent());
       }
       if (!f.exists()) {
-         return null;
+         return defaultFile;
       }
       return f;
    }

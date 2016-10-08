@@ -52,6 +52,10 @@ class ChordMapper extends ControlDialog
             return "Create Map File";
          }
          @Override
+         File getDefaultMapFile(File deflt) {
+            return null;
+         }
+         @Override
          String getCfgExplanation() {
             return "<html>Optionally select a file of existing mappings to include.</html>";
          }
@@ -98,6 +102,10 @@ class ChordMapper extends ControlDialog
             return "Assess Map File";
          }
          @Override
+         File getDefaultMapFile(File deflt) {
+            return deflt;
+         }
+         @Override
          String getCfgExplanation() {
             return "<html>Select a map file to assess.</html>";
          }
@@ -135,6 +143,7 @@ class ChordMapper extends ControlDialog
          }
       };
       abstract String getTitle();
+      abstract File getDefaultMapFile(File deflt);
       abstract String getCfgExplanation();
       abstract String getChordsKeysExplanation();
       abstract boolean isFileOk(File chordsFile, File keysFile, File mappedFile);
@@ -145,7 +154,7 @@ class ChordMapper extends ControlDialog
    }
 
    ///////////////////////////////////////////////////////////////////
-   ChordMapper(Window owner, SortedChordTimes times, Action action) {
+   ChordMapper(Window owner, File mapFile, SortedChordTimes times, Action action) {
       super(owner, action.getTitle());
       setResizable(true);
       m_NL = null;
@@ -167,9 +176,14 @@ class ChordMapper extends ControlDialog
       }
       m_Times = times;
       m_Action = action;
+      File defaultMapFile = m_Action.getDefaultMapFile(mapFile);
+      if (defaultMapFile != null 
+       && (!defaultMapFile.exists() || defaultMapFile.isDirectory())) {
+         defaultMapFile = null;
+      }
       m_ChordsFile = Persist.getFile("#.map.chords.file");
       m_KeysFile = Persist.getFile("#.map.keys.file");
-      m_MapFile = Persist.getFile("#.map.mapped.file");
+      m_MapFile = Persist.getFile("#.map.mapped.file", defaultMapFile);
       m_GotEnter = false;
       m_DuplicateKeys = 0;
       m_DuplicateKey = "";
@@ -183,7 +197,7 @@ class ChordMapper extends ControlDialog
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
-      Box fileBox = createButtonLabelBox(sm_MAPPED);
+      Box fileBox = createButtonLabelBox(sm_MAPPED, defaultMapFile);
       m_MapFileLabel = (JLabel)fileBox.getComponent(2);
       setLabel(m_MapFileLabel, m_MapFile);
       box.add(fileBox);
@@ -193,12 +207,12 @@ class ChordMapper extends ControlDialog
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
-      fileBox = createButtonLabelBox(sm_CHORDS);
+      fileBox = createButtonLabelBox(sm_CHORDS, null);
       m_ChordsFileLabel = (JLabel)fileBox.getComponent(2);
       setLabel(m_ChordsFileLabel, m_ChordsFile);
       box.add(fileBox);
       box.add(Box.createVerticalGlue());
-      fileBox = createButtonLabelBox(sm_KEYS);
+      fileBox = createButtonLabelBox(sm_KEYS, null);
       m_KeysFileLabel = (JLabel)fileBox.getComponent(2);
       setLabel(m_KeysFileLabel, m_KeysFile);
       box.add(fileBox);
@@ -257,7 +271,11 @@ class ChordMapper extends ControlDialog
          m_Action.persist(m_CheckBoxSortChords, m_CheckBoxSkipDupKeys, m_CheckBoxShowEmpty);
          m_Action.act(this, m_MapFile, m_ChordsFile, m_KeysFile);
          SaveChordsWindow scw = new
-            SaveChordsWindow(this, m_Action.getSaveDialogTitle(), "cfg.chords");
+            SaveChordsWindow(this, 
+                             m_Action.getSaveDialogTitle(), 
+                             m_MapFile != null
+                              ? m_MapFile.getParent()
+                              : ".");
          scw.setPersistName("#.chord.list");
          scw.setExtension("cfg.chords");
          scw.setVisible(true);
@@ -362,7 +380,7 @@ class ChordMapper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private Box createButtonLabelBox(String buttonLabel) {
+   private Box createButtonLabelBox(String buttonLabel, File deflt) {
       Box box = new Box(BoxLayout.LINE_AXIS);
       box.setOpaque(false);
       box.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -376,7 +394,7 @@ class ChordMapper extends ControlDialog
       b = new JButton(sm_CLEAR);
       b.setPreferredSize(new Dimension(15, 15));
       b.setMargin(new Insets(0, 0, 0, 0));
-      b.addActionListener(new FileNameClearer(label));
+      b.addActionListener(new FileNameClearer(label, deflt));
       box.add(b);
       return box;
    }
@@ -410,8 +428,9 @@ class ChordMapper extends ControlDialog
    class FileNameClearer implements ActionListener {
 
       ///////////////////////////////////////////////////////////////////
-      FileNameClearer(JLabel label) {
+      FileNameClearer(JLabel label, File deflt) {
          m_Label = label;
+         m_Default = deflt;
       }
 
       ///////////////////////////////////////////////////////////////////
@@ -422,19 +441,20 @@ class ChordMapper extends ControlDialog
             return;
          }
          if (m_Label == m_ChordsFileLabel) {
-            m_ChordsFile = null;
+            m_ChordsFile = m_Default;
          }
          if (m_Label == m_KeysFileLabel) {
-            m_KeysFile = null;
+            m_KeysFile = m_Default;
          }
          if (m_Label == m_MapFileLabel) {
-            m_MapFile = null;
+            m_MapFile = m_Default;
          }
-         setLabel(m_Label, null);
+         setLabel(m_Label, m_Default);
       }
 
       ///////////////////////////////////////////////////////////////////
       private JLabel m_Label;
+      private File m_Default;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -665,7 +685,7 @@ class ChordMapper extends ControlDialog
                str = line;
             } else if (target == Target.CHORD) {
                // ignore duplicate chords
-               if (m_Assignments.isUsed(t)) {
+               if (m_Assignments.isMap(t)) {
                   StringInt si = lr.getNameAndPosition();
                   Log.log(String.format("Skipped duplicate chord \"%s\" in line %d of %s", t, si.getInt(), si.getString()));
                   str = "";
@@ -782,12 +802,12 @@ class ChordMapper extends ControlDialog
    private KeyPress m_CR;
    private Action m_Action;
    private JFileChooser m_FileChooser;
+   private JLabel m_MapFileLabel;
    private JLabel m_ChordsFileLabel;
    private JLabel m_KeysFileLabel;
-   private JLabel m_MapFileLabel;
+   private File m_MapFile;
    private File m_ChordsFile;
    private File m_KeysFile;
-   private File m_MapFile;
    private JCheckBox m_CheckBoxSortChords;
    private JCheckBox m_CheckBoxSkipDupKeys;
    private JCheckBox m_CheckBoxMoreDetail;

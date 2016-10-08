@@ -61,7 +61,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_PrefDir = Persist.get(sm_PREF_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CfgDir = Persist.get(sm_CFG_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CfgFName = Persist.get(sm_CFG_FILE_PERSIST, "");
-      m_KeyPressFile = Persist.getFile(sm_KEY_SOURCE_FILE_PERSIST, "key.source.file");
+      m_KeyPressFile = Persist.getFile(sm_KEY_SOURCE_FILE_PERSIST);
       
       m_CountsMenu = new JMenu(sm_COUNTS_MENU_TEXT);
       add(m_CountsMenu);
@@ -369,13 +369,8 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_FILE_MAP_CHORDS_TEXT:
       case sm_FILE_ASSESS_MAP_TEXT: {
-         ChordTimes ct = m_Twidlit.getChordTimes();
-         // don't use the keystroke-prompted chord times
-         if (ct.isKeystrokes()) {
-            ct = new ChordTimes(false, isRightHand());
-         }
-         new ChordMapper(m_Twidlit, 
-                         new SortedChordTimes(ct),
+         new ChordMapper(m_Twidlit, new File(m_CfgDir, m_CfgFName),
+                         new SortedChordTimes(getChordTimes()),
                          command == sm_FILE_MAP_CHORDS_TEXT
                            ? ChordMapper.Action.CREATE
                            : ChordMapper.Action.ASSESS);
@@ -546,6 +541,16 @@ class TwidlitMenu extends PersistentMenuBar
             return;
          }
       }
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   private ChordTimes getChordTimes() {
+      ChordTimes ct = m_Twidlit.getChordTimes();
+      // don't use the keystroke-prompted chord times
+      if (ct.isKeystrokes()) {
+         return new ChordTimes(false, isRightHand());
+      }
+      return ct;
    }
 
    ///////////////////////////////////////////////////////////////////

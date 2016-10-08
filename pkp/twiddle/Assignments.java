@@ -137,7 +137,7 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isUsed(Twiddle tw) {
+   public boolean isMap(Twiddle tw) {
       for (Assignment asg: this) {
 			if (asg.isMap(tw)) {
             return true;
@@ -149,7 +149,7 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public boolean add(Assignment newAsg) {
-      if (isUsed(newAsg.getTwiddle())) {
+      if (isMap(newAsg.getTwiddle())) {
          m_Remap.add(newAsg);
          return false;
       }
