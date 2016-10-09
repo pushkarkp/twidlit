@@ -393,6 +393,9 @@ class ChordMapper extends ControlDialog
             Log.parseWarn(mappedLr, err.toString(), line);
             err = new StringBuilder();
          }
+         if (asg == null) {
+            continue;
+         }
          int chordPos = Util.find(asg.getTwiddle(), m_SortedTwiddles);
          if (chordPos == -1) {
             Log.log("Failed to find '" + asg.getTwiddle() + "' in " + chordF.getPath());
