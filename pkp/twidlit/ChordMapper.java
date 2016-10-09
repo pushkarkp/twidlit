@@ -34,6 +34,7 @@ import pkp.io.LineReader;
 import pkp.ui.HtmlWindow;
 import pkp.ui.ControlDialog;
 import pkp.ui.ExtensionFileFilter;
+import pkp.ui.FileBox;
 import pkp.string.StringInt;
 import pkp.util.Persist;
 import pkp.util.Pref;
@@ -57,17 +58,17 @@ class ChordMapper extends ControlDialog
          }
          @Override
          String getCfgExplanation() {
-            return "<html>Optionally select a file of existing mappings to include.</html>";
+            return "<html>Optionally select an existing file of mappings to include.</html>";
          }
          @Override
          String getChordsKeysExplanation() {
-            return "<html>Select a file of chords and a file of keystrokes to combine.</html>";
+            return "<html>Select a file of chords and a file of keystrokes to combine. The chords should be sorted by speed and the keystrokes sorted by frequency.</html>";
          }
          @Override
          boolean isFileOk(File chordsFile, File keysFile, File mappedFile) {
             if ((chordsFile == null || keysFile == null)
              && (mappedFile == null || chordsFile != null || keysFile != null)) {
-               Log.warn("Mapping requires both a chords and a keystrokes files.");
+               Log.warn("Mapping requires both a chords file and a keystrokes files.");
                return false;
             }
             return true;
@@ -174,16 +175,6 @@ class ChordMapper extends ControlDialog
             }
          }
       }
-      m_Times = times;
-      m_Action = action;
-      File defaultMapFile = m_Action.getDefaultMapFile(mapFile);
-      if (defaultMapFile != null 
-       && (!defaultMapFile.exists() || defaultMapFile.isDirectory())) {
-         defaultMapFile = null;
-      }
-      m_ChordsFile = Persist.getFile("#.map.chords.file");
-      m_KeysFile = Persist.getFile("#.map.keys.file");
-      m_MapFile = Persist.getFile("#.map.mapped.file", defaultMapFile);
       m_GotEnter = false;
       m_DuplicateKeys = 0;
       m_DuplicateKey = "";
@@ -192,36 +183,51 @@ class ChordMapper extends ControlDialog
          m_ExistingTwiddles[i] = new ArrayList<Integer>();
       }
       m_Assignments = new Assignments();
+
+      m_Times = times;
+      m_Action = action;
+      File defaultMapFile = m_Action.getDefaultMapFile(mapFile);
+      if (defaultMapFile != null 
+       && (!defaultMapFile.exists() || defaultMapFile.isDirectory())) {
+         defaultMapFile = null;
+      }
+
       Box box = getBox();
       JLabel label = new JLabel(m_Action.getCfgExplanation());
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
-      Box fileBox = createButtonLabelBox(sm_MAPPED, defaultMapFile);
-      m_MapFileLabel = (JLabel)fileBox.getComponent(2);
-      setLabel(m_MapFileLabel, m_MapFile);
-      box.add(fileBox);
+
+      m_MapFileBox = new
+         FileBox(sm_MAPPED, Persist.getFile("#.map.mapped.file", defaultMapFile),
+                 defaultMapFile, "Choose a map file", "cfg.chords");
+      box.add(m_MapFileBox);
       box.add(Box.createVerticalGlue());
       box.add(Box.createVerticalGlue());
+
       label = new JLabel(m_Action.getChordsKeysExplanation());
       label.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(label);
       box.add(Box.createVerticalGlue());
-      fileBox = createButtonLabelBox(sm_CHORDS, null);
-      m_ChordsFileLabel = (JLabel)fileBox.getComponent(2);
-      setLabel(m_ChordsFileLabel, m_ChordsFile);
-      box.add(fileBox);
+
+      m_ChordsFileBox = new 
+         FileBox(sm_CHORDS, Persist.getFile("#.map.chords.file"), 
+                 null, "Choose a chords file", "chords");
+      box.add(m_ChordsFileBox);
       box.add(Box.createVerticalGlue());
-      fileBox = createButtonLabelBox(sm_KEYS, null);
-      m_KeysFileLabel = (JLabel)fileBox.getComponent(2);
-      setLabel(m_KeysFileLabel, m_KeysFile);
-      box.add(fileBox);
+
+      m_KeysFileBox = new 
+         FileBox(sm_KEYS, Persist.getFile("#.map.keys.file"), 
+                 null, "Choose a keystrokes file", "keys");
+      box.add(m_KeysFileBox);
       box.add(Box.createVerticalGlue());
+
       m_CheckBoxSortChords = m_Action.getCheckbox(0, this, box);
       m_CheckBoxSkipDupKeys = m_Action.getCheckbox(1, this, box);
       // alias for assess
       m_CheckBoxMoreDetail = m_CheckBoxSkipDupKeys;
       m_CheckBoxShowEmpty = m_Action.getCheckbox(2, this, box);
+
       addButton(createButton(sm_OK));
       addButton(createButton(sm_CANCEL));
       addButton(createButton(sm_HELP));
@@ -236,45 +242,23 @@ class ChordMapper extends ControlDialog
          Log.err("ChordMapper unexpected command: " + e.getActionCommand());
          return;
       }
-      case sm_CHORDS: {
-         File f = chooseFile("chords", m_ChordsFile, "chords");
-         if (f != null) {
-            m_ChordsFile = Io.asRelative(f);
-            setLabel(m_ChordsFileLabel, m_ChordsFile);
-         }
-         return;
-      }
-      case sm_KEYS: {
-         File f = chooseFile("keystrokes", m_KeysFile, "keys");
-         if (f != null) {
-            m_KeysFile = Io.asRelative(f);
-            setLabel(m_KeysFileLabel, m_KeysFile);
-         }
-         return;
-      }
-      case sm_MAPPED: {
-         File f = chooseFile("mapped", m_MapFile, "cfg.chords");
-         if (f != null && !f.isDirectory()) {
-            m_MapFile = Io.asRelative(f);
-         }
-         setLabel(m_MapFileLabel, m_MapFile);
-         return;
-      }
       case sm_OK:
-         // require both chords and keys or mapped with neither
-         if (!m_Action.isFileOk(m_ChordsFile, m_KeysFile, m_MapFile)) {
+         File chordsFile = m_ChordsFileBox.getFile();
+         File keysFile = m_KeysFileBox.getFile();
+         File mapFile = m_MapFileBox.getFile();
+         if (!m_Action.isFileOk(chordsFile, keysFile, mapFile)) {
             return;
          }
-         Persist.setFile("#.map.chords.file", m_ChordsFile);
-         Persist.setFile("#.map.keys.file", m_KeysFile);
-         Persist.setFile("#.map.mapped.file", m_MapFile);
+         Persist.setFile("#.map.chords.file", chordsFile);
+         Persist.setFile("#.map.keys.file", keysFile);
+         Persist.setFile("#.map.mapped.file", mapFile);
          m_Action.persist(m_CheckBoxSortChords, m_CheckBoxSkipDupKeys, m_CheckBoxShowEmpty);
-         m_Action.act(this, m_MapFile, m_ChordsFile, m_KeysFile);
+         m_Action.act(this, mapFile, chordsFile, keysFile);
          SaveChordsWindow scw = new
             SaveChordsWindow(this, 
                              m_Action.getSaveDialogTitle(), 
-                             m_MapFile != null
-                              ? m_MapFile.getParent()
+                             mapFile != null
+                              ? mapFile.getParent()
                               : ".");
          scw.setPersistName("#.chord.list");
          scw.setExtension("cfg.chords");
@@ -283,7 +267,7 @@ class ChordMapper extends ControlDialog
             String action = m_CheckBoxSkipDupKeys.isSelected() ? "skipped" : "found";
             String seeLog = Log.hasFile() ? " (see log for details)." : ".";
             Log.warn(String.format("%d duplicate keystrokes (eg %s) were ", m_DuplicateKeys, m_DuplicateKey)
-                    + action + " in " + m_KeysFile.getPath() + seeLog);
+                    + action + " in " + keysFile.getPath() + seeLog);
          }
          // return;
       case sm_CANCEL:
@@ -317,93 +301,11 @@ class ChordMapper extends ControlDialog
 
    // Private /////////////////////////////////////////////////////////////////
 
-   ///////////////////////////////////////////////////////////////////
-   private File chooseFile(String name, File f, String ext) {
-      File dir = null;
-      if (f != null) {
-         if (f.isDirectory()) {
-            dir = f;
-         } else if (f.getParent() != null) {
-            dir = f.getParentFile();
-         }
-      }
-      JFileChooser fc = createChooser("Choose a " + name + " file", ext, f);
-      ChooserActionListener cal = new ChooserActionListener(fc);
-      fc.addActionListener(cal);
-      fc.showDialog(this, "OK");
-      return cal.getFile();
-   }
-
-   ///////////////////////////////////////////////////////////////////
-   class ChooserActionListener implements ActionListener {
-
-      ////////////////////////////////////////////////////////////////
-      ChooserActionListener(JFileChooser chooser) {
-         m_FileChooser = chooser;
-         m_File = null;
-      }
-
-      ////////////////////////////////////////////////////////////////
-      File getFile() {
-         return m_File;
-      }
-
-      ////////////////////////////////////////////////////////////////
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         if (e.getActionCommand() == "CancelSelection") {
-            return;
-         } else if (e.getActionCommand() != "ApproveSelection") {
-            Log.err("ChooserActionListener unexpected command: " + e.getActionCommand());
-         }
-         m_File = m_FileChooser.getSelectedFile();
-       }
-
-      // Data ////////////////////////////////////////////////////////
-      private JFileChooser m_FileChooser;
-      private File m_File;
-   }
-
-   ///////////////////////////////////////////////////////////////////
-   private JFileChooser createChooser(String title, String ext, File dir) {
-      JFileChooser fc = new JFileChooser();
-      fc.setDialogTitle(title);
-      if (dir == null || !dir.exists()) {
-         dir = new File(".");
-      }
-      fc.setCurrentDirectory(dir);
-      ArrayList<String> effs = new ArrayList<String>();
-      effs.add(ext);
-      ExtensionFileFilter.setFileFilters(fc, effs);
-      fc.addChoosableFileFilter(fc.getAcceptAllFileFilter());
-      return fc;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private Box createButtonLabelBox(String buttonLabel, File deflt) {
-      Box box = new Box(BoxLayout.LINE_AXIS);
-      box.setOpaque(false);
-      box.setAlignmentX(Component.LEFT_ALIGNMENT);
-      JButton b = createButton(buttonLabel);
-      b.setMargin(new Insets(0, 5, 0, 5));
-      box.add(b);
-      box.add(Box.createHorizontalGlue());
-      JLabel label = new JLabel();
-      box.add(label);
-      box.add(Box.createRigidArea(new Dimension(5, 0)));
-      b = new JButton(sm_CLEAR);
-      b.setPreferredSize(new Dimension(15, 15));
-      b.setMargin(new Insets(0, 0, 0, 0));
-      b.addActionListener(new FileNameClearer(label, deflt));
-      box.add(b);
-      return box;
-   }
-
    ////////////////////////////////////////////////////////////////////////////
    private JButton createButton(String label) {
-      JButton button = new JButton(label);
-      button.addActionListener(this);
-      return button;
+      JButton b = new JButton(label);
+      b.addActionListener(this);
+      return b;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -415,48 +317,6 @@ class ChordMapper extends ControlDialog
       return cb;
    }
    
-   ////////////////////////////////////////////////////////////////////////////
-   private void setLabel(JLabel label, File f) {
-      if (f == null || f.getPath() == "") {
-         label.setText("unset");
-      } else {
-         label.setText(f.getName());
-      }
-   }
-
-   //////////////////////////////////////////////////////////////////////
-   class FileNameClearer implements ActionListener {
-
-      ///////////////////////////////////////////////////////////////////
-      FileNameClearer(JLabel label, File deflt) {
-         m_Label = label;
-         m_Default = deflt;
-      }
-
-      ///////////////////////////////////////////////////////////////////
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         if (e.getActionCommand() != sm_CLEAR) {
-            Log.err("ChordMapper unexpected command: " + e.getActionCommand());
-            return;
-         }
-         if (m_Label == m_ChordsFileLabel) {
-            m_ChordsFile = m_Default;
-         }
-         if (m_Label == m_KeysFileLabel) {
-            m_KeysFile = m_Default;
-         }
-         if (m_Label == m_MapFileLabel) {
-            m_MapFile = m_Default;
-         }
-         setLabel(m_Label, m_Default);
-      }
-
-      ///////////////////////////////////////////////////////////////////
-      private JLabel m_Label;
-      private File m_Default;
-   }
-
    ////////////////////////////////////////////////////////////////////////////
    private enum Target { MAPPED, CHORD, KEYS };
 
@@ -585,9 +445,9 @@ class ChordMapper extends ControlDialog
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
       String str = "";
       str += "# Twidlit Assessment at " + df.format(Calendar.getInstance().getTime()) + '\n';
-      str += "# Map    " + m_MapFile.getPath() + "\n";
-      str += "# Chords " + m_ChordsFile.getPath() + "\n";
-      str += "# Keys   " + m_KeysFile.getPath() + "\n";
+      str += "# Map    " + m_MapFileBox.getFile().getPath() + "\n";
+      str += "# Chords " + m_ChordsFileBox.getFile().getPath() + "\n";
+      str += "# Keys   " + m_KeysFileBox.getFile().getPath() + "\n";
       String freq1 = m_GotFreq ? "  Change %" : "Speed";
       String freq2 = m_GotFreq ? "Speed   Freq" : "    %";
       String freq3 = m_GotFreq ? "  " : " ";
@@ -793,21 +653,16 @@ class ChordMapper extends ControlDialog
    private static final String sm_OK = "OK";
    private static final String sm_CANCEL = "Cancel";
    private static final String sm_HELP = "Help";
-   private static final String sm_MAPPED = "Mapped";
+   private static final String sm_MAPPED = "Map";
    private static final String sm_CHORDS = "Chords";
    private static final String sm_KEYS = "Keystrokes";
-   private static final String sm_CLEAR = "x";
 
    private KeyPress m_NL;
    private KeyPress m_CR;
    private Action m_Action;
-   private JFileChooser m_FileChooser;
-   private JLabel m_MapFileLabel;
-   private JLabel m_ChordsFileLabel;
-   private JLabel m_KeysFileLabel;
-   private File m_MapFile;
-   private File m_ChordsFile;
-   private File m_KeysFile;
+   private FileBox m_ChordsFileBox;
+   private FileBox m_KeysFileBox;
+   private FileBox m_MapFileBox;
    private JCheckBox m_CheckBoxSortChords;
    private JCheckBox m_CheckBoxSkipDupKeys;
    private JCheckBox m_CheckBoxMoreDetail;

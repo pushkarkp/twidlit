@@ -14,6 +14,13 @@ import javax.swing.filechooser.FileFilter;
 public class ExtensionFileFilter extends FileFilter {
 
    ///////////////////////////////////////////////////////////////////
+   public static void addFileFilter(JFileChooser fc, String extension) {
+      fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
+      fc.addChoosableFileFilter(new ExtensionFileFilter(extension));
+      fc.addChoosableFileFilter(fc.getAcceptAllFileFilter());
+   }
+
+   ///////////////////////////////////////////////////////////////////
    public static void setFileFilters(JFileChooser fc, List<String> extensions) {
       fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
       for (int i = 0; i < extensions.size(); ++i) {
