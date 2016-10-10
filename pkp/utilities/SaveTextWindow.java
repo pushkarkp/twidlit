@@ -4,12 +4,12 @@
  * SaveTextWindow.java
  */
 
-package pkp.twidlit;
+package pkp.utilities;
 
 import java.awt.Font;
 
 //////////////////////////////////////////////////////////////////////
-class SaveTextWindow extends pkp.ui.SaveTextWindow {
+public class SaveTextWindow extends pkp.ui.SaveTextWindow {
    public SaveTextWindow(String title, String str, String ext, String dir) {
       super(title, str, ext);
       setDirectory(dir);

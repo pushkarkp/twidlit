@@ -4,7 +4,7 @@
  * ChordMapper.java
  */
 
-package pkp.twidlit;
+package pkp.utilities;
 
 import java.awt.Window;
 import java.awt.Component;
@@ -42,7 +42,7 @@ import pkp.util.Log;
 import pkp.util.Util;
 
 //////////////////////////////////////////////////////////////////////
-class ChordMapper extends ControlDialog 
+public class ChordMapper extends ControlDialog 
    implements ActionListener, SaveChordsWindow.ContentForTitle {
 
    /////////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ class ChordMapper extends ControlDialog
    }
 
    ///////////////////////////////////////////////////////////////////
-   ChordMapper(Window owner, File mapFile, SortedChordTimes times, Action action) {
+   public ChordMapper(Window owner, File mapFile, SortedChordTimes times, Action action) {
       super(owner, action.getTitle());
       setResizable(true);
       m_NL = null;

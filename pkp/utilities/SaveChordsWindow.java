@@ -4,7 +4,7 @@
  * SaveChordsWindow.java
  */
 
-package pkp.twidlit;
+package pkp.utilities;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -12,15 +12,15 @@ import javax.swing.JButton;
 import pkp.twiddle.Chord;
 
 //////////////////////////////////////////////////////////////////////
-class SaveChordsWindow extends SaveTextWindow implements ActionListener {
+public class SaveChordsWindow extends SaveTextWindow implements ActionListener {
 
    //////////////////////////////////////////////////////////////////////
-   interface ContentForTitle {
+   public interface ContentForTitle {
       String getContentForTitle(String title);
    }
 
    ///////////////////////////////////////////////////////////////////
-   SaveChordsWindow(ContentForTitle cft, String title, String dir) {
+   public SaveChordsWindow(ContentForTitle cft, String title, String dir) {
       super(title, "", "chords", dir);
       m_ContentForTitle = cft;
       addCorner0Button(new JButton(sm_CONVERT_TEXT[0]));
