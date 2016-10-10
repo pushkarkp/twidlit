@@ -1,7 +1,7 @@
 /**
  * Copyright 2015 Pushkar Piggott
  *
- * Progress.show
+ * ProgressPanel.java
  */
 
 package pkp.twidlit;
