@@ -5,11 +5,8 @@
  */
 package pkp.util;
 
-import java.util.Properties;
 import java.io.File;
 import java.net.URL;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JRadioButtonMenuItem;
 import pkp.io.Io;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,6 +14,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static boolean match(String a, String b) {
+//System.out.println("match(" + toTag(a) + ", " + toTag(b) + ") " + toTag(a).equals(toTag(b)));
       return toTag(a).equals(toTag(b));
    }
 
@@ -44,6 +42,7 @@ public class Persist {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void set(String name, String value) {
+//System.out.println(name + '=' + value);
       sm_Persist.set(name, value);
    }
 
