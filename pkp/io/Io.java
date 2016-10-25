@@ -199,15 +199,25 @@ public class Io {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean fileExists(File f) {
+      return f != null && f.exists() && !f.isDirectory();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static boolean dirExists(File f) {
+      return f != null && f.exists() && f.isDirectory();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void dirExistsOrExit(File f) {
-      if (!f.exists() || !f.isDirectory()) {
+      if (!dirExists(f)) {
          Log.err("Did not find the directory \"" + f.getPath() + "\".");
       }
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public static void fileExistsOrExit(File f) {
-      if (!f.exists() || f.isDirectory()) {
+      if (!fileExists(f)) {
          Log.err("Did not find the file \"" + f.getPath() + "\".");
       }
    }
@@ -249,15 +259,18 @@ public class Io {
 
    ////////////////////////////////////////////////////////////////////////////
    public static String getRelativePath(String path) {
-      String cd = System.getProperty("user.dir");
-      if (!path.startsWith(cd)) {
-         return path;
+      String ud = System.getProperty("user.dir");
+      if (path.startsWith(ud)) {
+         int prefix = ud.length();
+         if (prefix < path.length()) {
+            ++prefix;
+         }
+         path = path.substring(prefix);
       }
-      int prefix = cd.length();
-      if (prefix < path.length()) {
-         ++prefix;
+      if ("".equals(path)) {
+         return ".";
       }
-      return path.substring(prefix);
+      return path;
    }
 
    ////////////////////////////////////////////////////////////////////////////
