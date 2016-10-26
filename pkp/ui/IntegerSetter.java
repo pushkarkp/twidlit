@@ -6,7 +6,6 @@
 
 package pkp.ui;
 
-import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -16,7 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import pkp.util.Log;
 
 //////////////////////////////////////////////////////////////////////
 public class IntegerSetter implements ActionListener {
