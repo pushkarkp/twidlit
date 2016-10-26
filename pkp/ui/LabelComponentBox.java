@@ -34,6 +34,12 @@ public class LabelComponentBox extends Box {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public void setEnabled(boolean set) {
+      m_Label.setEnabled(set);
+      m_Component.setEnabled(set);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public JLabel getLabel() { return m_Label; }
    public JComponent getComponent() { return m_Component; }
 
