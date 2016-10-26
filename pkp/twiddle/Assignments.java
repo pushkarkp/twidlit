@@ -8,7 +8,10 @@ package pkp.twiddle;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.io.File;
 import pkp.times.SortedChordTimes;
+import pkp.io.LineReader;
+import pkp.io.Io;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,6 +92,24 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public Assignments(File f) {
+      StringBuilder err = new StringBuilder();
+      LineReader lr = new LineReader(Io.toExistUrl(f));
+      for (;;) {
+         String line = lr.readLine();
+         if (line == null) {
+            break;
+         }
+         add(Assignment.parseLine(line, err));
+         if (!"".equals(err.toString())) {
+            Log.parseWarn(lr, err.toString(), line);
+            err = new StringBuilder();
+         }
+      }
+      lr.close();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    // An assignment maps one OR MORE chords to a keypress list.
    // Return a list of 1 to 1 mappings.
    public List<Assignment> toList() {
@@ -140,6 +161,16 @@ public class Assignments extends ArrayList<Assignment> {
    public boolean isMap(Twiddle tw) {
       for (Assignment asg: this) {
 			if (asg.isMap(tw)) {
+            return true;
+         }
+		}
+      return false;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean isUse(Chord ch) {
+      for (Assignment asg: this) {
+         if (asg.isUse(ch)) {
             return true;
          }
 		}

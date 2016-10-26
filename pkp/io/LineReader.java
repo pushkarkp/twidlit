@@ -19,6 +19,11 @@ import pkp.util.Log;
 public class LineReader implements StringSource, NamedOrdered {
 
    ////////////////////////////////////////////////////////////////////////////
+   public LineReader(URL url) {
+      this(url, false);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public LineReader(URL url, boolean mustExist) {
       m_Url = url;
       if (m_Url == null) {
@@ -82,6 +87,21 @@ public class LineReader implements StringSource, NamedOrdered {
    @Override // StringSource
    public String getNextString() {
       return readLine();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public int getInt(String line) {
+      int offset = Io.findFirstOf(line, Io.sm_DIGIT);
+      int len = Io.findFirstOf(line.substring(offset), Io.sm_WS);
+      if (len > 0) {
+         StringBuilder err = new StringBuilder();
+         int val = Io.parseInt(line.substring(offset, offset + len), err);
+         if ("".equals(err.toString())) {
+            return val;
+         }
+         Log.parseWarn(this, err.toString(), line);
+      }
+      return 0;
    }
 
    ////////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,26 @@ public class Util {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static int find(String e, String[] le) {
+      for (int i = 0; i < le.length; ++i) {
+         if (e.equals(le[i])) {
+            return i;
+         }
+      }
+      return -1;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static int findStartsWith(String e, String[] le) {
+      for (int i = 0; i < le.length; ++i) {
+         if (le[i].startsWith(e)) {
+            return i;
+         }
+      }
+      return -1;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    // Sort a list of integers and a parallel list.
    public static <T> void sortAscending(List<Integer> li, List<T> lt) {
       sort(li, lt, ArithmeticComparison.GREATER);

@@ -372,11 +372,10 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_FILE_MAP_CHORDS_TEXT:
       case sm_FILE_ASSESS_MAP_TEXT: {
-         new ChordMapper(m_Twidlit, new File(m_CfgDir, m_CfgFName),
-                         new SortedChordTimes(getChordTimes()),
-                         command == sm_FILE_MAP_CHORDS_TEXT
-                           ? ChordMapper.Action.CREATE
-                           : ChordMapper.Action.ASSESS);
+         new ChordMapper(m_Twidlit, 
+                         new File(m_CfgDir, m_CfgFName),
+                         getSortedChordTimes(),
+                         command.equals(sm_FILE_MAP_CHORDS_TEXT));
          return;
       }
       case sm_FILE_PREF_TEXT:
@@ -547,13 +546,13 @@ class TwidlitMenu extends PersistentMenuBar
    }
 
    ///////////////////////////////////////////////////////////////////
-   private ChordTimes getChordTimes() {
+   private SortedChordTimes getSortedChordTimes() {
       ChordTimes ct = m_Twidlit.getChordTimes();
       // don't use the keystroke-prompted chord times
       if (ct.isKeystrokes()) {
-         return new ChordTimes(false, isRightHand());
+         return null;//new ChordTimes(false, isRightHand());
       }
-      return ct;
+      return new SortedChordTimes(ct);
    }
 
    ///////////////////////////////////////////////////////////////////

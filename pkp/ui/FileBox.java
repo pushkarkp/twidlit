@@ -27,12 +27,31 @@ public class FileBox
    implements ActionListener {
 
    ///////////////////////////////////////////////////////////////////
+   public FileBox(String buttonLabel, File file, String prompt, String ext) {
+      this(buttonLabel, file, null, prompt, ext, null);
+   }
+
+   ///////////////////////////////////////////////////////////////////
    public FileBox(String buttonLabel, File file, File defaultFile, String prompt, String ext) {
+      this(buttonLabel, file, defaultFile, prompt, ext, null);
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public FileBox(String buttonLabel, File file, String prompt, String ext, String defaultLabel) {
+      this(buttonLabel, file, null, prompt, ext, defaultLabel);
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public FileBox(String buttonLabel, File file, File defaultFile, String prompt, String ext, String defaultLabel) {
       super(BoxLayout.LINE_AXIS);
       m_ButtonLabel = buttonLabel;
-      m_DefaultFile = defaultFile;
-      m_File = file == null ? m_DefaultFile : file;
+      m_DefaultFile = Io.fileExists(defaultFile) ? defaultFile : null;
+      m_File = Io.fileExists(file) ? file : m_DefaultFile;
       m_Prompt = prompt;
+      m_DefaultLabel = defaultLabel != null ? defaultLabel
+                     : m_DefaultFile != null ? m_DefaultFile.getPath()
+                     : "unset";
+      m_Toggle = false;
       m_Extension = ext;
       setOpaque(false);
       setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -50,6 +69,17 @@ public class FileBox
       b.addActionListener(this);
       add(b);
       setFileLabel();
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public void setToggle(boolean set) {
+      m_Toggle = set;
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public void setActionListener(ActionListener al, String c) {
+      m_ActionListener = al;
+      m_Command = c;
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -77,27 +107,26 @@ public class FileBox
          }
          break;
       case sm_CLEAR:
-         m_File = m_DefaultFile;
+         m_File = m_Toggle && m_File == m_DefaultFile
+                ? null
+                : m_DefaultFile;
          break;
       }
       setFileLabel();
+      if (m_ActionListener != null) {
+         m_ActionListener.actionPerformed(new ActionEvent(this, 0, m_Command));
+      }
    }
 
    // Private /////////////////////////////////////////////////////////////////
 
    ///////////////////////////////////////////////////////////////////
    private void chooseFile() {
-      File dir = null;
-      if (m_File != null) {
-         if (m_File.isDirectory()) {
-            dir = m_File;
-         } else {
-            dir = m_File.getParentFile();
-         }
-      }
-      m_FileChooser = new JFileChooser(dir == null || !dir.exists()
-                                       ? new File(".")
-                                       : dir);
+      m_FileChooser = new JFileChooser(Io.dirExists(m_File)
+                                       ? m_File
+                                       : m_File != null && Io.dirExists(m_File.getParentFile())
+                                        ? m_File.getParentFile()
+                                        : new File("."));
       m_FileChooser.setDialogTitle(m_Prompt);
       ExtensionFileFilter.addFileFilter(m_FileChooser, m_Extension);
       m_FileChooser.addActionListener(this);
@@ -106,9 +135,9 @@ public class FileBox
 
    ////////////////////////////////////////////////////////////////////////////
    private void setFileLabel() {
-      m_FileLabel.setText(m_File == null || m_File.getPath() == ""
-                          ? "unset"
-                          : m_File.getName());
+      m_FileLabel.setText(Io.fileExists(m_File)
+                          ? m_File.getName()
+                          : m_DefaultLabel);
    }
 
    // Data /////////////////////////////////////////////////////////////////////
@@ -118,8 +147,12 @@ public class FileBox
    private final String m_Prompt;
    private final String m_Extension;
    private final File m_DefaultFile;
+   private final String m_DefaultLabel;
 
    private JLabel m_FileLabel;
    private JFileChooser m_FileChooser;
    private File m_File;
+   private boolean m_Toggle;
+   private ActionListener m_ActionListener;
+   private String m_Command;
 }

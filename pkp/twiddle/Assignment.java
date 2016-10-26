@@ -77,6 +77,16 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean isUse(Chord ch) {
+      for (int i = 0; i < m_Twiddles.size(); ++i) {
+         if (ch.equals(m_Twiddles.get(i).getChord())) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public ArrayList<Assignment> separate() {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
       for (int i = 0; i < m_Twiddles.size(); ++i) {
