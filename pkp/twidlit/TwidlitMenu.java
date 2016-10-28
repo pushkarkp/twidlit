@@ -177,10 +177,10 @@ class TwidlitMenu extends PersistentMenuBar
       Persist.set(sm_PREF_DIR_PERSIST, Io.getRelativePath(m_PrefDir));
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_CFG_FILE_PERSIST, m_CfgFName);
-      Persist.setFile(sm_NGRAMS_FILE_PERSIST, m_NGramsFile);
+      Persist.set(sm_NGRAMS_FILE_PERSIST, m_NGramsFile);
       Persist.set(sm_COUNTS_DIR_PERSIST, Io.getRelativePath(m_CountsInDir));
       Persist.set(sm_COUNTS_TEXT_DIR_PERSIST, Io.getRelativePath(m_CountsOutDir));
-      Persist.setFile(sm_KEY_SOURCE_FILE_PERSIST, m_KeyPressFile);
+      Persist.set(sm_KEY_SOURCE_FILE_PERSIST, m_KeyPressFile);
       Persist.set(sm_TUTOR_OTHER_AUTOSCALE_PERSIST, m_TutorAutoScale);
       Persist.set(sm_TUTOR_OTHER_TIMED_PERSIST, m_TutorOtherTimed);
       super.persist("");
@@ -380,7 +380,7 @@ class TwidlitMenu extends PersistentMenuBar
       }
       case sm_FILE_PREF_TEXT:
          m_FileChooser = makeFileChooser(new PrefActionListener(), m_PrefDir);
-         m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+         m_FileChooser.setSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          m_FileChooser.setDialogTitle("Set Preferences Folder");
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_FileChooser = null;
@@ -414,11 +414,11 @@ class TwidlitMenu extends PersistentMenuBar
             m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("txt"));
             m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
             if (m_CountsAllFiles) {
-               m_FileChooser.setFileFilter(m_FileChooser.getAcceptAllFileFilter());
+               m_FileChooser.setFilter(m_FileChooser.getAcceptAllFileFilter());
             }
          } else {
             m_FileChooser.setDialogTitle("Select a Folder of Text Files to Count");
-            m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            m_FileChooser.setSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          }
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_CountsAllFiles = m_FileChooser.getFileFilter() == m_FileChooser.getAcceptAllFileFilter();
@@ -617,7 +617,7 @@ class TwidlitMenu extends PersistentMenuBar
    ////////////////////////////////////////////////////////////////////////////
    private JFileChooser makeCfgFileChooser(ActionListener al) {
       JFileChooser fc = makeFileChooser(al, m_CfgDir);
-      fc.setFileFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
+      fc.setFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
       fc.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
       return fc;
    }
@@ -855,7 +855,7 @@ class TwidlitMenu extends PersistentMenuBar
     ///////////////////////////////////////////////////////////////////
    class CountsChoosenFileUser implements SaveTextWindow.ChoosenFileUser {
       @Override 
-      public void setFileChooser(JFileChooser fc) {
+      public void setChooser(JFileChooser fc) {
          m_CountsOutDir = fc.getCurrentDirectory().getPath();
       }
    }

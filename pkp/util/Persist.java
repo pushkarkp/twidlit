@@ -114,7 +114,7 @@ public class Persist {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static boolean setFile(String name, File f) {
+   public static boolean set(String name, File f) {
       if (f == null) {
          unset(name);
          return false;

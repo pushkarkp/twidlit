@@ -137,9 +137,9 @@ public class ChordMapper extends ControlDialog
          if (!isFileOk(m_ChordTimes, chordsFile, keysFile) || !m_Action.isFileOk(mapFile)) {
             return;
          }
-         Persist.setFile(sm_CHORDS_FILE_PERSIST, chordsFile);
-         Persist.setFile(sm_KEYS_FILE_PERSIST, keysFile);
-         Persist.setFile(sm_MAP_FILE_PERSIST, mapFile);
+         Persist.set(sm_CHORDS_FILE_PERSIST, chordsFile);
+         Persist.set(sm_KEYS_FILE_PERSIST, keysFile);
+         Persist.set(sm_MAP_FILE_PERSIST, mapFile);
          m_Action.persist(m_CheckBoxSortChords, m_CheckBoxSkipDupKeys, m_CheckBoxShowEmpty);
          m_Action.act(this, mapFile, chordsFile, keysFile);
          SaveChordsWindow scw = new
