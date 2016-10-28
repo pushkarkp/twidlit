@@ -380,7 +380,7 @@ class TwidlitMenu extends PersistentMenuBar
       }
       case sm_FILE_PREF_TEXT:
          m_FileChooser = makeFileChooser(new PrefActionListener(), m_PrefDir);
-         m_FileChooser.setSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+         m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          m_FileChooser.setDialogTitle("Set Preferences Folder");
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_FileChooser = null;
@@ -414,11 +414,11 @@ class TwidlitMenu extends PersistentMenuBar
             m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter("txt"));
             m_FileChooser.addChoosableFileFilter(m_FileChooser.getAcceptAllFileFilter());
             if (m_CountsAllFiles) {
-               m_FileChooser.setFilter(m_FileChooser.getAcceptAllFileFilter());
+               m_FileChooser.setFileFilter(m_FileChooser.getAcceptAllFileFilter());
             }
          } else {
             m_FileChooser.setDialogTitle("Select a Folder of Text Files to Count");
-            m_FileChooser.setSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            m_FileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          }
          m_FileChooser.showDialog(m_Twidlit, "OK");
          m_CountsAllFiles = m_FileChooser.getFileFilter() == m_FileChooser.getAcceptAllFileFilter();
@@ -617,7 +617,7 @@ class TwidlitMenu extends PersistentMenuBar
    ////////////////////////////////////////////////////////////////////////////
    private JFileChooser makeCfgFileChooser(ActionListener al) {
       JFileChooser fc = makeFileChooser(al, m_CfgDir);
-      fc.setFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
+      fc.setFileFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
       fc.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
       return fc;
    }
@@ -855,7 +855,7 @@ class TwidlitMenu extends PersistentMenuBar
     ///////////////////////////////////////////////////////////////////
    class CountsChoosenFileUser implements SaveTextWindow.ChoosenFileUser {
       @Override 
-      public void setChooser(JFileChooser fc) {
+      public void setFileChooser(JFileChooser fc) {
          m_CountsOutDir = fc.getCurrentDirectory().getPath();
       }
    }
