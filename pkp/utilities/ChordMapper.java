@@ -22,6 +22,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.List;
 import pkp.twiddle.Twiddle;
 import pkp.twiddle.Chord;
 import pkp.twiddle.KeyPress;
@@ -376,8 +377,8 @@ public class ChordMapper extends ControlDialog
       m_Assigns = new ArrayList<Assignment>();
       m_MaxAssignLength = 0;
       m_Assessments = new ArrayList<String>();
-      Assignments asgs = new Assignments(mappedF);
-      for (Assignment asg: asgs) {
+      List<Assignment> mapped = (new Assignments(mappedF)).toList();
+      for (Assignment asg: mapped) {
          int chordPos = m_ChordTimes.findChord(asg.getTwiddle().getChord().toString());
          if (chordPos == -1) {
             Log.log("Failed to find \"" + asg.getTwiddle().getChord() + "\" in "
@@ -641,8 +642,6 @@ public class ChordMapper extends ControlDialog
    private int m_MaxAssignLength;
    private ArrayList<String> m_Assessments;
    private SortedChordTimes m_ChordTimes;
-   private ArrayList<Twiddle> m_SortedTwiddles;
-   private ArrayList<Integer> m_SortedTwiddleTimes;
    private ArrayList<KeyPressList> m_SortedKpls;
    private ArrayList<Integer> m_SortedKplFrequencies;
    private boolean m_GotFreq;
