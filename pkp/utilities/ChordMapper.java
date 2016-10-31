@@ -13,7 +13,6 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -175,7 +174,8 @@ public class ChordMapper extends ControlDialog
    @Override // ContentForTitle
    public String getContentForTitle(String title) {
       if (Action.CREATE.getSaveDialogTitle().equals(title)) {
-         return m_Assignments.toString(KeyPress.Format.FILE, false, 
+         return m_Assignments.toString(!Assignment.sm_SHOW_THUMB_KEYS,
+                                       KeyPress.Format.FILE,
                                        m_CheckBoxShowEmpty.isSelected(), 
                                        m_CheckBoxSortChords.isSelected()
                                        ? m_ChordTimes : null);
@@ -222,9 +222,9 @@ public class ChordMapper extends ControlDialog
          @Override
          JCheckBox getCheckbox(int which, ChordMapper mapper, Box box) {
             switch (which) {
-            case 0: return mapper.addCheckBox(box, "Sort by chord frequency", Persist.getBool("#.map.frequency.sort", false));
-            case 1: return mapper.addCheckBox(box, "Skip duplicate keystrokes", Persist.getBool("#.map.skip.duplicates", true));
-            case 2: return mapper.addCheckBox(box, "Show unmapped chords", Persist.getBool("#.map.show.unmapped", false));
+            case 0: return mapper.addCheckBox("Sort by chord frequency", Persist.getBool("#.map.frequency.sort", false), box);
+            case 1: return mapper.addCheckBox("Skip duplicate keystrokes", Persist.getBool("#.map.skip.duplicates", true), box);
+            case 2: return mapper.addCheckBox("Show unmapped chords", Persist.getBool("#.map.show.unmapped", false), box);
             default: return null;
             }
          }
@@ -277,8 +277,8 @@ public class ChordMapper extends ControlDialog
          @Override
          JCheckBox getCheckbox(int which, ChordMapper mapper, Box box) {
             switch (which) {
-            case 0: return mapper.addCheckBox(box, "Sort by chord frequency", false);
-            case 1: return mapper.addCheckBox(box, "More detail", Persist.getBool("#.assess.more.detail", false));
+            case 0: return mapper.addCheckBox("Sort by chord frequency", false, box);
+            case 1: return mapper.addCheckBox("More detail", Persist.getBool("#.assess.more.detail", false), box);
             default: return null;
             }
          }
@@ -315,7 +315,7 @@ public class ChordMapper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private JCheckBox addCheckBox(Box box, String label, boolean check) {
+   private JCheckBox addCheckBox(String label, boolean check, Box box) {
       JCheckBox cb = new JCheckBox(label, check);
       cb.setOpaque(false);
       cb.setAlignmentX(Component.LEFT_ALIGNMENT);

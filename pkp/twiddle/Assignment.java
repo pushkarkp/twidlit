@@ -14,6 +14,7 @@ import pkp.util.Log;
 public class Assignment extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean sm_SHOW_THUMB_KEYS = true;
    public static Assignment sm_NO_ASSIGNMENT = new Assignment(new Twiddle(), new KeyPressList());
 
    ////////////////////////////////////////////////////////////////////////////
@@ -77,16 +78,6 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isUse(Chord ch) {
-      for (int i = 0; i < m_Twiddles.size(); ++i) {
-         if (ch.equals(m_Twiddles.get(i).getChord())) {
-            return true;
-         }
-      }
-      return false;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public ArrayList<Assignment> separate() {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
       for (int i = 0; i < m_Twiddles.size(); ++i) {
@@ -107,22 +98,22 @@ public class Assignment extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString(KeyPress.Format.FILE, false, "\n");
+      return toString(sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, "\n");
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString(KeyPress.Format format, boolean shortStr, String separator) {
-      if (shortStr && isThumbed()) {
-         shortStr = false;
+   public String toString(boolean showThumbs, KeyPress.Format format, String separator) {
+      if (!showThumbs && isThumbed()) {
+         showThumbs = true;
       }
       String keys = " = " + m_KeyPressList.toString(format);
       String sep = "";
       String twiddles = "";
       for (int i = 0; i < m_Twiddles.size(); ++i) {
          twiddles += sep
-                   + (shortStr
-                     ? m_Twiddles.get(i).toShortString()
-                     : m_Twiddles.get(i).toString())
+                   + (showThumbs
+                     ? m_Twiddles.get(i).toString()
+                     : m_Twiddles.get(i).toShortString())
                    + keys;
          sep = separator;
       }

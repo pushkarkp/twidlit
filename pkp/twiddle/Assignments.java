@@ -122,20 +122,20 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString(KeyPress.Format.FILE, false, false, null);
+      return toString(Assignment.sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, false, null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString(KeyPress.Format format, boolean shortStr) {
-      return toString(format, shortStr, false, null);
+   public String toString(boolean showThumbs, KeyPress.Format format) {
+      return toString(showThumbs, format, false, null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String toString(KeyPress.Format format, boolean shortStr, boolean showAll, SortedChordTimes times) {
-      if (shortStr) {
+   public String toString(boolean showThumbs, KeyPress.Format format, boolean showAll, SortedChordTimes times) {
+      if (!showThumbs) {
          for (Assignment asg: this) {
             if (asg.isThumbed()) {
-               shortStr = false;
+               showThumbs = true;
                break;
             }
          }
@@ -152,29 +152,24 @@ public class Assignments extends ArrayList<Assignment> {
 		}
       String str = "";
       for (Assignment asg: asgs) {
-         str += asg.toString(format, shortStr, "\n") + '\n';
+         str += asg.toString(showThumbs, format, "%n") + "%n";
 		}
       return str;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isMap(Twiddle tw) {
-      for (Assignment asg: this) {
-			if (asg.isMap(tw)) {
-            return true;
+   public int find(Twiddle tw) {
+      for (int i = 0; i < size(); ++i) {
+			if (get(i).isMap(tw)) {
+            return i;
          }
 		}
-      return false;
+      return -1;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isUse(Chord ch) {
-      for (Assignment asg: this) {
-         if (asg.isUse(ch)) {
-            return true;
-         }
-		}
-      return false;
+   public boolean isMap(Twiddle tw) {
+      return find(tw) != -1;
    }
 
    ////////////////////////////////////////////////////////////////////////////
