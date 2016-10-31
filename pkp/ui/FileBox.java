@@ -73,7 +73,21 @@ public class FileBox
 
    ///////////////////////////////////////////////////////////////////
    public void setToggle(boolean set) {
+      setToggle(set, false);
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public void setToggle(boolean set, boolean flip) {
       m_Toggle = set;
+      if (flip) {
+         m_File = null;
+         setFileLabel();
+      }
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   public boolean isToggled() {
+      return m_File != m_DefaultFile;
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -107,7 +121,7 @@ public class FileBox
          }
          break;
       case sm_CLEAR:
-         m_File = m_Toggle && m_File == m_DefaultFile
+         m_File = m_Toggle && !isToggled()
                 ? null
                 : m_DefaultFile;
          break;
