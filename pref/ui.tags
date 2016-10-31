@@ -2,6 +2,11 @@ about.y
 about.x
 about.w
 about.h
+assess.map.file.y
+assess.map.file.x
+assess.map.file.w
+assess.map.file.h
+assess.more.detail
 character.counts.y
 character.counts.x
 character.counts.w
@@ -10,6 +15,10 @@ chord.delay.y
 chord.delay.x
 chord.delay.w
 chord.delay.h
+chord.groups.y
+chord.groups.x
+chord.groups.w
+chord.groups.h
 chord.list.y
 chord.list.x
 chord.list.w
@@ -36,6 +45,12 @@ graph.of.character.counts.y
 graph.of.character.counts.x
 graph.of.character.counts.w
 graph.of.character.counts.h
+group.chords.1
+group.chords.2
+group.chords.y
+group.chords.x
+group.chords.w
+group.chords.h
 help.y
 help.x
 help.w

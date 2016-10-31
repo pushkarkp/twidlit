@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import pkp.utilities.ChordMapper;
+import pkp.utilities.ChordGrouper;
 import pkp.utilities.SaveChordsWindow;
 import pkp.utilities.SaveTextWindow;
 import pkp.twiddle.Assignment;
@@ -54,6 +55,7 @@ class TwidlitMenu extends PersistentMenuBar
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_MAP_CHORDS_TEXT);
       add(fileMenu, sm_FILE_ASSESS_MAP_TEXT);
+      add(fileMenu, sm_FILE_GROUP_CHORDS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_TWIDDLER_SETTINGS_TEXT);
       m_SettingsWindow = new SettingsWindow(new Cfg());
@@ -376,6 +378,11 @@ class TwidlitMenu extends PersistentMenuBar
                          new File(m_CfgDir, m_CfgFName),
                          getSortedChordTimes(),
                          command.equals(sm_FILE_MAP_CHORDS_TEXT));
+         return;
+      }
+      case sm_FILE_GROUP_CHORDS_TEXT: {
+         new ChordGrouper(m_Twidlit, 
+                          new File(m_CfgDir, m_CfgFName));
          return;
       }
       case sm_FILE_PREF_TEXT:
@@ -945,6 +952,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
    private static final String sm_FILE_MAP_CHORDS_TEXT = "Create Map File...";
    private static final String sm_FILE_ASSESS_MAP_TEXT = "Assess Map File...";
+   private static final String sm_FILE_GROUP_CHORDS_TEXT = "Group Chords...";
    private static final String sm_FILE_TWIDDLER_SETTINGS_TEXT = "Twiddler Settings";
    private static final String sm_FILE_PREF_TEXT = "Preferences...";
    private static final String sm_FILE_QUIT_TEXT = "Quit";

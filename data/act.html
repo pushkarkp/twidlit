@@ -3,7 +3,7 @@
 <a name='top'>
 <title>Activities</title>
 <center><h1>Activities</h1></center>
-You can use Twidlit in any way that makes sense to you, but it was developed to support the following sequence of activities towards fast Twiddler fluency. 
+Use Twidlit in any way that makes sense to you, but it was developed to support the following sequence of activities towards fast Twiddler fluency. 
 <dl>
 <dt><a href='#fluent'>Getting familiar</a>
 <dt><a href='#chording'>Random chording</a>
@@ -28,7 +28,7 @@ With air twiddling, your fingers get the hang of it pretty fast, and you can sta
 <h3>Playing scales</h3>
 If your Twiddler were a musical instrument you would expect to start out spending a lot of time playing scales. 
 <em>Random chording</em> is Twiddler scales. 
-You are not making music yet, but you are getting a feel for the chords: what's easy and what's hard, which side is which, how many fingers can I use at once?   
+You are not making music yet, but you are getting a feel for the chords: what's easy and what's hard, which side is which, and just how hard is it to coordinate three or four fingers?   
 <br><br>
 Meanwhile, Twidlit keeps track of how long each chord takes. 
 Don't worry if you are very slow or erratic to start with, it won't affect your times long-term. 
@@ -39,16 +39,16 @@ Don't worry if you are very slow or erratic to start with, it won't affect your 
 <h3>Timing all chords</h3>
 There are <a href='ref.html#stats'>255</a> thumb-less chords. 
 That's more than a whole keyboard's worth, with and without the Shift key pressed. 
-A few are too awkward for frequent use, but there are enough left that once you are practiced with all of them you may choose to ignore some thumb-keys. 
+A few are too awkward for frequent use, but there are enough left that once you are practiced with all of them you may choose to ignore some of the thumb-keys. 
 <br><br>
-You need to find out for yourself which ones are fast and which are unmanageable, so random chording tests them all. 
+You need to find out for yourself which ones you are quick with and which are unmanageable, so random chording tests them all. 
 <a name='setup'>
 <h3>Initial setup</h3>
 The Twiddler uses a file of chord mappings (<tt>twiddler.cfg</tt>) to tell it what keystrokes to send for each chord. 
 Twidlit needs to have the same mappings so it can convert incoming keystrokes back to chords for the display. 
 <br><br>
 Unfortunately, the Twiddler's factory-default mapping only includes about 75 thumb-less chords. 
-To practice all of them you're going to need a different file. 
+To practice all of them you're going to need a different map file. 
 <br><br>
 Plug in your Twiddler and use <a href="ref.html#saveas"><em>File > Save As...</em></a> to save Twidlit's complete mapping to your Twiddler as <tt>twiddler.cfg</tt>. 
 (You will need to set <em>Files of type</em> to <em>cfg files</em>. 
@@ -57,7 +57,7 @@ You can rename the factory-supplied <tt>twiddler.cfg</tt> in the save dialog if 
 Twidlit comes set up with a complete mapping by default. 
 If it has been changed you may not have all chords covered. 
 In that case, <a href="ref.html#allchords"><em>File > Map All Chords...</em></a> will be enabled. 
-Use it to reinstall the complete mapping. 
+Use it to reinstall the complete mapping before saving to the Twiddler. 
 
 <h3>Which hand?</h3>
 It is good to leave your dominant hand free for other things, but it's up to you. 
@@ -67,10 +67,14 @@ Separate times are kept for each hand.
 <br><br>
 Use <em><a href="ref.html#tutor">Tutor</a> > Left/Right Hand</em> to specify the hand you are using. 
 The progress bars on the <a href="ref.html#twiddler">Twiddler window</a> flip to the side away from your palm. 
-<br><br>
+
+<h3>Practice</h3>
 Get as much practice as you can. 
 Remember you don't need your brain for this.
 As with air twiddling, keep trying to find activities you can do at the same time (such as watching movies). 
+<br><br>
+Twidlit keeps track of the last 16 presses of every chord and you can view them, or save them to a <a href="syn.html#timed">timed.chords</a> file, using <em><a href="ref.html#timelist">Tutor > List Chords by Time.</a></em> 
+You can use the file to generate a mapping. 
 
 <a name='map'>
 <h2>Mapping chords</h2>
@@ -85,7 +89,9 @@ and both chord speed and keystroke frequency can be measured.
 <h3>Fast and frequent</h3>
 <a href="http://norvig.com/mayzner.html">http://norvig.com/mayzner.html</a> is the best resource I've seen for generic alphabetic character frequencies, 
 but if you write code or just want to get a handle on punctuation frequencies then you need Twidlit's <a href="ref.html#counts"><em>Counts</em></a> facility to count your characters. 
+<br><br>
 Emails, source code, even formatted documents saved as text, all contain a record of your (printable) keystrokes, and can be analyzed. 
+Twidlit can save a <tt><a href='syn.html#ccount'>count.keys</a></tt> file of keystrokes sorted by frequency that you can use to generate a mapping.
 <br><br>
 This is not a complete solution, there are plenty of keystrokes (such as the cursor keys) that don't leave a record. 
 It can get things into proportion though, and I have found it invaluable for source code. 
@@ -98,7 +104,19 @@ It makes little sense to copy someone else's mappings verbatim, but do copy thei
 Leave the fastest chords and most frequent keystrokes free though, and then use Twidlit to arrange them. 
 
 <h3>Putting it together</h3>
-<em><a href='ref.html#file'>File</a> > Create Map File...</em> opens a <a href="ref.html#map">dialog</a> where you can select a hand-coded mnemonic <a href="syn.html#cfg"><tt>cfg.chords</tt></a> file, a <a href="syn.html#timed"><tt>timed.chords</tt></a> file and <a href="syn.html#ccount"><tt>count.keys</tt></a> file, and combine them into a new <tt>cfg.chords</tt> file. 
+Using <em>File > <a href='ref.html#map'>Create Map File</a></em> you can select a hand-coded mnemonic <a href="syn.html#cfg"><tt>cfg.chords</tt></a> file of less frequent chords, a <a href="syn.html#timed"><tt>timed.chords</tt></a> file of chords sorted by speed, and a <a href="syn.html#ccount"><tt>count.keys</tt></a> file of keystrokes sorted by frequency, and combine them into a new <tt>cfg.chords</tt> file. 
+<br><br>
+<em>File > <a href='ref.html#assess'>Assess Map File</a></em> allows you to easily find the mappings that are far enough from the ideal to be worth reconsidering. 
+
+<h3>Chord Space Mining</h3>
+There are 255 chords, but what patterns connect them? 
+Chord patterns are a primary resource for devising mnemonics, but they are strongly interconnected. 
+As you develop a mapping and chords get used up, only some of the chords for a given pattern will still be available. 
+<br><br>
+Unless you are good at visualizing hypercubes you are not going to be able to tell which ones. 
+How useful it would be to have a tool that lists the remaining available chords by pattern. 
+It would then be much easier to find the pattern that best matches a group of keystrokes needing allocation. 
+<em>File > <a href='ref.html#group'>Group Chords</a></em> is such a tool. 
 
 <a name='learn'>
 <h2>Learning the mapping</h2>

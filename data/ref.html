@@ -16,6 +16,7 @@
 <dd><dl>
 <dt><a href='#map'>Create Map File</a>
 <dt><a href='#assess'>Assess Map File</a>
+<dt><a href='#group'>Group Chords</a>
 <dt><a href='#settings'>Twiddler Settings</a>
 <dt><a href='#countsrange'>Range of Counts Displayed</a>
 <dt><a href='#speed'>Chord Wait</a>
@@ -51,6 +52,8 @@ Click the window <em>Save As...</em> button to save it as <tt>cfg.chords</tt> or
 <dd>Opens the <a href="#map">Create Map File dialog</a>.
 <dt><b>Assess Map File...</b>
 <dd>Opens the <a href="#assess">Assess Map File dialog</a>.
+<dt><b>Group Chords...</b>
+<dd>Opens the <a href="#group">Group Chords dialog</a>.
 <dt><b>Twiddler Settings...</b>
 <dd>Opens the <a href='#settings'>Twiddler Settings dialog</a> that allows you to modify the current configuration's Twiddler settings. 
 <dt><b>Preferences...</b>
@@ -154,7 +157,7 @@ Select the map file (<a href="syn.html#cfg"><tt>cfg.chords</tt></a>) you wish to
 <br><br>
 The chord and keystroke files are in order of speed and frequency respectively. 
 Ideally, a mapping retains these orders so your faster chords map to your more frequent keys. 
-In practice, keystrokes are moved up or down the order so as to correspond to chords that have some mnemonic or other association with them, or because you have other information about their frequency. 
+In practice, you will move keystrokes up or down the order so as to correspond to chords that have some mnemonic or other association with them, or because you have other information about their frequency. 
 <br><br>
 The assessment creates a file that annotates each mapping with three values:
 <ol>
@@ -162,6 +165,49 @@ The assessment creates a file that annotates each mapping with three values:
 <li>The percentage change of chord delay between the keystroke's ideal and actual positions. 
 <li>The percentage change of keystroke occurrence between the keystroke's ideal and actual positions. 
 </ol>
+
+<a name='group'>
+<h2>Group Chords</h2>
+Optionally select a map file of interest, it divides the chord space into <em>used</em> (mapped) and <em>free</em> (unused) parts. 
+If there is no map file then all chords are free. 
+BTW: The map file <em>x</em> button on this dialog is a little bit magic, it toggles between the current map file (if available) and <em>none</em>.
+<br><br>
+Choose whether to group used or free chords. 
+Used chords can be listed bare (horizontally) or as mappings (vertically). 
+<br><br>
+<em>Group by pattern</em> is a simple facility that lists the chords that match the given pattern. 
+A pattern consists of four characters, one for each finger. 
+Each character is from the first column of the following table: 
+<pre><code>   Character       Meaning
+   1 0 |           |
+   2 r R ,         ,
+   3               | or ,
+   4 m M -         -
+   5               | or - 
+   6               , or - 
+   7               | or , or - 
+   8 l L '         ' 
+   9               | or ' 
+   a A             , or ' 
+   b B             | or , or ' 
+   c C             - or ' 
+   d D             | or - or ' 
+   e E             , or - or ' 
+   f F ?           any</code></pre>
+For example, with no map file selected, <code>|a-?</code> yields:
+<pre><code>|a-?   8: |,-| |'-| |,-, |'-, |,-- |'-- |,-' |'-'</code></pre>
+If <em>Group used chords</em> is selected then the mappings are listed. 
+<br><br>
+<em>Generate patterns</em> takes two patterns and combines them to generate a series of patterns and their lists of chords. 
+Twidlit generates a pattern of every permutation of buttons allowed by the first pattern, and fills in the gaps with the corresponding characters from the second pattern. 
+<br><br>
+Dots ('.') can be used in either pattern, but not in the same finger in both. 
+Result patterns containing dots or yielding fewer than the set minimum size are ignored. 
+<br><br>
+For example, with no map file selected, <code>|a-. ...?</code> yields:
+<pre><code>|,-?   4: |,-| |,-, |,-- |,-' 
+|'-?   4: |'-| |'-, |'-- |'-' 
+</code></pre>
 
 <a name='settings'>
 <h2>Twiddler Settings</h2>
@@ -329,8 +375,6 @@ Set this to zero to turn off chord marking.
 <dt><tt>chord.times.stored 16</tt><br>
 <dd>The number of times recorded for each chord (it must be must be one of [1, 2, 4, 8, 16, 32, 64]). 
 Once the limit is reached new times replace the oldest. 
-<dt><tt>control.separation.size 10</tt><br>
-<dd>The size of the separation between controls on the Twiddler Settings windows.
 <dt><tt>count.repeats.max 2</tt><br>
 <dd>When character frequency counting, any more are ignored after this many of the same character in a row.
 <dt><tt>display.format std</tt><br>
