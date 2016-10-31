@@ -55,22 +55,9 @@ public class PersistentDialog extends JDialog {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void persist(Box p) {
-      int n = 0;
-      boolean inRb = false;
-      for (int j = 0; j < p.getComponentCount(); ++j) {
-         if (p.getComponent(j) instanceof JRadioButton) {
-            if (!inRb) {
-               inRb = true;
-               ++n;
-            }
-            JRadioButton rb = (JRadioButton)p.getComponent(j);
-            if (rb.isSelected()) {
-               Persist.set(getPersistName() + "." + n, Persist.toTag("#." + n + "." + rb.getActionCommand()));
-            }
-         } else {
-            inRb = false;
-         }
+   public void persist(JRadioButton rb, int n) {
+      if (rb.isSelected()) {
+         Persist.set(getPersistName() + "." + n, Persist.toTag("#." + n + "." + rb.getActionCommand()));
       }
    }
 
