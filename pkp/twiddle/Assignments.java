@@ -143,27 +143,27 @@ public class Assignments extends ArrayList<Assignment> {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
       for (Assignment asg: this) {
          asgs.addAll(asg.separate());
-		}
+      }
       if (showAll) {
          asgs = addUnmapped(asgs);
-		}
+      }
       if (times != null) {
          asgs = sort(asgs, times);
-		}
+      }
       String str = "";
       for (Assignment asg: asgs) {
-         str += asg.toString(showThumbs, format, "%n") + "%n";
-		}
+         str += asg.toString(showThumbs, format, "\n") + "\n";
+      }
       return str;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public int find(Twiddle tw) {
       for (int i = 0; i < size(); ++i) {
-			if (get(i).isMap(tw)) {
+         if (get(i).isMap(tw)) {
             return i;
          }
-		}
+      }
       return -1;
    }
 
@@ -175,6 +175,9 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public boolean add(Assignment newAsg) {
+      if (newAsg == null) {
+         return false;
+      }
       if (isMap(newAsg.getTwiddle())) {
          m_Remap.add(newAsg);
          return false;
