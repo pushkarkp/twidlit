@@ -521,7 +521,7 @@ public class KeyPress {
       if (args.length == 0) {
          //System.out.println("add a string");
          for (int i = 0; i < 255; ++i) {
-            System.out.print(String.format("%d %s%n", i, sm_KeyCodeToName.getString(i, "")));
+            System.out.printf("%d %s%n", i, sm_KeyCodeToName.getString(i, ""));
          }
          return;
       }
