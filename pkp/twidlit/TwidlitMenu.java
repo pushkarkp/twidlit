@@ -153,7 +153,7 @@ class TwidlitMenu extends PersistentMenuBar
       // setSource() flips timed booleans so flip them back 
       useOtherTimed();
       // use the gathered settings to set up the source
-      m_Twidlit.initialize(m_TwidlitInit, "Press the chord shown.");
+      m_Twidlit.initialize(m_TwidlitInit);
       m_Twidlit.extendTitle(cfgFileName);
       if (!isChords() && m_Twidlit.isChords()) {
          // set keystrokes failed

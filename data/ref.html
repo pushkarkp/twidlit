@@ -357,6 +357,13 @@ The syntax is described <a href='syn.html#types'>here<a>.
 <dd>The color of the background of most windows.
 <dt><tt>border.color 0xc0c0a0</tt><br>
 <dd>The color of the border on the mapping dialog.
+<dt><tt>chord.keys.display.msec 1000</tt><br>
+<dd>The milliseconds for which a chord's keystrokes are displayed in the <a href='#text'>Text pane</a> (random chording only). 
+<dt><tt>chord.prompt Press the chord shown.</tt><br>
+<dd>The prompt message in the <a href='#text'>Text pane</a> (random chording only). 
+<dt><tt>chord.times.stored 16</tt><br>
+<dd>The number of times recorded for each chord (it must be must be one of [1, 2, 4, 8, 16, 32, 64]). 
+Once the limit is reached new times replace the oldest. 
 <dt><tt>chord.wait.autoscale.step 8</tt><br>
 <dd>The chord presses between automatic scaling of the <a href="#wait">chord wait</a> from the mean of means. 
 <dt><tt>chord.wait.autoscale.mean.percent 50</tt><br>
@@ -372,9 +379,6 @@ Set this to zero to turn it off.
 Set this to zero to turn off chord marking. 
 <dt><tt>chord.wait.timed.percent 200</tt><br>
 <dd>The percentage of the <a href="#wait">chord wait</a> for which a chord is timed. 
-<dt><tt>chord.times.stored 16</tt><br>
-<dd>The number of times recorded for each chord (it must be must be one of [1, 2, 4, 8, 16, 32, 64]). 
-Once the limit is reached new times replace the oldest. 
 <dt><tt>count.repeats.max 2</tt><br>
 <dd>When character frequency counting, any more are ignored after this many of the same character in a row.
 <dt><tt>display.format std</tt><br>
@@ -387,7 +391,7 @@ The options are <tt>std</tt>, <tt>esc</tt>, <tt>hex</tt> and <tt>tag</tt>.
 <dd>The milliseconds Twidlit waits for a further keystroke to arrive from the Twiddler before converting the accumulated keys into a chord.
 <dt><tt>new.line windows</tt><br>
 <dd>The new line style used in text files. 
-Delete this setting if not using Windows line ends. 
+Delete this setting if not using Windows line ends.
 <dt><tt>prompt.font SansSerif</tt><br>
 <dd>The font used for the prompt in the Text pane. 
 <dt><tt>progress.step.msec 150</tt><br>

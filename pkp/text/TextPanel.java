@@ -8,11 +8,15 @@ package pkp.text;
 
 import java.awt.Font;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.FontMetrics;
-import javax.swing.JPanel;
 import java.awt.FontMetrics;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.io.File;
 import java.util.StringTokenizer;
 import pkp.source.KeyPressListSource;
@@ -35,19 +39,25 @@ import pkp.io.Io;
 // Incorporates a source for the text. 
 public class TextPanel 
    extends JPanel 
-   implements KeyPressListSource.Message {
+   implements ActionListener, KeyPressListSource.Message {
 
    ////////////////////////////////////////////////////////////////////////////
-   public TextPanel(KeyMap km, String chordsPrompt) {
+   public TextPanel(KeyMap km) {
       // badtags.sh supports only one tag per line
       int size = Pref.getInt("#.text.size");
       m_TextFont = new Font(Pref.get("#.text.font"), Font.BOLD, size);
       setFont(m_TextFont);
       m_PromptFont = new Font(Pref.get("#.prompt.font"), Font.PLAIN, size);
-      m_CHORDS_PROMPT = chordsPrompt;
+      m_TEXT_COLOR = Pref.getColor("#.text.color");
+      m_TEXT_HIGHLIGHT_COLOR = Pref.getColor("#.text.highlight.color");
+      m_CHORD_PROMPT = Pref.get("#.chord.prompt");
+      m_PRESSED_DISPLAY_MSEC = Pref.getInt("#.chord.keys.display.msec", 1000);
+      m_PressedTimer = new Timer(m_PRESSED_DISPLAY_MSEC, this);
+      m_PressedTimer.setActionCommand(null);
+      m_PressedTimer.stop();
       m_KeyMap = km;
-		m_Text = "";
-	   m_SPACE = (char)Pref.getInt("#.text.visible.space", 0x87);
+      m_Text = "";
+      m_SPACE = (char)Pref.getInt("#.text.visible.space", 0x87);
       m_Past = "";
       m_KplSource = null;
    }
@@ -93,6 +103,18 @@ public class TextPanel
       if (isChords()) {
          m_KplSource = ((ChordSource)m_KplSource).newKeyMap(m_KeyMap);
       }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public void setPressed(String pressed) {
+      if (m_PRESSED_DISPLAY_MSEC == 0) {
+         return;
+      }
+      m_PressedTimer.stop();
+      m_Pressed = pressed;
+      repaint();
+      m_PressedTimer.setInitialDelay(m_PRESSED_DISPLAY_MSEC);
+      m_PressedTimer.restart();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -148,48 +170,62 @@ public class TextPanel
       super.repaint();
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   @Override // ActionListener
+   public void actionPerformed(ActionEvent e) {
+      m_PressedTimer.stop();
+      m_Pressed = null;
+      repaint();
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public void paintComponent(Graphics g) {
       super.paintComponent(g);
       if (m_Past.length() + m_Text.length() == 0 || !(g instanceof Graphics2D)) {
-			return;
-		}
-		int y = (int)(getHeight() * 0.75);
+         return;
+      }
+      int y = (int)(getHeight() * 0.75);
       if (isChords()) {
-         // show prompt, not chords' source keys
-         int offset = setPromptFont(g);
-			g.setColor(Pref.getColor("#.text.color"));
-			g.drawString(m_CHORDS_PROMPT, offset, y);
+         // show prompt or pressed, not chords' source keys
+         Color textColor = m_TEXT_COLOR;
+         String prompt = m_CHORD_PROMPT;
+         if (m_Pressed != null) {
+            textColor = m_TEXT_HIGHLIGHT_COLOR;
+            prompt = m_Pressed;
+         }
+         int offset = setPromptFont(prompt, g);
+         g.setColor(textColor);
+         g.drawString(prompt, offset, y);
          g.setFont(m_TextFont);
          return;
       }
-		FontMetrics fm = g.getFontMetrics(getFont());
-		String hlight = m_Text.substring(0, m_Length).replace(' ', m_SPACE);
-		int start = (getWidth() - fm.stringWidth(hlight.substring(0, 0))) / 3;
-		int startPast = start - fm.stringWidth(m_Past);
-		if (startPast < 0) {
-			int i = 0;
-			while (startPast < 0) {
-				++i;
-				startPast = start - fm.stringWidth(m_Past.substring(i));
-			}
-			m_Past = m_Past.substring(i);
-		}
-		int startFuture = start + fm.stringWidth(hlight);
-		String extend;
-		while (startFuture + fm.stringWidth(m_Text.substring(Math.min(m_Length, m_Text.length()))) < getWidth()
-			 && (!"".equals(extend = getNextString()))) {
-			m_Text += extend;
-		}
-		if (!m_HideText) {
-			g.setColor(Pref.getColor("#.text.color"));
-			g.drawString(m_Past, startPast, y);
-			g.setColor(Pref.getColor("#.text.highlight.color"));
-			g.drawString(hlight, start, y);
-			g.setColor(Pref.getColor("#.text.color"));
-			g.drawString(m_Text.substring(m_Length), startFuture, y);
-		}
+      FontMetrics fm = g.getFontMetrics(getFont());
+      String hlight = m_Text.substring(0, m_Length).replace(' ', m_SPACE);
+      int start = (getWidth() - fm.stringWidth(hlight.substring(0, 0))) / 3;
+      int startPast = start - fm.stringWidth(m_Past);
+      if (startPast < 0) {
+         int i = 0;
+         while (startPast < 0) {
+            ++i;
+            startPast = start - fm.stringWidth(m_Past.substring(i));
+         }
+         m_Past = m_Past.substring(i);
+      }
+      int startFuture = start + fm.stringWidth(hlight);
+      String extend;
+      while (startFuture + fm.stringWidth(m_Text.substring(Math.min(m_Length, m_Text.length()))) < getWidth()
+          && (!"".equals(extend = getNextString()))) {
+         m_Text += extend;
+      }
+      if (!m_HideText) {
+         g.setColor(m_TEXT_COLOR);
+         g.drawString(m_Past, startPast, y);
+         g.setColor(m_TEXT_HIGHLIGHT_COLOR);
+         g.drawString(hlight, start, y);
+         g.setColor(m_TEXT_COLOR);
+         g.drawString(m_Text.substring(m_Length), startFuture, y);
+      }
    }
 
    // Private /////////////////////////////////////////////////////////////////
@@ -212,38 +248,43 @@ public class TextPanel
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private int setPromptFont(Graphics g) {
+   private int setPromptFont(String prompt, Graphics g) {
       final int WIDTH = (int)(getWidth() * 0.9);
       FontMetrics fm;
       int size = m_PromptFont.getSize();
       for (;;) {
          g.setFont(m_PromptFont);
          fm = g.getFontMetrics(g.getFont());
-         if (fm.stringWidth(m_CHORDS_PROMPT) > WIDTH
+         if (fm.stringWidth(m_CHORD_PROMPT) > WIDTH
           || fm.getHeight() > getHeight()) {
             break;
          }
-//System.out.printf("fm.stringWidth(m_CHORDS_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORDS_PROMPT), getWidth());
+//System.out.printf("fm.stringWidth(m_CHORD_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORD_PROMPT), getWidth());
          ++size;
          m_PromptFont = new Font(m_PromptFont.getName(), m_PromptFont.getStyle(), size);
       }
       for (;;) {
-         if (fm.stringWidth(m_CHORDS_PROMPT) < WIDTH
+         if (fm.stringWidth(m_CHORD_PROMPT) < WIDTH
           && fm.getHeight() < getHeight()) {
             break;
          }
-//System.out.printf("fm.stringWidth(m_CHORDS_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORDS_PROMPT), getWidth());
+//System.out.printf("fm.stringWidth(m_CHORD_PROMPT) %d getWidth() %d%n", fm.stringWidth(m_CHORD_PROMPT), getWidth());
          --size;
          m_PromptFont = new Font(m_PromptFont.getName(), m_PromptFont.getStyle(), size);
          g.setFont(m_PromptFont);
          fm = g.getFontMetrics(g.getFont());
       }
-      return (getWidth() - fm.stringWidth(m_CHORDS_PROMPT)) / 2;
+      return (getWidth() - fm.stringWidth(prompt)) / 2;
    }
    
    // Data ////////////////////////////////////////////////////////////////////
+   private final int m_PRESSED_DISPLAY_MSEC;
+   private final Color m_TEXT_COLOR;
+   private final Color m_TEXT_HIGHLIGHT_COLOR;
    private final char m_SPACE;
-   private final String m_CHORDS_PROMPT;
+   private final String m_CHORD_PROMPT;
+   private Timer m_PressedTimer;
+   private String m_Pressed;
    private KeyMap m_KeyMap;
    private KeyPressListSource m_KplSource;
    private Assignment m_Assignment;
