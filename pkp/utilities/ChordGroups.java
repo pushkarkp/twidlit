@@ -18,7 +18,7 @@ public class ChordGroups {
    public ChordGroups(int fixMask, int acceptMask, Assignments asgs, boolean free, boolean showMappings) {
       m_Groups = new ArrayList<ChordGroup>();
       m_GroupFree = free;
-      m_ShowMappings = free && showMappings;
+      m_ShowMappings = !free && showMappings;
       m_Assignments = asgs;
       m_AcceptMask = acceptMask;
       for (int p = 0; p < sm_Permutations.length; ++p) {
