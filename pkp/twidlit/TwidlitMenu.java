@@ -557,7 +557,7 @@ class TwidlitMenu extends PersistentMenuBar
       ChordTimes ct = m_Twidlit.getChordTimes();
       // don't use the keystroke-prompted chord times
       if (ct.isKeystrokes()) {
-         return null;//new ChordTimes(false, isRightHand());
+         ct = new ChordTimes(false, isRightHand());
       }
       return new SortedChordTimes(ct);
    }
