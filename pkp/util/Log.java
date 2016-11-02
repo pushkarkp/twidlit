@@ -355,8 +355,8 @@ public class Log implements ActionListener {
 
    // Data ////////////////////////////////////////////////////////////////////
    private static final String sm_BUTTON_STRING = "Clear";
-   private static final SimpleDateFormat sm_DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-   private static final SimpleDateFormat sm_TIME_FORMAT = new SimpleDateFormat("hh:mm:ss ");
+   private static final SimpleDateFormat sm_DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+   private static final SimpleDateFormat sm_TIME_FORMAT = new SimpleDateFormat("HH:mm:ss ");
    private static Quitter sm_Quitter = null;
    private static Window sm_Window = null;
    private static Log sm_Log = null;
