@@ -38,7 +38,7 @@ public class SortedChordTimes implements SharedIndexableInts {
          } else if (!t.getThumbKeys().isEmpty()) {
             Log.parseWarn(chordLr, String.format("Ignored chord with thumb keys \"%s\"", line));
          } else {
-            m_Labels[i] = t.toString();
+            m_Labels[i] = t.getChord().toString();
             m_Times[i] = chordLr.getInt(line);
             if (m_Times[i] == 0) {
                m_Times[i] = sm_EMPTY;
