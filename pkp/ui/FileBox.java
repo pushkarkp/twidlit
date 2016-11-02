@@ -51,7 +51,8 @@ public class FileBox
       m_DefaultLabel = defaultLabel != null ? defaultLabel
                      : m_DefaultFile != null ? m_DefaultFile.getPath()
                      : "unset";
-      m_Toggle = false;
+      m_CanToggle = false;
+      m_Toggled = false;
       m_Extension = ext;
       setOpaque(false);
       setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -72,14 +73,15 @@ public class FileBox
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void setToggle(boolean set) {
-      setToggle(set, false);
+   public void setCanToggle(boolean set) {
+      setCanToggle(set, false);
    }
 
    ///////////////////////////////////////////////////////////////////
-   public void setToggle(boolean set, boolean flip) {
-      m_Toggle = set;
-      if (flip) {
+   public void setCanToggle(boolean set, boolean toggled) {
+      m_CanToggle = set;
+      m_Toggled = set && toggled;
+      if (m_Toggled) {
          m_File = null;
          setFileLabel();
       }
@@ -87,7 +89,7 @@ public class FileBox
 
    ///////////////////////////////////////////////////////////////////
    public boolean isToggled() {
-      return m_File != m_DefaultFile;
+      return m_CanToggle && m_Toggled;
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -117,13 +119,19 @@ public class FileBox
       case "ApproveSelection":
          if (m_FileChooser.getSelectedFile() != null) {
             m_File = Io.asRelative(m_FileChooser.getSelectedFile());
+            m_Toggled = false;
             setFileLabel();
          }
          break;
       case sm_CLEAR:
-         m_File = m_Toggle && !isToggled()
-                ? null
-                : m_DefaultFile;
+         if (m_CanToggle) {
+            m_Toggled = !m_Toggled;
+            if (m_Toggled) {
+               m_File = null;
+               break;
+            }
+         }
+         m_File = m_DefaultFile;
          break;
       }
       setFileLabel();
@@ -166,7 +174,8 @@ public class FileBox
    private JLabel m_FileLabel;
    private JFileChooser m_FileChooser;
    private File m_File;
-   private boolean m_Toggle;
+   private boolean m_CanToggle;
+   private boolean m_Toggled;
    private ActionListener m_ActionListener;
    private String m_Command;
 }

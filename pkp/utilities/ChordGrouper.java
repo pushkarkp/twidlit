@@ -97,7 +97,7 @@ public class ChordGrouper extends ControlDialog
       m_MapFileBox = new 
          FileBox(sm_MAP, Persist.getFile(sm_FILE_PERSIST, defaultMapFile),
                  defaultMapFile, "Choose a map file", "cfg.chords", "none");
-      m_MapFileBox.setToggle(true, Persist.getBool(sm_X_FLIP_PERSIST));
+      m_MapFileBox.setCanToggle(true, Persist.getBool(sm_X_TOGGLED_PERSIST));
       m_MapFileBox.setActionListener(this, sm_FILE_BOX_UPDATE);
       box.add(m_MapFileBox);
       box.add(Box.createVerticalGlue());
@@ -155,9 +155,8 @@ public class ChordGrouper extends ControlDialog
          enableGenerate(e.getActionCommand() == sm_GENERATE);
          return;
       case sm_OK:
-         File mapFile = m_MapFileBox.getFile();
          Persist.set(sm_FILE_PERSIST, m_MapFileBox.getFile());
-         Persist.set(sm_X_FLIP_PERSIST, m_MapFileBox.isToggled());
+         Persist.set(sm_X_TOGGLED_PERSIST, m_MapFileBox.isToggled());
          Persist.set(sm_GROUP_MASK_PERSIST, m_GroupText.getText());
          Persist.set(sm_GENERATE_FIXED_PERSIST, m_FixedText.getText());
          Persist.set(sm_GENERATE_ACCEPT_PERSIST, m_AcceptText.getText());
@@ -331,7 +330,7 @@ public class ChordGrouper extends ControlDialog
    private static final String sm_GENERATE_FIXED_PERSIST = "#.group.chords.fixed.mask";
    private static final String sm_GENERATE_ACCEPT_PERSIST = "#.group.chords.accept.mask";
    private static final String sm_MINIMUM_PERSIST = "#.group.chords.minimum";
-   private static final String sm_X_FLIP_PERSIST = "#.group.chords.x.toggle";
+   private static final String sm_X_TOGGLED_PERSIST = "#.group.chords.x.toggled";
 
    private static final String sm_FILE_BOX_UPDATE = "FileBoxUpdate";
   
