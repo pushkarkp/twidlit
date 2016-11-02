@@ -174,11 +174,7 @@ public class ChordMapper extends ControlDialog
    @Override // ContentForTitle
    public String getContentForTitle(String title) {
       if (Action.CREATE.getSaveDialogTitle().equals(title)) {
-         return m_Assignments.toString(!Assignment.sm_SHOW_THUMB_KEYS,
-                                       KeyPress.Format.FILE,
-                                       m_CheckBoxShowEmpty.isSelected(), 
-                                       m_CheckBoxSortChords.isSelected()
-                                       ? m_ChordTimes : null);
+         return getMap();
       } else 
       if (Action.ASSESS.getSaveDialogTitle().equals(title)) {
          return getAssessment();
@@ -428,12 +424,7 @@ public class ChordMapper extends ControlDialog
    
    ////////////////////////////////////////////////////////////////////////////
    private String getAssessment() {
-      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-      String str = "";
-      str += "# Twidlit Assessment at " + df.format(Calendar.getInstance().getTime()) + '\n';
-      str += "# Map    " + m_MapFileBox.getFile().getPath() + "\n";
-      str += "# Chords " + (m_ChordsFileBox.getFile() == null ? "current" : m_ChordsFileBox.getFile().getPath()) + "\n";
-      str += "# Keys   " + m_KeysFileBox.getFile().getPath() + "\n";
+      String str = getHeader("Assessment");
       if (m_MaxAssignLength == 0) {
          // no assignments
          return str + "\n# Nothing to show. Check the log.\n";
@@ -462,6 +453,9 @@ public class ChordMapper extends ControlDialog
    private void map(File mappedF, File chordF, File keysF) {
       if (mappedF != null) {
          m_Assignments = new Assignments(mappedF);
+         if (m_Assignments.size() == 0) {
+            Log.warn('"' + mappedF.getPath() + "\" contains no assignments.");
+         }
          if (m_Assignments.isRemap()) {
             Log.warn(m_Assignments.reportRemap(mappedF.getPath()));
          }
@@ -485,6 +479,28 @@ public class ChordMapper extends ControlDialog
          chordLr.close();
          keysLr.close();
       }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private String getMap() {
+      String str = getHeader("Mapping");
+      str += m_Assignments.toString(!Assignment.sm_SHOW_THUMB_KEYS,
+                                    KeyPress.Format.FILE,
+                                    m_CheckBoxShowEmpty.isSelected(), 
+                                    m_CheckBoxSortChords.isSelected()
+                                    ? m_ChordTimes : null);
+      return str;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private String getHeader(String title) {
+      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+      return "# Twidlit " + title + " at " + df.format(Calendar.getInstance().getTime()) + '\n'
+           + (m_MapFileBox.getFile() != null
+             ? "# Map    " + m_MapFileBox.getFile().getPath() + "\n"
+             : "")
+           + "# Chords " + (m_ChordsFileBox.getFile() == null ? "current" : m_ChordsFileBox.getFile().getPath()) + "\n"
+           + "# Keys   " + m_KeysFileBox.getFile().getPath() + "\n";
    }
 
    ////////////////////////////////////////////////////////////////////////////
