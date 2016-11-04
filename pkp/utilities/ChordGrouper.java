@@ -25,6 +25,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.text.MaskFormatter;
 import javax.swing.JTextField;
+import javax.swing.JOptionPane;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ArrayList;
@@ -104,34 +105,41 @@ public class ChordGrouper extends ControlDialog
 
       m_FreeButtonGroup = new ButtonGroup();
       m_Used = createRadioButton(sm_USED, m_FreeButtonGroup);
+      m_Used.addActionListener(this);
       box.add(m_Used);
-      m_List = createCheckBox("List mappings", Persist.getBool(sm_GROUP_LIST_PERSIST));
+      m_List = createCheckBox("List mappings");
       box.add(indent("   ", m_List));
       m_Free = createRadioButton(sm_FREE, m_FreeButtonGroup);
+      m_Free.addActionListener(this);
       box.add(m_Free);
-      box.add(Box.createVerticalGlue());
+      box.add(Box.createRigidArea(new Dimension(0, 4)));
       box.add(Box.createVerticalGlue());
 
       m_FingerButtonGroup = new ButtonGroup();
       m_GroupByMask = createRadioButton(sm_GROUP_BY, m_FingerButtonGroup);
       m_GroupByMask.addActionListener(this);
-      m_GroupText = createTextField(sm_GROUP_MASK_PERSIST, "");
-      box.add(createTextFieldBox(m_GroupByMask, m_GroupText, null));
+      m_GroupText = createTextField(sm_GROUP_MASK_PERSIST, getMaskChars());
+      box.add(createRadioButtonTextFieldBox(m_GroupByMask, m_GroupText, null));
       box.add(Box.createRigidArea(new Dimension(0, 2)));
       m_Generate = createRadioButton(sm_GENERATE, m_FingerButtonGroup);
       m_Generate.addActionListener(this);
-      m_FixedText = createTextField(sm_GENERATE_FIXED_PERSIST, ".");
-      m_AcceptText = createTextField(sm_GENERATE_ACCEPT_PERSIST, ".");
-      box.add(createTextFieldBox(m_Generate, m_FixedText, m_AcceptText));
-      box.add(Box.createVerticalGlue());
-
+      m_FixedText = createTextField(sm_GENERATE_FIXED_PERSIST, getMaskChars() + ".");
+      m_AcceptText = createTextField(sm_GENERATE_ACCEPT_PERSIST, getMaskChars() + ".");
+      box.add(createRadioButtonTextFieldBox(m_Generate, m_FixedText, m_AcceptText));
+      box.add(Box.createRigidArea(new Dimension(0, 2)));
       m_MinGroup = new SpinnerNumberModel(Persist.getInt(sm_MINIMUM_PERSIST, 1), 1, Chord.sm_VALUES, 1);
       JSpinner spin = new JSpinner(m_MinGroup);
       addMargin(0, 3, spin);
       spin.setMaximumSize(spin.getPreferredSize());
-      m_MinBox = new LabelComponentBox("Minimum size:", spin);
+      m_MinBox = new LabelComponentBox("Minimum group size", spin);
       m_MinBox.setAlignmentX(Component.LEFT_ALIGNMENT);
       box.add(indent("     ", m_MinBox));
+      box.add(Box.createVerticalGlue());
+
+      m_Priority = createTextField(sm_PRIORITY_PERSIST, "1234");
+      LabelComponentBox priorityBox = new LabelComponentBox("Finger priority", m_Priority);
+      priorityBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+      box.add(priorityBox);
 
       handleNoFile();
       enableGenerate(m_Generate.isSelected());
@@ -150,11 +158,18 @@ public class ChordGrouper extends ControlDialog
       case sm_FILE_BOX_UPDATE:
          handleNoFile();
          return;
+      case sm_USED:
+      case sm_FREE:
+         m_List.setEnabled(e.getActionCommand() == sm_USED);
+         return;
       case sm_GROUP_BY:
       case sm_GENERATE:
          enableGenerate(e.getActionCommand() == sm_GENERATE);
          return;
       case sm_OK:
+         if (hasDuplicates(m_Priority)) {
+            return;
+         }
          Persist.set(sm_FILE_PERSIST, m_MapFileBox.getFile());
          Persist.set(sm_X_TOGGLED_PERSIST, m_MapFileBox.isToggled());
          Persist.set(sm_GROUP_MASK_PERSIST, m_GroupText.getText());
@@ -162,9 +177,11 @@ public class ChordGrouper extends ControlDialog
          Persist.set(sm_GENERATE_ACCEPT_PERSIST, m_AcceptText.getText());
          Persist.set(sm_MINIMUM_PERSIST, m_MinGroup.getNumber().intValue());
          persist(m_Used, 1);
+         persist(m_List);
          persist(m_Free, 1);
          persist(m_GroupByMask, 2);
          persist(m_Generate, 2);
+         Persist.set(sm_PRIORITY_PERSIST, m_Priority.getText());
          SaveChordsWindow scw = new
          SaveChordsWindow(this, "Chord Groups", "txt");
          scw.setPersistName("#.chord.groups");
@@ -194,6 +211,7 @@ public class ChordGrouper extends ControlDialog
          str += "# " + m_MapFileBox.getFile().getPath() + '\n';
          str += "# " + (m_Free.isSelected() ? "Free" : "Used") + " chords\n";
       }
+      str += "# " + "Finger priority " + m_Priority.getText() + '\n';
 
       Assignments asgs = m_MapFileBox.getFile() == null
                        ? new Assignments()
@@ -204,7 +222,7 @@ public class ChordGrouper extends ControlDialog
                        asgs,
                        m_Free.isSelected(),
                        m_List.isSelected());
-         return str + '\n' + group.toString();
+         return str + '\n' + group.toString(m_Priority.getText());
       } else {
          str += "# Generated from " + m_FixedText.getText() + ' ' + m_AcceptText.getText() + '\n';
          if (m_MinGroup.getNumber().intValue() > 1) {
@@ -216,7 +234,7 @@ public class ChordGrouper extends ControlDialog
                         asgs,
                         m_Free.isSelected(),
                         m_List.isSelected());
-         return str + '\n' + groups.toString(m_MinGroup.getNumber().intValue());
+         return str + '\n' + groups.toString(m_Priority.getText(), m_MinGroup.getNumber().intValue());
       }
    }
 
@@ -229,14 +247,6 @@ public class ChordGrouper extends ControlDialog
    ////////////////////////////////////////////////////////////////////////////
    private static Dimension addMargin(int w, int h, Dimension d) {
       return new Dimension(d.width + w, d.height + h);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private JCheckBox createCheckBox(String label, boolean check) {
-      JCheckBox cb = new JCheckBox(label, check);
-      cb.setOpaque(false);
-      cb.setAlignmentX(Component.LEFT_ALIGNMENT);
-      return cb;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -257,8 +267,8 @@ public class ChordGrouper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static JTextField createTextField(String pName, String extraChars) {
-      JFormattedTextField txt = new JFormattedTextField(createFormatter(getMaskChars() + extraChars));
+   private static JTextField createTextField(String pName, String chars) {
+      JFormattedTextField txt = new JFormattedTextField(createFormatter(chars));
       txt.setFont(new Font("monospaced", Font.PLAIN, txt.getFont().getSize()));
       txt.setHorizontalAlignment(JTextField.RIGHT);
       txt.setValue(Persist.get(pName, "????"));
@@ -268,7 +278,7 @@ public class ChordGrouper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static Box createTextFieldBox(JRadioButton rb, JTextField tf1, JTextField tf2) {
+   private static Box createRadioButtonTextFieldBox(JRadioButton rb, JTextField tf1, JTextField tf2) {
       Box b = new Box(BoxLayout.LINE_AXIS);
       b.setAlignmentX(Component.LEFT_ALIGNMENT);
       b.setOpaque(false);
@@ -294,10 +304,26 @@ public class ChordGrouper extends ControlDialog
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   private static boolean hasDuplicates(JTextField tf) {
+      final String txt = tf.getText();
+      boolean present[] = new boolean[4];
+      for (int i = 0; i < txt.length(); ++i) {
+         int value = txt.charAt(i) - '1';
+         if (present[value]) {
+            Log.warn(String.format("Repeated value %d in '%s'", value + 1, txt));
+            tf.grabFocus();
+            return true;
+         }
+         present[value] = true;
+      }
+      return false;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    private void handleNoFile() {
       if (m_MapFileBox.getFile() != null) {
          m_Used.setEnabled(true);
-         m_List.setEnabled(true);
+         m_List.setEnabled(m_Used.isSelected());
       } else {
          m_Used.setEnabled(false);
          m_List.setEnabled(false);
@@ -324,13 +350,14 @@ public class ChordGrouper extends ControlDialog
    private static final String sm_HELP = "Help";
    
    private static final String sm_FILE_PERSIST = "#.group.chords.file";
+   private static final String sm_X_TOGGLED_PERSIST = "#.group.chords.x.toggled";
    // group free is saved by PersistentFrame
    private static final String sm_GROUP_MASK_PERSIST = "#.group.chords.by.mask";
    private static final String sm_GROUP_LIST_PERSIST = "#.group.chords.list.mappings";
    private static final String sm_GENERATE_FIXED_PERSIST = "#.group.chords.fixed.mask";
    private static final String sm_GENERATE_ACCEPT_PERSIST = "#.group.chords.accept.mask";
    private static final String sm_MINIMUM_PERSIST = "#.group.chords.minimum";
-   private static final String sm_X_TOGGLED_PERSIST = "#.group.chords.x.toggled";
+   private static final String sm_PRIORITY_PERSIST = "#.group.chords.finger priority";
 
    private static final String sm_FILE_BOX_UPDATE = "FileBoxUpdate";
   
@@ -347,4 +374,5 @@ public class ChordGrouper extends ControlDialog
    private JTextField m_AcceptText;
    private SpinnerNumberModel m_MinGroup;
    private LabelComponentBox m_MinBox;
+   private JTextField m_Priority;
 }

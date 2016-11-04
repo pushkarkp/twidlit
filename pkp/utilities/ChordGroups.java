@@ -35,15 +35,15 @@ public class ChordGroups {
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString(1);
+      return toString("", 1);
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public String toString(int min) {
+   public String toString(String priority, int min) {
       String str = "";
       for (int i = 0; i < m_Groups.size(); ++i) {
          if (m_Groups.get(i).getSize() >= min) {
-            str += m_Groups.get(i).toString() + '\n';
+            str += m_Groups.get(i).toString(priority) + '\n';
          }
       }
       return str;

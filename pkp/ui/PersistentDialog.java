@@ -12,6 +12,7 @@ import javax.swing.JDialog;
 import javax.swing.Box;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import pkp.util.Persist;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +56,7 @@ public class PersistentDialog extends JDialog {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public void persist(JRadioButton rb, int n) {
+   protected void persist(JRadioButton rb, int n) {
       if (rb.isSelected()) {
          Persist.set(getPersistName() + "." + n, Persist.toTag("#." + n + "." + rb.getActionCommand()));
       }
@@ -75,6 +76,25 @@ public class PersistentDialog extends JDialog {
       rb.setOpaque(false);
       buttonGroup.add(rb);
       return rb;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   protected void persist(JCheckBox cb) {
+      Persist.set(getPersistName() + "." + cb.getText(), cb.isSelected());
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   protected JCheckBox createCheckBox(String text) {
+      return createCheckBox(text, true);
+   }
+
+   ///////////////////////////////////////////////////////////////////
+   protected JCheckBox createCheckBox(String text, boolean enabled) {
+      boolean selected = Persist.getBool(getPersistName() + ' ' + text);
+      JCheckBox cb = new JCheckBox(text, selected);
+      cb.setOpaque(false);
+      cb.setEnabled(enabled);
+      return cb;
    }
 
    // Private /////////////////////////////////////////////////////////////////

@@ -52,6 +52,32 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public static int reverseButtons(int chord) {
+      int backwards = 0;
+      for (int i = 0; i < 4; ++i) {
+         backwards <<= 2;
+         backwards |= (chord & 3);
+         chord >>= 2;
+      }
+      return backwards;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static int orderFingers(String order, int chord) {
+      if ("".equals(order) || "1234".equals(order)) {
+         return chord;
+      }
+      int sorted = 0;
+      for (int i = 0; i < 4; ++i) {
+         // convert 1234 to 3210
+         int f = 4 - (order.charAt(i) - '0');
+         sorted <<= 2;
+         sorted |= getFingerButton(f, chord);
+      }
+      return sorted;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public int toCfg() {
       int cfg = 0;
       int chord = m_Value;

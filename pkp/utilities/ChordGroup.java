@@ -73,26 +73,34 @@ public class ChordGroup {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public String groupToString() {
-      String str = "";
-      if (m_Assignments == null) {
-         for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-            if (m_Chord[i]) {
-               str += new Chord(i) + " ";
+   public String groupToString(String priority) {
+      String str = m_Assignments == null ? "" : "\n   ";
+      for (int c = 1; c <= Chord.sm_VALUES; ++c) {
+         int chord = Chord.orderFingers(priority, c);
+         if (m_Assignments == null) {
+            if (m_Chord[chord]) {
+               str += new Chord(chord) + " ";
             }
-         }
-      } else {
-         str += "\n   ";
-         for (int i = 0; i < m_Size; ++i) {
-            str += m_Assignments.get(m_Selected[i]).toString(!Assignment.sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, "") + "\n   ";
+         } else {
+            for (int i = 0; i < m_Size; ++i) {
+               Assignment asg = m_Assignments.get(m_Selected[i]);
+               if (chord == asg.getTwiddle().getChord().toInt()) {
+                  str += asg.toString(!Assignment.sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, "") + "\n   ";
+               }
+            }
          }
       }
       return str;
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public String toString(String priority) {
+      return maskToString() + String.format(" %3d: ", getSize()) + groupToString(priority);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return maskToString() + String.format(" %3d: ", getSize()) + groupToString();
+      return toString("");
    }
 
    // Private /////////////////////////////////////////////////////////////////
