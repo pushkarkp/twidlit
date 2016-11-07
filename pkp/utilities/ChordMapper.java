@@ -163,7 +163,7 @@ public class ChordMapper extends ControlDialog
          dispose();
          return;
       case sm_HELP:
-         HtmlWindow hw = new HtmlWindow(getClass().getResource("/data/ref.html") + "#map");
+         HtmlWindow hw = new HtmlWindow(getClass().getResource("/data/ref.html") + m_Action.getHelpTag());
          hw.setTitle(sm_HELP);
          hw.setVisible(true);
          return;
@@ -192,6 +192,10 @@ public class ChordMapper extends ControlDialog
          @Override
          String getTitle() {
             return "Create Map File";
+         }
+         @Override
+         String getHelpTag() {
+            return "#map";
          }
          @Override
          File getDefaultMapFile(File deflt) {
@@ -245,6 +249,10 @@ public class ChordMapper extends ControlDialog
             return "Assess Map File";
          }
          @Override
+         String getHelpTag() {
+            return "#assess";
+         }
+         @Override
          File getDefaultMapFile(File deflt) {
             return deflt;
          }
@@ -292,6 +300,7 @@ public class ChordMapper extends ControlDialog
          }
       };
       abstract String getTitle();
+      abstract String getHelpTag();
       abstract File getDefaultMapFile(File deflt);
       abstract FileBox getMapFileBox(File deflt);
       abstract String getCfgExplanation();
