@@ -221,7 +221,7 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseTag(String tag, Modifiers modifiers, StringBuilder err) {
-      if ("".equals(tag)) {
+      if (tag == null || "".equals(tag)) {
          return new KeyPress();
       }
       char c0 = tag.charAt(0);
