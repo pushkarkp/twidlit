@@ -25,6 +25,7 @@ public class LineReader implements StringSource, NamedOrdered {
 
    ////////////////////////////////////////////////////////////////////////////
    public LineReader(URL url, boolean mustExist) {
+      m_StripComment = true;
       m_Url = url;
       if (m_Url == null) {
          if (mustExist) {
@@ -42,6 +43,11 @@ public class LineReader implements StringSource, NamedOrdered {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public void setKeepComment(boolean keep) {
+      m_StripComment = !keep;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public String readLine() {
       String line = null;
       do {
@@ -53,7 +59,9 @@ public class LineReader implements StringSource, NamedOrdered {
          if (line == null) {
             return null;
          }
-         line = Io.trimComment(line);
+         if (m_StripComment) {
+            line = Io.trimComment(line);
+         }
          ++m_LineNumber;
       } while ("".equals(line.trim()));
       return line;
@@ -118,6 +126,7 @@ public class LineReader implements StringSource, NamedOrdered {
    public int getLineNumber() { return m_LineNumber; }
 
    // Data ////////////////////////////////////////////////////////////////////
+   private boolean m_StripComment;
    private URL m_Url;
    private BufferedReader m_In;
    private int m_LineNumber = 0;
