@@ -168,13 +168,13 @@ The assessment creates a file that annotates each mapping with three values:
 
 <a name='group'>
 <h2>Group Chords</h2>
-Optionally select a map file of interest. 
-It divides the chord space into <em>used</em> (mapped) and <em>free</em> (unused) parts. 
-If no map file is specified then all chords are free. 
-BTW: The map file <em>x</em> button on this dialog is a little bit magic, it toggles between the current map file (if available) and <em>none</em>.
+Optionally select a chords file of interest. 
+It divides chord space into <em>used</em> (mapped) and <em>free</em> (unused) parts. 
+If no chords file is specified then all chords are free. 
+BTW: The <em>x</em> button on this dialog is a little bit magic, it toggles between the current map file (if available) and <em>none</em>.
 <br><br>
 Choose whether to group used or free chords. 
-Used chords can be listed bare (horizontally) or as mappings (vertically). 
+Used chords can be listed bare (horizontally) or with their file text (vertically). 
 <br><br>
 <em>Group by pattern</em> is a simple facility that lists the chords that match the given pattern. 
 A pattern consists of four characters, one for each finger. 
@@ -195,25 +195,30 @@ Each character is from the first column of the following table:
    d D             | or - or ' 
    e E             , or - or ' 
    f F ?           any</code></pre>
-For example, with no map file selected, <code>|a-?</code> yields:
+For example, with no chords file selected, <code>|a-?</code> yields:
 <pre><code>|a-?   8: |,-| |'-| |,-, |'-, |,-- |'-- |,-' |'-'</code></pre>
 <br>
-<em>Generate patterns</em> takes two patterns and combines them to generate a series of patterns and their lists of chords. 
+<em>Generate patterns</em> takes two patterns and combines them to create a series of patterns and their lists of chords. 
 Twidlit generates a pattern of every permutation of buttons allowed by the first pattern, and fills in the gaps with the corresponding characters from the second pattern. 
 <br><br>
-Dots ('.') can be used in either pattern. 
+Dots ('.') can be used in either pattern but not in the same finger in both. 
 Result patterns containing dots or yielding fewer than the set minimum group size are ignored. 
-Nothing is generated if a dot appears in the same finger in both patterns. 
 <br><br>
-For example, with no map file selected, <code>|a-. ...?</code> yields:
+For example, with no chords file selected, <code>|a-. ...?</code> yields:
 <pre><code>|,-?   4: |,-| |,-, |,-- |,-' 
 |'-?   4: |'-| |'-, |'-- |'-' 
 </code></pre>
-<tt>|</tt> and <tt>-</tt> are fixed, <tt>a</tt> generates <tt>,</tt> and <tt>'</tt> and the final dot deploys the <tt>?</tt> wild card. 
+<tt>|</tt> and <tt>-</tt> are fixed and <tt>a</tt> generates <tt>,</tt> and <tt>'</tt>. 
+No wild cards appear in the first three fingers because of the dots in the second pattern. 
+The final dot in the first deploys the <tt>?</tt> wild card. 
 <br><br>
 A group of numbers is listed in order by working through all the available values for the rightmost digit while the others are fixed, then stepping to the next value for the next-to rightmost digit, and so on working right to left. 
 Twidlit orders chords similarly by default, but works left to right (reflecting the greater agility of the thumb-side fingers). 
 You can specify your own order by rearranging the <em>Finger priority</em> values. 
+<br><br>
+For example:
+<pre><code>|a-?   8: |,-| |'-| |,-, |'-, |,-- |'-- |,-' |'-' [1234]
+|a-?   8: |,-| |,-, |,-- |,-' |'-| |'-, |'-- |'-' [4321]</code></pre>
 
 <a name='settings'>
 <h2>Twiddler Settings</h2>

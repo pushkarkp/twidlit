@@ -7,23 +7,23 @@
 package pkp.utilities;
 
 import java.util.ArrayList;
-import pkp.twiddle.Assignments;
 import pkp.twiddle.Chord;
-import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
 public class ChordGroups {
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordGroups(int fixMask, int acceptMask, Assignments asgs, boolean free, boolean showMappings) {
+   public ChordGroups(int fixMask, int acceptMask, ChordText chordText, boolean free, boolean showText, String priority) {
       m_Groups = new ArrayList<ChordGroup>();
-      m_GroupFree = free;
-      m_ShowMappings = !free && showMappings;
-      m_Assignments = asgs;
       m_AcceptMask = acceptMask;
+      m_ChordText = chordText;
+      m_GroupFree = free;
+      m_ShowText = showText;
+      m_Priority = priority;
       for (int p = 0; p < sm_Permutations.length; ++p) {
-         if (applies(sm_Permutations[p], fixMask)) {
-            add(findGroups(sm_Permutations[p] & fixMask, 5, 0), m_Groups);
+         if (applies(sm_Permutations[p], fixMask, m_AcceptMask)) {
+//System.out.printf("Permutation 0x%x & fixMask 0x%x = 0x%x%n", sm_Permutations[p], fixMask, sm_Permutations[p] & fixMask);
+            m_Groups.addAll(findGroups(sm_Permutations[p] & fixMask, 0, 0));
          }
       }
    }
@@ -35,15 +35,16 @@ public class ChordGroups {
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      return toString("", 1);
+      return toString(1);
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public String toString(String priority, int min) {
+   public String toString(int min) {
       String str = "";
       for (int i = 0; i < m_Groups.size(); ++i) {
+         String group = m_Groups.get(i).toString(m_Priority);
          if (m_Groups.get(i).getSize() >= min) {
-            str += m_Groups.get(i).toString(priority) + '\n';
+            str += group;
          }
       }
       return str;
@@ -52,10 +53,14 @@ public class ChordGroups {
    // Private /////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
-   private static boolean applies(int permutation, int mask) {
+   // only accept permutations that avoid zero fingers
+   private static boolean applies(int permutation, int fixMask, int acceptMask) {
       for (int finger = 0; finger < 4; ++finger) {
-         if (ChordGroup.getMaskFinger(finger, mask) == 0
-          && ChordGroup.getMaskFinger(finger, permutation) != 0) {
+         if (ChordGroup.getMaskFinger(finger, permutation) == 0) {
+            if (ChordGroup.getMaskFinger(finger, acceptMask) == 0) {
+               return false;
+            }
+         } else if (ChordGroup.getMaskFinger(finger, fixMask) == 0) {
             return false;
          }
       }
@@ -63,57 +68,53 @@ public class ChordGroups {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   private void add(ChordGroup g, ArrayList<ChordGroup> groups) {
-      if (g.getSize() > 0) {
-         groups.add(g);
+   private ArrayList<ChordGroup> findGroups(int fixMask, int f, int buildMask) {
+//System.out.printf("findGroups(0x%x, %d, 0x%x)%n", fixMask, f, buildMask);
+      int finger = 0;
+      int fingerMask = 0;
+      for (; f < 4 && fingerMask == 0; ++f) {
+         finger = Chord.getFinger(m_Priority, f);
+         fingerMask = ChordGroup.getMaskFinger(finger, fixMask);
       }
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   private void add(ArrayList<ChordGroup> gs, ArrayList<ChordGroup> groups) {
-      for (ChordGroup g: gs) {
-         add(g, groups);
+      if (fingerMask == 0) {
+         int mask = combineMasks(buildMask, m_AcceptMask);
+//System.out.printf("0x%x + 0x%x = 0x%x %s%n", buildMask, m_AcceptMask, mask, ChordGroup.maskToString(mask));
+         if (mask == 0) {
+            return new ArrayList<ChordGroup>();
+         }
+         ArrayList<ChordGroup> groups = new ArrayList<ChordGroup>();
+         groups.add(new ChordGroup(mask, m_ChordText, m_GroupFree, m_ShowText));
+         return groups;
       }
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   private ArrayList<ChordGroup> findGroups(int fixMask, int finger, int buildMask) {
       ArrayList<ChordGroup> groups = new ArrayList<ChordGroup>();
-      for (;;) {
-         --finger;
-         buildMask <<= 4;
-         if (ChordGroup.getMaskFinger(finger, fixMask) != 0) {
-            break;
-         }
-         if (finger == 0) {
-            add(getGroup(buildMask), groups);
-            return groups;
-         }
-      }
-      final int fingerMask = ChordGroup.getMaskFinger(finger, fixMask);
       for (int b = 0; b < ChordGroup.sm_Maskable.length; ++b) {
          if ((ChordGroup.sm_Maskable[b] & fingerMask) != 0) {
-            if (finger > 0) {
-               add(findGroups(fixMask, finger, ChordGroup.sm_Maskable[b] | buildMask), groups);
-            } else {
-               add(getGroup(ChordGroup.sm_Maskable[b] | buildMask), groups);
-            }
+            groups.addAll(
+               findGroups(
+                  fixMask, 
+                  f, 
+                  buildMask | ChordGroup.sm_Maskable[b] << finger * ChordGroup.sm_MaskShift
+            ));
          }
       }
       return groups;
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordGroup getGroup(int fixMask) {
-      int bothMask = 0;
-      for (int finger = 3; finger >= 0; --finger) {
-         bothMask <<= 4;
-         final int fixMaskFinger = ChordGroup.getMaskFinger(finger, fixMask);
-         bothMask |= fixMaskFinger != 0
-                   ? fixMaskFinger
-                   : ChordGroup.getMaskFinger(finger, m_AcceptMask);
+   public static int combineMasks(int fixed, int accept) {
+      int both = 0;
+      for (int f = 3; f >= 0; --f) {
+         both <<= ChordGroup.sm_MaskShift;
+         int finger = ChordGroup.getMaskFinger(f, fixed);
+         if (finger == 0) {
+            finger = ChordGroup.getMaskFinger(f, accept);
+            if (finger == 0) {
+               return 0;
+            }
+         }
+         both |= finger;
       }
-      return new ChordGroup(bothMask, m_Assignments, m_GroupFree, m_ShowMappings);
+      return both;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -123,9 +124,10 @@ public class ChordGroups {
       0x00FF, 0x0F0F, 0xF00F, 0x0FF0, 0xF0F0, 0xFF00, 
       0x000F, 0x00F0, 0x0F00, 0xF000};
 
+   private final String m_Priority;
    private final boolean m_GroupFree;
-   private final boolean m_ShowMappings;
+   private final boolean m_ShowText;
    private final int m_AcceptMask;
-   private Assignments m_Assignments;
+   private final ChordText m_ChordText;
    private ArrayList<ChordGroup> m_Groups;
 }

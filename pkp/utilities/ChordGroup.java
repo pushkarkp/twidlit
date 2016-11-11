@@ -11,11 +11,6 @@
 
 package pkp.utilities;
 
-import java.util.ArrayList;
-import pkp.twiddle.Assignments;
-import pkp.twiddle.Assignment;
-import pkp.twiddle.Twiddle;
-import pkp.twiddle.KeyPress;
 import pkp.twiddle.Chord;
 import pkp.util.Log;
 
@@ -23,12 +18,19 @@ import pkp.util.Log;
 public class ChordGroup {
 
    /////////////////////////////////////////////////////////////////////////////
-   public static final int sm_Maskable[] = {
-      0x1, 0x2, 0x4, 0x8};
+   public static final int sm_MaskShift = 4;
+   public static final int sm_Maskable[] = {0x1, 0x2, 0x4, 0x8};
 
    /////////////////////////////////////////////////////////////////////////////
+   // index == least significant nibble == [0]
+   // pinky == most significant nibble == [3]
+   public static int getMaskAtFinger(int finger, int mask) {
+      return mask & (15 << (3 - finger) * sm_MaskShift);
+   }
+
+    /////////////////////////////////////////////////////////////////////////////
    public static int getMaskFinger(int finger, int mask) {
-      return (mask >> finger * 4) & 15;
+      return (mask >> finger * sm_MaskShift) & 15;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -41,30 +43,17 @@ public class ChordGroup {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordGroup(int mask, Assignments asgs, boolean free, boolean showMapping) {
+   public ChordGroup(int mask, ChordText chordLines, boolean free, boolean showText) {
       m_Mask = mask;
-      if (!free && showMapping) {
-         m_Assignments = asgs;
-      }
-      m_Chord = new boolean[Chord.sm_VALUES + 1];
-      m_Size = 0;
-      m_Selected = new int[Chord.sm_VALUES + 1];
-      final int maskableChords[] = getMaskableChords();
-      for (int c = 1; c <= Chord.sm_VALUES; ++c) {
-         if ((maskableChords[c] & mask) == maskableChords[c]) {
-            int found = asgs.find(new Twiddle(c, 0));
-            if (free == (found == -1)) {
-               m_Chord[c] = true;
-               m_Selected[m_Size] = found;
-               ++m_Size;
-            }
-         }
-      }
+      m_ChordText = chordLines;
+      m_Free = free;
+      m_ShowText = !free && showText;
+      m_Count = 0;
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public int getSize() {
-      return m_Size;
+      return m_Count;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -74,28 +63,29 @@ public class ChordGroup {
 
    /////////////////////////////////////////////////////////////////////////////
    public String groupToString(String priority) {
-      String str = m_Assignments == null ? "" : "\n   ";
+      String str = "";
+      final int maskableChords[] = getMaskableChords();
       for (int c = 1; c <= Chord.sm_VALUES; ++c) {
          int chord = Chord.orderFingers(priority, c);
-         if (m_Assignments == null) {
-            if (m_Chord[chord]) {
-               str += new Chord(chord) + " ";
-            }
-         } else {
-            for (int i = 0; i < m_Size; ++i) {
-               Assignment asg = m_Assignments.get(m_Selected[i]);
-               if (chord == asg.getTwiddle().getChord().toInt()) {
-                  str += asg.toString(!Assignment.sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, "") + "\n   ";
+         if ((maskableChords[chord] & m_Mask) == maskableChords[chord]) {
+            String line = m_ChordText.get(chord);
+            if (m_Free == (line == null)) {
+               ++m_Count;
+               if (!m_ShowText) {
+                  str += " " + new Chord(chord);
+               } else {
+                  str += "\n   " + line;
                }
             }
          }
       }
-      return str;
+      return str + '\n';
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString(String priority) {
-      return maskToString() + String.format(" %3d: ", getSize()) + groupToString(priority);
+      String str = groupToString(priority);
+      return maskToString() + String.format(" %3d:", getSize()) + str;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -142,7 +132,7 @@ public class ChordGroup {
    public static int chordToMaskable(int chord) {
       int maskable = 0;
       for (int finger = 0; finger < 4; ++finger) {
-         maskable <<= 4;
+         maskable <<= sm_MaskShift;
          maskable |= sm_Maskable[Chord.getFingerButton(finger, chord)];
       }
       return maskable;
@@ -152,8 +142,10 @@ public class ChordGroup {
    private static int sm_MaskableChords[];
 
    private int m_Mask;
-   private Assignments m_Assignments;
+   private boolean m_Free;
+   private boolean m_ShowText;
+   private ChordText m_ChordText;
    private boolean[] m_Chord;
-   private int[] m_Selected;
-   private int m_Size;
+   private String m_String;
+   private int m_Count;
 }

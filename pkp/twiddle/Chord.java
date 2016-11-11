@@ -47,6 +47,13 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   // index == least significant 2 bits == [0]
+   // pinky == most significant 2 bits == [3]
+   public static int getButtonAtFinger(int finger, int chord) {
+      return chord & (3 << (3 - finger) * 2);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public static int getFingerButton(int finger, int chord) {
       return (chord >> finger * 2) & 3;
    }
@@ -75,6 +82,14 @@ public class Chord {
          sorted |= getFingerButton(f, chord);
       }
       return sorted;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static int getFinger(String order, int finger) {
+      if ("".equals(order) || "1234".equals(order)) {
+         return finger;
+      }
+      return order.charAt(finger) - '1';
    }
 
    /////////////////////////////////////////////////////////////////////////////
