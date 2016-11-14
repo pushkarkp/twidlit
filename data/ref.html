@@ -102,9 +102,8 @@ Hands are timed separately.
 (The progress bars are on the side away from your palm.)
 <dt><a name='chords'><b>Chords</b>
 <dd>Sets practice to random chords. 
-The <a href='#text'>Text pane</a> will remain blank. 
 Twidlit attempts to test all chords with equal probability, but can only show chords that are mapped. 
-<dt><b>Keystrokes</b>
+<dt><a name='keystrokes'><b>Keystrokes</b>
 <dd>Sets practice to keystrokes read from a file. 
 Clicking on this menu item displays a file chooser to open a <a href='syn.html#keys'>file of keystrokes</a>. 
 If no file is chosen then upper and lower case alphabetic keys are used. 
@@ -224,7 +223,7 @@ For example:
 <h2>Twiddler Settings</h2>
 Use the sliders and checkboxes to change the Twiddler settings in the current configuration. 
 They will come into effect next time you save the configuration to the Twiddler. 
-Use the button to the right to reset to the default value. 
+Use the <em>x</em> button to the right to reset to the default value. 
 Any setting not at its default will also appear in the <a href='syn.html#cfg'><tt>cfg.chords</tt></a> file. 
 <br><br>
 Click on the version number to change between Twiddler versions 2 and 3. 
@@ -308,8 +307,8 @@ If there is still ambiguity it displays the chord with the least number of finge
 <a name='text'>
 <h2>Text pane</h2>
 The Text pane is in the main window, underneath the menu bar. 
-It displays the upcoming keystrokes with the current keystroke highlighted. 
-It remains blank if <em><a href="#chords">Tutor > Chords<a></em> is checked. 
+If <em><a href="#chords">Tutor > Chords<a></em> is checked it displays the last keystroke pressed. 
+If <em><a href="#keystrokes">Tutor > Keystrokes<a></em> is checked it displays the upcoming keystrokes with the current keystroke highlighted. 
 
 <a name='html'>
 <h2>Help</h2>
