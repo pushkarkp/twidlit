@@ -64,7 +64,6 @@ public class Assignment extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public int getTwiddleCount() { return m_Twiddles.size(); }
    public Twiddle getTwiddle(int i) { return m_Twiddles.get(i); }
-   public Twiddle getTwiddle() { return getTwiddle(0); }
    public KeyPressList getKeyPressList() { return m_KeyPressList; }
 
    ////////////////////////////////////////////////////////////////////////////

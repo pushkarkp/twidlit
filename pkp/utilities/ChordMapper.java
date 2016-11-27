@@ -384,9 +384,9 @@ public class ChordMapper extends ControlDialog
       m_Assessments = new ArrayList<String>();
       List<Assignment> mapped = (new Assignments(mappedF)).toList();
       for (Assignment asg: mapped) {
-         int chordPos = m_ChordTimes.findChord(asg.getTwiddle().getChord().toString());
+         int chordPos = m_ChordTimes.findChord(asg.getTwiddle(0).getChord().toString());
          if (chordPos == -1) {
-            Log.log("Failed to find \"" + asg.getTwiddle().getChord() + "\" in "
+            Log.log("Failed to find \"" + asg.getTwiddle(0).getChord() + "\" in "
                     + (chordF != null ? chordF.getPath() : "chords"));
             continue;
          }

@@ -130,7 +130,7 @@ public class TextPanel
       }
       highlight(asg.getKeyPressList().toString(Format.DISPLAY).length());
       repaint();
-      return asg.getTwiddle();
+      return asg.getTwiddle(0);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ public class TextPanel
 		}
 //System.out.printf("'%s' %d%n", asg.getKeyPressList().toString(Format.DISPLAY), asg.getKeyPressList().toString(Format.DISPLAY).length());
       highlight(asg.getKeyPressList().toString(Format.DISPLAY).length());
-      return asg.getTwiddle();
+      return asg.getTwiddle(0);
    }
 
    ////////////////////////////////////////////////////////////////////////////

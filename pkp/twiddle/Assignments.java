@@ -178,7 +178,7 @@ public class Assignments extends ArrayList<Assignment> {
       if (newAsg == null) {
          return false;
       }
-      if (isMap(newAsg.getTwiddle())) {
+      if (isMap(newAsg.getTwiddle(0))) {
          m_Remap.add(newAsg);
          return false;
       }
@@ -238,7 +238,7 @@ public class Assignments extends ArrayList<Assignment> {
          int chord = i + 1;
          int a = 0;
          for (; a < asgs.size(); ++a) {
-            Twiddle tw = asgs.get(a).getTwiddle();
+            Twiddle tw = asgs.get(a).getTwiddle(0);
             if (tw.getThumbKeys().isEmpty() && tw.getChord().toInt() == chord) {
                break;
             }
@@ -262,7 +262,7 @@ public class Assignments extends ArrayList<Assignment> {
             continue;
          }
          for (int a = 0; a < asgs.size(); ++a) {
-            Twiddle tw = asgs.get(a).getTwiddle();
+            Twiddle tw = asgs.get(a).getTwiddle(0);
             if (tw.getChord().toInt() == chord) {
                if (tw.getThumbKeys().isEmpty()) {
                   sorted.add(asgs.get(a));
