@@ -338,30 +338,31 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString() { return toString(Format.FILE); }
-   public String toTagString() { return toString(Format.TAG); }
 
    ////////////////////////////////////////////////////////////////////////////
    public String toString(Format format) {
-		if (format == Format.DISPLAY) {
+      boolean file = false;
+      if (format == Format.DISPLAY) {
          format = sm_DisplayFormat;
-		}
-		if (format == Format.FILE) {
+      }
+      if (format == Format.FILE) {
+         file = true;
          format = sm_FileFormat;
-		}
+      }
 //System.out.println(format.name());
-		if (format == Format.HEX) {
+      if (format == Format.HEX) {
          return String.format("\\k%04x", toInt());
-		}
-	   if (format == Format.TAG) {
+      }
+      if (format == Format.TAG) {
          return m_Modifiers.toString(keyCodeToTagString(m_KeyCode));
-		}
-		if (m_KeyCode == 0) {
-			if (m_Modifiers.isEmpty()) {
-				Log.err("Empty KeyPress.");
-				return "empty";
-			}
-			return m_Modifiers.toLeadTagString();
-		}
+      }
+      if (m_KeyCode == 0) {
+         if (m_Modifiers.isEmpty()) {
+            Log.err("Empty KeyPress.");
+            return "empty";
+         }
+         return m_Modifiers.toLeadTagString();
+      }
       if (sm_Duplicate.is(m_KeyCode)) {
          Log.log(String.format("Key 0x%x is a duplicate", m_KeyCode));
          return "duplicate";
@@ -404,6 +405,10 @@ public class KeyPress {
             return str;
          }
       }
+      // comment char only needs escape in files
+      if (file && keyValue == Io.sm_COMMENT) {
+         return "\\" + Io.sm_COMMENT;
+      }
       if (format == Format.STD
        || format == Format.ESC) {
          return modifiers.toString(Io.toEscapeChar(keyValue));
@@ -413,17 +418,6 @@ public class KeyPress {
       }
       return modifiers.toString("" + keyValue);
    }
-/*
-   ////////////////////////////////////////////////////////////////////////////
-   public String toTagString(Modifiers prevModifiers) {
-      String str = "";
-      if (!m_Modifiers.equals(prevModifiers)) {
-         str = prevModifiers.minus(m_Modifiers).toTailTagString()
-             + m_Modifiers.minus(prevModifiers).toLeadTagString();
-      }
-      return str + keyCodeToTagString(m_KeyCode);
-   }
-*/
 
    ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
@@ -530,7 +524,7 @@ public class KeyPress {
          char c = args[i].charAt(0);
          if (c == '<') {
             KeyPress act = KeyPress.parseTag(args[i].substring(1, args[i].length() - 1), Modifiers.sm_EMPTY, err);
-            System.out.printf("'%s': '%s' '%s' (%s)\n", args[i], act, act.toTagString(), err);
+            System.out.printf("'%s': '%s' '%s' (%s)\n", args[i], act, act.toString(Format.TAG), err);
             err = new StringBuilder();
          } else if (c == '-') {
             switch (args[i].charAt(1)) {
@@ -543,7 +537,7 @@ public class KeyPress {
             for (int j = 0; j < args[i].length(); ++j) {
                char ch = args[i].charAt(j);
                KeyPress kp = KeyPress.parseText(ch, Modifiers.sm_EMPTY, null);
-               System.out.printf("'%c': '%s'\n", ch, kp.toTagString());
+               System.out.printf("'%c': '%s'\n", ch, kp.toString(Format.TAG));
             }
          }
       }

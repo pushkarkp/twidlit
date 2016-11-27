@@ -571,11 +571,27 @@ public class Io {
       case ' ': return "\\s";
       case '\t': return "\\t";
       case '\\': return "\\\\";
-      case sm_COMMENT: return "\\" + sm_COMMENT;
       case '<': return "\\<";
       case 11: return "\\v";
       }
       return (c < 32) ? String.format("\\x%02x", (int)c) : "" + c;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String toEscapeCommented(String str) {
+      String out = "";
+      for (int i = 0; i < str.length(); ++i) {
+         out += toEscapeCharCommented(str.charAt(i));
+      }
+      return out;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static String toEscapeCharCommented(char c) {
+      if (c == sm_COMMENT) {
+         return "\\" + sm_COMMENT;
+      }
+      return toEscapeChar(c);
    }
 
    ////////////////////////////////////////////////////////////////////////////
