@@ -112,7 +112,7 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    // An assignment maps one OR MORE chords to a keypress list.
    // Return a list of 1 to 1 mappings.
-   public List<Assignment> toList() {
+   public List<Assignment> to121List() {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
       for (Assignment a : this) {
          asgs.addAll(a.separate());

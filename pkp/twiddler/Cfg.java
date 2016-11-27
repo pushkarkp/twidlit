@@ -41,7 +41,7 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void write(File f, Assignments a, Settings s, int version) {
-      List<Assignment> asgs = a.toList();
+      List<Assignment> asgs = a.to121List();
       // assignments plus 1 terminating 0 int
       int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
       int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
