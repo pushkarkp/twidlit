@@ -102,6 +102,28 @@ public class Twiddle extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   // a twiddle is less than another if it has fewer thumb buttons or
+   // a smaller chord or a lesser thumb button.
+   public boolean lessThan(Twiddle other) {
+      int n = getThumbKeys().getCount();
+      int on = other.getThumbKeys().getCount();
+      if (n < on) {
+         return true;
+      }
+      if (n > on) {
+         return false;
+      }
+      int c = getChord().compare(other.getChord());
+      if (c < 0) {
+         return true;
+      }
+      if (c > 0) {
+         return false;
+      }
+      return getThumbKeys().toInt() < other.getThumbKeys().toInt();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public KeyPressList getKeyPressList(KeyMap map) {
       if (getThumbKeys().isEmpty()) {
          // no modifiers, no options

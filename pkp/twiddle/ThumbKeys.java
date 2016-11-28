@@ -124,6 +124,28 @@ public class ThumbKeys extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   // -1 <, 0 ==, 1 >
+   public int compare(ThumbKeys other) {
+      int n = getCount();
+      int on = other.getCount();
+      if (n < on) {
+         return -1;
+      }
+      if (n > on) {
+         return 1;
+      }
+      int i = toInt();
+      int oi = other.toInt();
+      if (i < oi) {
+         return -1;
+      }
+      if (i > oi) {
+         return 1;
+      }
+      return 0;
+  }
+
+   ////////////////////////////////////////////////////////////////////////////
    public int getCount() {
       int count = 0;
       for (int i = 0; i < 4; ++i) {

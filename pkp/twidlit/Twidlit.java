@@ -337,7 +337,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
 //         Log.warn("Twidlit probably has a different cfg from your Twiddler.");
       }
       m_KeysPressed = new KeyPressList();
-      Twiddle tw = pressed.getTwiddle(0);
+      Twiddle tw = pressed.getBestTwiddle();
       Twiddle next = m_TextPanel.getNextTwiddle(pressed.getKeyPressList());
       if (next == null) {
          m_TwiddlerWindow.markMismatch(tw);
@@ -354,7 +354,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
                                  m_TimeMs))
          );
 //System.out.printf("%s %s%n", tw.getChord(), m_ChordTimes.getTimes(tw.getChord().toInt(), 0));
-         m_TwiddlerWindow.show(next, pressed.getTwiddle(0), m_ChordTimes);
+         m_TwiddlerWindow.show(next, pressed.getBestTwiddle(), m_ChordTimes);
          // start time
          m_StartTimeMs = System.currentTimeMillis();
          m_TimeMs = 0;

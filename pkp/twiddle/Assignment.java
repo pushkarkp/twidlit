@@ -67,6 +67,20 @@ public class Assignment extends java.lang.Object {
    public KeyPressList getKeyPressList() { return m_KeyPressList; }
 
    ////////////////////////////////////////////////////////////////////////////
+   public Twiddle getBestTwiddle() {
+      if (m_Twiddles.size() == 1) {
+         return m_Twiddles.get(0);
+      }
+      Twiddle best = m_Twiddles.get(0);
+      for (int i = 1; i < m_Twiddles.size(); ++i) {
+         if (m_Twiddles.get(i).lessThan(best)) {
+            best = m_Twiddles.get(i);
+         }
+      }
+      return best;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean isMap(Twiddle tw) {
       for (int i = 0; i < m_Twiddles.size(); ++i) {
          if (tw.equals(m_Twiddles.get(i))) {

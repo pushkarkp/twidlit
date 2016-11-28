@@ -205,9 +205,32 @@ public class Chord {
       return new Chord(ch >> 8);
    }
 
-   /////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   // -1 <, 0 ==, 1 >
+   public int compare(Chord other) {
+      int f = getFingerCount();
+      int of = other.getFingerCount();
+      if (f < of) {
+         return -1;
+      }
+      if (f > of) {
+         return 1;
+      }
+      int i = toInt();
+      int oi = other.toInt();
+      if (i < oi) {
+         return -1;
+      }
+      if (i > oi) {
+         return 1;
+      }
+      return 0;
+  }
+
+ /////////////////////////////////////////////////////////////////////////////
    public boolean isValid() { return m_Value != 0; }
    public int toInt() { return m_Value; }
+   public int getFingerCount() { return countFingers(m_Value); }
    public int getRowKey(int row) { return (m_Value >> row * 2) & 3; }
    public static int getKeys() { return m_Keys; }
    public static int getDepth() { return m_Depth; }
