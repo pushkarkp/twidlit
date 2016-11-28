@@ -145,7 +145,7 @@ public class Assignments extends ArrayList<Assignment> {
          asgs.addAll(asg.separate());
       }
       if (showAll) {
-         asgs = addUnmapped(asgs);
+         asgs.addAll(getUnmapped(asgs));
       }
       if (times != null) {
          asgs = sort(asgs, times);
@@ -177,6 +177,9 @@ public class Assignments extends ArrayList<Assignment> {
    public boolean add(Assignment newAsg) {
       if (newAsg == null) {
          return false;
+      }
+      if (newAsg.getTwiddleCount() > 1) {
+         Log.err("Multi-chord assignment.");
       }
       if (isMap(newAsg.getTwiddle(0))) {
          m_Remap.add(newAsg);
@@ -232,22 +235,23 @@ public class Assignments extends ArrayList<Assignment> {
    // Private /////////////////////////////////////////////////////////////////
 
    ///////////////////////////////////////////////////////////////////////////////
-   private static ArrayList<Assignment> addUnmapped(ArrayList<Assignment> asgs) {
-      ArrayList<Assignment> all = new ArrayList<Assignment>(asgs);
-      for (int i = 0; i < Chord.sm_VALUES; ++i) {
-         int chord = i + 1;
+   private static ArrayList<Assignment> getUnmapped(ArrayList<Assignment> asgs) {
+      ArrayList<Assignment> unmapped = new ArrayList<Assignment>();
+      for (int chord = 1; chord <= Chord.sm_VALUES; ++chord) {
          int a = 0;
          for (; a < asgs.size(); ++a) {
+            // only one twiddle per assignment in 121 list
             Twiddle tw = asgs.get(a).getTwiddle(0);
-            if (tw.getThumbKeys().isEmpty() && tw.getChord().toInt() == chord) {
+            if (tw.getThumbKeys().isEmpty()
+             && tw.getChord().toInt() == chord) {
                break;
             }
          }
          if (a == asgs.size()) {
-            all.add(new Assignment(new Twiddle(chord), new KeyPressList()));
+            unmapped.add(new Assignment(new Twiddle(chord), new KeyPressList()));
          }
       }
-      return all;
+      return unmapped;
    }
 
    ////////////////////////////////////////////////////////////////////////////
