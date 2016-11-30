@@ -43,11 +43,11 @@ public class ChordGroup {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordGroup(int mask, ChordText chordLines, boolean free, boolean showText) {
-      m_Mask = mask;
-      m_ChordText = chordLines;
-      m_Free = free;
+   public ChordGroup(ChordText chordText, boolean free, boolean showText, int mask) {
+      m_ChordText = chordText;
+      m_GroupFree = free;
       m_ShowText = !free && showText;
+      m_Mask = mask;
       m_Count = 0;
    }
 
@@ -62,6 +62,17 @@ public class ChordGroup {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public int eligibleCount() {
+      int count = 0;
+      for (int c = 1; c <= Chord.sm_VALUES; ++c) {
+         if (m_GroupFree == (m_ChordText.get(c) == null)) {
+            ++count;
+         }
+      }
+      return count;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public String groupToString(String priority) {
       String str = "";
       final int maskableChords[] = getMaskableChords();
@@ -69,7 +80,7 @@ public class ChordGroup {
          int chord = Chord.orderFingers(priority, c);
          if ((maskableChords[chord] & m_Mask) == maskableChords[chord]) {
             String line = m_ChordText.get(chord);
-            if (m_Free == (line == null)) {
+            if (m_GroupFree == (line == null)) {
                ++m_Count;
                if (!m_ShowText) {
                   str += " " + new Chord(chord);
@@ -141,10 +152,10 @@ public class ChordGroup {
    // Data ////////////////////////////////////////////////////////////////////
    private static int sm_MaskableChords[];
 
-   private int m_Mask;
-   private boolean m_Free;
-   private boolean m_ShowText;
-   private ChordText m_ChordText;
+   private final ChordText m_ChordText;
+   private final boolean m_GroupFree;
+   private final boolean m_ShowText;
+   private final int m_Mask;
    private boolean[] m_Chord;
    private String m_String;
    private int m_Count;

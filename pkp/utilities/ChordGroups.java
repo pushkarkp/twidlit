@@ -13,13 +13,13 @@ import pkp.twiddle.Chord;
 public class ChordGroups {
 
    /////////////////////////////////////////////////////////////////////////////
-   public ChordGroups(int fixMask, int acceptMask, ChordText chordText, boolean free, boolean showText, String priority) {
-      m_Groups = new ArrayList<ChordGroup>();
-      m_AcceptMask = acceptMask;
+   public ChordGroups(ChordText chordText, boolean free, boolean showText, int fixMask, int acceptMask, String priority) {
       m_ChordText = chordText;
       m_GroupFree = free;
       m_ShowText = showText;
+      m_AcceptMask = acceptMask;
       m_Priority = priority;
+      m_Groups = new ArrayList<ChordGroup>();
       for (int p = 0; p < sm_Permutations.length; ++p) {
          if (applies(sm_Permutations[p], fixMask, m_AcceptMask)) {
 //System.out.printf("Permutation 0x%x & fixMask 0x%x = 0x%x%n", sm_Permutations[p], fixMask, sm_Permutations[p] & fixMask);
@@ -83,7 +83,7 @@ public class ChordGroups {
             return new ArrayList<ChordGroup>();
          }
          ArrayList<ChordGroup> groups = new ArrayList<ChordGroup>();
-         groups.add(new ChordGroup(mask, m_ChordText, m_GroupFree, m_ShowText));
+         groups.add(new ChordGroup(m_ChordText, m_GroupFree, m_ShowText, mask));
          return groups;
       }
       ArrayList<ChordGroup> groups = new ArrayList<ChordGroup>();
@@ -124,10 +124,10 @@ public class ChordGroups {
       0x00FF, 0x0F0F, 0xF00F, 0x0FF0, 0xF0F0, 0xFF00, 
       0x000F, 0x00F0, 0x0F00, 0xF000};
 
-   private final String m_Priority;
+   private final ChordText m_ChordText;
    private final boolean m_GroupFree;
    private final boolean m_ShowText;
+   private final String m_Priority;
    private final int m_AcceptMask;
-   private final ChordText m_ChordText;
    private ArrayList<ChordGroup> m_Groups;
 }

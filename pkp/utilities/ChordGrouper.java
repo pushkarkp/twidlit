@@ -109,9 +109,9 @@ public class ChordGrouper extends ControlDialog
       box.add(m_Used);
       m_ShowText = createCheckBox("Show text");
       box.add(indent("   ", m_ShowText));
-      m_Free = createRadioButton(sm_FREE, m_FreeButtonGroup);
-      m_Free.addActionListener(this);
-      box.add(m_Free);
+      m_GroupFree = createRadioButton(sm_FREE, m_FreeButtonGroup);
+      m_GroupFree.addActionListener(this);
+      box.add(m_GroupFree);
       box.add(Box.createRigidArea(new Dimension(0, 4)));
       box.add(Box.createVerticalGlue());
 
@@ -183,7 +183,7 @@ public class ChordGrouper extends ControlDialog
          Persist.set(sm_MINIMUM_PERSIST, m_MinGroup.getNumber().intValue());
          persist(m_Used, 1);
          persist(m_ShowText);
-         persist(m_Free, 1);
+         persist(m_GroupFree, 1);
          persist(m_GroupByMask, 2);
          persist(m_Generate, 2);
          Persist.set(sm_PRIORITY_PERSIST, m_Priority.getText());
@@ -210,25 +210,28 @@ public class ChordGrouper extends ControlDialog
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
       String head = "";
       head += "# Twidlit Chord Grouping at " + df.format(Calendar.getInstance().getTime()) + '\n';
-      if (m_ChordsFileBox.getFile() == null) {
-         head += "# All chords\n";
-      } else {
-         head += "# " + m_ChordsFileBox.getFile().getPath() + '\n';
-         head += "# " + (m_Free.isSelected() ? "Free" : "Used") + " chords\n";
-      }
-      head += "# " + "Finger priority " + m_Priority.getText() + '\n';
-      
+
       ChordText chordText = new 
          ChordText(m_ChordsFileBox.getFile() != null
                  ? new LineReader(Io.toUrl(m_ChordsFileBox.getFile()))
                  : null);
 
+      if (m_ChordsFileBox.getFile() == null) {
+         head += "# All chords (255)\n";
+      } else {
+         head += "# " + m_ChordsFileBox.getFile().getPath() + '\n';
+         head += "# " + (m_GroupFree.isSelected() ? "Free" : "Used") + " chords ("
+              + String.valueOf((new ChordGroup(chordText, m_GroupFree.isSelected(), false, 0)).eligibleCount())
+              + "/255)\n";
+      }
+      head += "# " + "Finger priority " + m_Priority.getText() + '\n';
+      
       if (m_GroupByMask.isSelected()) {
          ChordGroup group = new
-            ChordGroup(stringToMask(m_GroupText.getText()),
-                       chordText,
-                       m_Free.isSelected(),
-                       m_ShowText.isSelected());
+            ChordGroup(chordText,
+                       m_GroupFree.isSelected(),
+                       m_ShowText.isSelected(),
+                       stringToMask(m_GroupText.getText()));
          return head + '\n' + group.toString(m_Priority.getText());
       } else {
          head += "# Generated from " + m_FixedText.getText() + ' ' + m_AcceptText.getText() + '\n';
@@ -236,11 +239,11 @@ public class ChordGrouper extends ControlDialog
             head += "# Minimum group size " + m_MinGroup.getNumber().intValue() + '\n';
          }
          ChordGroups groups = new
-            ChordGroups(stringToMask(m_FixedText.getText()),
-                        stringToMask(m_AcceptText.getText()),
-                        chordText,
-                        m_Free.isSelected(),
+            ChordGroups(chordText,
+                        m_GroupFree.isSelected(),
                         m_ShowText.isSelected(),
+                        stringToMask(m_FixedText.getText()),
+                        stringToMask(m_AcceptText.getText()),
                         m_Priority.getText());
          return head + '\n' + groups.toString(m_MinGroup.getNumber().intValue());
       }
@@ -344,7 +347,7 @@ public class ChordGrouper extends ControlDialog
       } else {
          m_Used.setEnabled(false);
          m_ShowText.setEnabled(false);
-         m_Free.setSelected(true);
+         m_GroupFree.setSelected(true);
       }
    }
 
@@ -383,7 +386,7 @@ public class ChordGrouper extends ControlDialog
    private ButtonGroup m_FreeButtonGroup;
    private JRadioButton m_Used;
    private JCheckBox m_ShowText;
-   private JRadioButton m_Free;
+   private JRadioButton m_GroupFree;
    private ButtonGroup m_FingerButtonGroup;
    private JRadioButton m_GroupByMask;
    private JRadioButton m_Generate;
