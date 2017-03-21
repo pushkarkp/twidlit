@@ -644,6 +644,9 @@ class TwidlitMenu extends PersistentMenuBar
       m_AllChordsItem.setEnabled(cfg != null);
       if (cfg == null) {
          cfg = new Cfg(m_SettingsWindow, Assignments.listAllByFingerCount());
+      } else if (!cfg.hasAssignments()) {
+         Log.warn("There were no assignments in the configuration, using default.");
+         cfg = new Cfg(cfg, Assignments.listAllByFingerCount());
       }
       m_TwidlitInit.setKeyMap(new KeyMap(cfg.getAssignments()));
       boolean settingsVisible = m_SettingsWindow.isVisible();
