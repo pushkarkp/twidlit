@@ -12,9 +12,11 @@ import pkp.io.Io;
 public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
-   public static final int sm_VALUES = 255;
+   public static final int sm_VALUES = 0xFF;
+   public static final int sm_VALUES_WITH_MOUSE = 0x3FF;
    public static final int sm_ROWS = 4;
    public static final int sm_COLUMNS = 3;
+   public static final int sm_MOUSE = 4;
 
    /////////////////////////////////////////////////////////////////////////////
    public static void use4Finger(boolean set) {
@@ -24,6 +26,25 @@ public class Chord {
    /////////////////////////////////////////////////////////////////////////////
    public static boolean isUsing4Finger() {
       return sm_4Finger;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static Chord createMouseButton(String str) {
+      Chord c = new Chord(fromString(str));
+      if (!c.isMouseButton()) {
+         return new Chord(0);
+      }   
+      return c;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static String getMouseButtonName(int chord) {
+      switch (getFingerButton(sm_MOUSE, chord)) {
+         case 1: return "right";
+         case 2: return "middle";
+         case 3: return "left";
+         default: return String.format("0x%4x is not a", chord);
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -47,6 +68,7 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   // returns button's 2 bits in place
    // index == least significant 2 bits == [0]
    // pinky == most significant 2 bits == [3]
    public static int getButtonAtFinger(int finger, int chord) {
@@ -54,19 +76,9 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   // returns button in the 2 LSBs
    public static int getFingerButton(int finger, int chord) {
       return (chord >> finger * 2) & 3;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   public static int reverseButtons(int chord) {
-      int backwards = 0;
-      for (int i = 0; i < 4; ++i) {
-         backwards <<= 2;
-         backwards |= (chord & 3);
-         chord >>= 2;
-      }
-      return backwards;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -94,6 +106,9 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public int toCfg() {
+      if (isMouseButton()) {
+         return 0;
+      }
       int cfg = 0;
       int chord = m_Value;
       for (int i = 0; i < 4; ++i) {
@@ -118,7 +133,14 @@ public class Chord {
    /////////////////////////////////////////////////////////////////////////////
    public static int fromString(String str) {
       str = str.substring(Io.findFirstNotOf(str, Io.sm_WS));
-      if (str.length() < 4 || (str.length() > 4 && str.charAt(4) != ' ')) {
+      if (str.length() < 4) {
+         return 0;
+      }
+      if (str.length() > 4 && str.charAt(4) != ' ') {
+         if ((str.length() == 5 || str.charAt(5) == ' ')
+          && "||||".equals(str.substring(1, 5))) {
+            return charToButton(str.charAt(0)) << 8;
+         }
          return 0;
       }
       int value = 0;
@@ -174,7 +196,9 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public Chord(int value) {
-      if (value < 0 || value > sm_VALUES) {
+      if (value < 0 
+       || (value > sm_VALUES
+        && (value & ~(3 << sm_MOUSE * 2)) != 0)) {
          m_Value = 0;
       } else {
          m_Value = value;
@@ -189,6 +213,8 @@ public class Chord {
    /////////////////////////////////////////////////////////////////////////////
    public boolean equals(Object obj) {
       Chord other = (Chord)obj;
+//System.out.printf("%d==%d%n", m_Value, other.m_Value);
+
       return other != null && other.m_Value == m_Value;
    }
 
@@ -227,8 +253,11 @@ public class Chord {
       return 0;
   }
 
- /////////////////////////////////////////////////////////////////////////////
-   public boolean isValid() { return m_Value != 0; }
+   /////////////////////////////////////////////////////////////////////////////
+   public boolean isValid() { return isChord() || isMouseButton(); }
+   public boolean isChord() { return m_Value > 0 && m_Value <= sm_VALUES; }
+   public boolean isMouseButton() { return (m_Value & 0x300) != 0 && (m_Value & ~0x300) == 0; }
+   public String getMouseButtonName() { return getMouseButtonName(m_Value); }
    public int toInt() { return m_Value; }
    public int getFingerCount() { return countFingers(m_Value); }
    public int getRowKey(int row) { return (m_Value >> row * 2) & 3; }
@@ -240,6 +269,9 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
+      if (isMouseButton()) {
+         return "" + buttonToChar(getFingerButton(4, m_Value)) + "||||";
+      }
       String str = "";
       for (int finger = 0; finger < 4; ++finger) {
          str += buttonToChar(getFingerButton(finger, m_Value));
@@ -256,7 +288,6 @@ public class Chord {
       int lastFinger = -1;
       int min = 3;
       int max = 0;
-System.out.printf("value %d\n", chord.toInt());      
       for (int finger = 0; finger < 4; ++finger) {
          int pressed = (chord.toInt() >> finger * 2) & 3;
          if (pressed != 0) {

@@ -22,9 +22,6 @@ public class Twiddle extends java.lang.Object {
 	}
 
    ////////////////////////////////////////////////////////////////////////////
-   public static final int sm_VALUES = Chord.sm_VALUES | ThumbKeys.sm_VALUES << 8;
-
-   ////////////////////////////////////////////////////////////////////////////
    public static ArrayList<Twiddle> read(URL url) {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
       if (lr == null) {
@@ -59,13 +56,13 @@ public class Twiddle extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(int twiddle) {
-      m_Chord = new Chord(twiddle & Chord.sm_VALUES);
+      m_Chord = new Chord(twiddle & Chord.sm_VALUES_WITH_MOUSE);
       m_ThumbKeys = new ThumbKeys((twiddle >> 8) & ThumbKeys.sm_VALUES);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(int chord, int thumbKeys) {
-      m_Chord = new Chord(chord & Chord.sm_VALUES);
+      m_Chord = new Chord(chord & Chord.sm_VALUES_WITH_MOUSE);
       m_ThumbKeys = new ThumbKeys(thumbKeys & ThumbKeys.sm_VALUES);
    }
 
@@ -85,6 +82,10 @@ public class Twiddle extends java.lang.Object {
          int split = Io.findFirstOf(str, Io.sm_WS);
          m_ThumbKeys = new ThumbKeys(str.substring(0, split));
          m_Chord = new Chord(str.substring(split));
+         if (!m_ThumbKeys.isEmpty() && m_Chord.isMouseButton()) {
+            Log.warn("Ignoring thumb keys with " + m_Chord.getMouseButtonName() + " mouse button");
+            m_ThumbKeys = new ThumbKeys(0);
+         }
       }
    }
 
@@ -156,7 +157,15 @@ public class Twiddle extends java.lang.Object {
       return m_Chord != null
           && m_Chord.isValid()
           && m_ThumbKeys != null
-          && m_ThumbKeys.isValid();
+          && m_ThumbKeys.isValid()
+          && (m_Chord.isChord() || m_ThumbKeys.isEmpty()); 
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public String toString() {
+      return m_ThumbKeys.toString() 
+           + (m_Chord.isMouseButton() ? " " : "  ")
+           + m_Chord.toString();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -164,7 +173,6 @@ public class Twiddle extends java.lang.Object {
    public ThumbKeys getThumbKeys() { return m_ThumbKeys; }
    public int toInt() { return (m_ThumbKeys.toInt() << 8) + m_Chord.toInt(); }
    public int toCfg() { return m_ThumbKeys.toCfg() | m_Chord.toCfg(); }
-   public String toString() { return m_ThumbKeys.toString() + " " + m_Chord.toString(); }
 
    // Data ////////////////////////////////////////////////////////////////////
    private Chord m_Chord;

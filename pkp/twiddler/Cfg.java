@@ -21,6 +21,7 @@ import pkp.twiddle.Assignments;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
+import pkp.twiddle.Chord;
 import pkp.io.Io;
 import pkp.io.LineReader;
 import pkp.util.Log;
@@ -33,81 +34,21 @@ public class Cfg implements Settings {
       String path = f.getPath().toLowerCase();
       Cfg cfg = new Cfg();
       if (path.endsWith(".cfg")) {
-         return cfg.read1(f) ? cfg : null;
+         return cfg.readBin(f) ? cfg : null;
       } else {
-         return cfg.readText1(f) ? cfg : null;
+         return cfg.readText(f) ? cfg : null;
       }
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static void write(File f, Assignments a, Settings s, int version) {
-      List<Assignment> asgs = a.to121List();
-      // assignments plus 1 terminating 0 int
-      int endOfTwiddles = sm_CONFIG_SIZE + (asgs.size() + 1) * 4;
-      int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
-      // plus 1 table-terminating 0 short
-      byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
-      ByteBuffer bb = ByteBuffer.wrap(data);
-
-      // settings
-      IntSettings is = s.getIntSettings();
-      bb.put((byte)is.MAJOR_VERSION.getValue());
-      bb.putShort(otherEndian((short)is.MINOR_VERSION.getValue()));
-      bb.putShort(otherEndian((short)endOfTwiddles));
-      bb.putShort(otherEndian((short)startOfMulti));
-      if (version == 1) {
-         write1(s, bb);
-      } else {
-         write2(s, bb);
+   public static void write(File f, Assignments asgs, Settings settings, int version) {
+//System.out.printf("version %d, format %d%n", version, settings.getIntSettings().FORMAT_VERSION.getValue());
+      if (version < 1 || version > 3) {
+         Log.err(String.format("Version (%d) out of range.", version));
       }
-      
-      // assignments
-      int k = 0;
-      for (int i = 0; i < asgs.size(); ++i) {
-         Assignment asg = asgs.get(i);
-         KeyPressList kpl = asg.getKeyPressList();
-         for (int j = 0; j < asg.getTwiddleCount(); ++j) {
-            bb.putShort((short)asg.getTwiddle(j).toCfg());
-            if (kpl.size() == 1) {
-               bb.putShort((short)kpl.get(0).toInt());
-            } else {
-               bb.put((byte)0xFF);
-               bb.put((byte)k);
-            }
-         }
-         if (kpl.size() > 1) {
-            ++k;
-         }
-      }
-      // terminating 0 int
-      bb.putInt(0);
-
-      // mouse assignments
-      byte mouseBytes[] = new byte[] {
-         0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
-         0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
-         0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09,
-         0x0, 0x0, 0x0,
-      };
-      bb.put(mouseBytes);
-
-      // multikey table
-      for (int i = 0; i < asgs.size(); ++i) {
-         KeyPressList kpl = asgs.get(i).getKeyPressList();
-         if (kpl.size() > 1) {
-            bb.putShort((short)((kpl.size() + 1) << 9));
-            for (int j = 0; j < kpl.size(); ++j) {
-               bb.putShort((short)kpl.get(j).toInt());
-            }
-         }
-      }
-      // table-terminating 0 short
-      bb.putShort((short)0);
-
-//System.out.printf("a.size() %d asgs.size() %d sm_CONFIG_SIZE %d sm_MOUSE_SPEC_SIZE %d%n", a.size(), asgs.size(), sm_CONFIG_SIZE, sm_MOUSE_SPEC_SIZE);
-//System.out.printf("endOfTwiddles %d startOfMulti %d countMulti(asgs) %d: %d%n", endOfTwiddles, startOfMulti, countMulti(asgs), startOfMulti + countMulti(asgs) + 2);
-//System.out.printf("bb.capacity() %d bb.position() %d%n", bb.capacity(), bb.position());
-
+      byte[] data = (version == 3) 
+                  ? write5(f, asgs, settings)
+                  : write4(f, asgs, settings, version);
       FileOutputStream fos = null;
       try {
          fos = new FileOutputStream(f);
@@ -165,7 +106,7 @@ public class Cfg implements Settings {
    public String toString() {
       String str = "";
       for (IntSettings is: getIntSettings().values()) {
-         if (!is.isDefault() && is.isCurrent(m_Version)) {
+         if (is.isGuiItem(m_Version) && !is.isDefault()) {
             str += Io.toCamel(is.getName()) + " " + is.getValue() + '\n';
          }
       }
@@ -180,44 +121,135 @@ public class Cfg implements Settings {
    // Private /////////////////////////////////////////////////////////////////
 
    ////////////////////////////////////////////////////////////////////////////
-   private static void write1(Settings s, ByteBuffer bb) {
+   private static byte[] write5(File f, Assignments a, Settings s) {
+      List<Assignment> mouseKeys = a.getSortedMouseKeys();
+      List<Assignment> asgs = a.to121List();
       IntSettings is = s.getIntSettings();
-      bb.putShort(otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
+      // fixed header plus assignments
+      int endOfTwiddles = 16 + asgs.size() * 4;
+      int sizeOfMulti = countMulti(mouseKeys) + countMulti(asgs);
+      if (sizeOfMulti > 0) {
+         sizeOfMulti += 4;
+      }
+      byte[] data = new byte[endOfTwiddles + sizeOfMulti];
+      ByteBuffer bb = ByteBuffer.wrap(data);
+
+      bb.put((byte)is.FORMAT_VERSION.getValue());
+      bb.put((byte)(s.getBoolSettings().toBits(3)));
+      bb.putShort(otherEndian((short)asgs.size()));
+      bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
+
+      int multiCount = writeMouseKeys(mouseKeys, bb);
+
+      bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
+      bb.put((byte)(is.KEY_REPEAT_DELAY.getValue() / 10));
+      bb.putShort((short)0);
+
+      writeAssignments(multiCount, asgs, bb);
+      if (sizeOfMulti > 0) {
+         bb.putInt((int)0);
+         writeMultikeyTable(mouseKeys, bb);
+         writeMultikeyTable(asgs, bb);
+      }
+
+      return data;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static byte[] write4(File f, Assignments a, Settings s, int version) {
+      IntSettings is = s.getIntSettings();
+      List<Assignment> asgs = a.to121List();
+      // assignments plus 1 terminating 0 int
+      int endOfTwiddles = is.CONFIG_SIZE.getValue() + (asgs.size() + 1) * 4;
+      int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
+      // plus 1 table-terminating 0 short
+      byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
+      ByteBuffer bb = ByteBuffer.wrap(data);
+
+      bb.put((byte)is.FORMAT_VERSION.getValue());
+      bb.putShort(otherEndian((short)is.CONFIG_SIZE.getValue()));
+      bb.putShort(otherEndian((short)endOfTwiddles));
+      bb.putShort(otherEndian((short)startOfMulti));
+
+      // int settings
+     if (version == 1) {
+         bb.putShort(otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
+      } else {
+         bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
+      }
       bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getValue()));
       bb.put((byte)is.START_SPEED.getValue());
       bb.put((byte)is.FAST_SPEED.getValue());
       bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
-      bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
+      bb.put((byte)(is.KEY_REPEAT_DELAY.getValue() / 10));
+      
+      bb.put((byte)(4 | s.getBoolSettings().toBits(version)));
+      writeAssignments(0, asgs, bb);
+      // terminating 0 int
+      bb.putInt(0);
 
-      BoolSettings bs = s.getBoolSettings();
-      bb.put((byte)(4
-         | (bs.ENABLE_REPEAT.is() ? 1 : 0) 
-         | (bs.ENABLE_STORAGE.is() ? 2 : 0)
-      ));
+      // mouse assignments
+      byte mouseBytes[] = new byte[] {
+         0x08, 0x00, 0x02, 0x04, 0x00, 0x04, 0x02, 0x00, 0x01, (byte)0x80, 0x00, (byte)0x82,
+         0x40, 0x00, (byte)0x84, 0x20, 0x00, (byte)0x81, 0x00, 0x08, 0x21, 0x00, 0x04, 0x11,
+         0x00, 0x02, 0x41, 0x00, (byte)0x80, (byte)0xA1, 0x00, 0x40, 0x0A, 0x00, 0x20, 0x09,
+         0x0, 0x0, 0x0,
+      };
+      bb.put(mouseBytes);
+
+      writeMultikeyTable(asgs, bb);
+      // table-terminating 0 short
+      bb.putShort((short)0);
+
+      return data;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static void write2(Settings s, ByteBuffer bb) {
-      IntSettings is = s.getIntSettings();
-      bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
-      bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getDefault()));
-      bb.put((byte)is.START_SPEED.getDefault());
-      bb.put((byte)is.FAST_SPEED.getDefault());
-      bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
-      bb.put((byte)(is.MS_REPEAT_DELAY.getValue() / 10));
-
-      BoolSettings bs = s.getBoolSettings();
-      bb.put((byte)(4
-         | (bs.ENABLE_REPEAT.is() ? 1 : 0) 
-         | (bs.ENABLE_STORAGE.is() ? 2 : 0)
-         | (bs.NO_BLUETOOTH.is() ? 8 : 0)
-         | (bs.STICKY_NUM.is() ? 16 : 0)
-         | (bs.STICKY_SHIFT.is() ? 128 : 0)
-      ));
+   private static void writeAssignments(int multiCount, List<Assignment> asgs, ByteBuffer bb) {
+      for (int i = 0; i < asgs.size(); ++i) {
+         int newMultiCount = multiCount;
+         Assignment asg = asgs.get(i);
+         KeyPressList kpl = asg.getKeyPressList();
+         for (int j = 0; j < asg.getTwiddleCount(); ++j) {
+            bb.putShort((short)asg.getTwiddle(j).toCfg());
+            newMultiCount = writeKeyPressList(multiCount, kpl, bb);
+         }
+         multiCount = newMultiCount;
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean read1(File inputFile) {
+   // Writes and increments the count (index) of multiKey sets 
+   // only if there is more than one key.
+   private static int writeKeyPressList(int multiCount, KeyPressList kpl, ByteBuffer bb) {
+      if (kpl.size() == 1) {
+         bb.putShort((short)kpl.get(0).toInt());
+         return multiCount;
+      }
+      bb.put((byte)0xFF);
+      bb.put((byte)multiCount);
+      return multiCount + 1;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static void writeMultikeyTable(List<Assignment> asgs, ByteBuffer bb) {
+      for (Assignment asg : asgs) {//int i = 0; i < asgs.size(); ++i) {
+         writeMultikey(asg.getKeyPressList(), bb);
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static void writeMultikey(KeyPressList kpl, ByteBuffer bb) {
+      if (kpl.size() > 1) {
+         bb.putShort((short)((kpl.size() + 1) << 9));
+         for (int j = 0; j < kpl.size(); ++j) {
+            bb.putShort((short)kpl.get(j).toInt());
+         }
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private boolean readBin(File inputFile) {
       if (inputFile == null) {
          Log.warn("No cfg file specified");
          return false;
@@ -237,98 +269,127 @@ public class Cfg implements Settings {
          return false;
       }
       ByteBuffer bb = ByteBuffer.wrap(data);
+      m_IntSettings.FORMAT_VERSION.setValue(bb.get() & 0xFF);
+      return (m_IntSettings.FORMAT_VERSION.getValue() == 4)
+         ? read4(bb, inputFile.getPath())
+         : read5(bb, inputFile.getPath());
+   }
 
-      m_IntSettings.MAJOR_VERSION.setValue(bb.get() & 0xFF);
-      m_IntSettings.MINOR_VERSION.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+   ////////////////////////////////////////////////////////////////////////////
+   private boolean read5(ByteBuffer bb, String path) {
+      int bits = bb.get();
+      m_BoolSettings.setFromBits(bits);
+
+      int chordMaps = otherEndian(bb.getShort()) & 0xFFFF;
+      m_IntSettings.IDLE_LIMIT.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+
+      KeyPress.clearWarned();
+      m_Assignments = new Assignments();
+      ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
+      ArrayList<Integer> whichKpl = new ArrayList<Integer>();
+      for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
+         int k = bb.getShort();
+         if (k != 0) {
+            int c = i + 1 << Chord.sm_MOUSE * 2;
+            readKeyMap(c, 0, k, path, multi, whichKpl);
+         }
+      }
+
+      m_IntSettings.MOUSE_SENSITIVITY.setValue(bb.get() & 0xFF);
+      m_IntSettings.KEY_REPEAT_DELAY.setValue((bb.get() & 0xFF) * 10);
+      otherEndian(bb.getShort());
+
+      for (int i = 0; i < chordMaps; ++i) {
+         if (bb.remaining() < 4) {
+            Log.err("Cfg file " + path + " is corrupt.");
+         }
+         int b = bb.getShort();
+         int c = toChord(b);
+         int t = toThumbKeys(b);
+         int k = bb.getShort();
+         if (!readKeyMap(c, t, k, path, multi, whichKpl)) {
+            Log.err(String.format("Format error: twiddle 0 key 0 in %s.", path));
+         }
+      }
+
+      if (multi.size() > 0) {
+         bb.getInt();
+      }
+      ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
+      for (int i = 0; i < multi.size(); ++i) {
+         KeyPressList kpl = readMultiKeys(bb, path);
+         if (kpl == null) {
+            Log.err("Cfg file " + path + " is corrupt." + String.format(" %d:%d", i, multi.size()));
+         }
+         kpls.add(kpl);
+      }
+
+      for (int i = 0; i < multi.size(); ++i) {
+         m_Assignments.add(new Assignment(multi.get(i), kpls.get(whichKpl.get(i))));
+      }
+      if (m_Assignments.isRemap()) {
+         Log.warn(m_Assignments.reportRemap(path));
+      }
+      return true;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private boolean read4(ByteBuffer bb, String path) {
+      m_IntSettings.CONFIG_SIZE.setValue(otherEndian(bb.getShort()) & 0xFFFF);
       int endOfTwiddles = otherEndian(bb.getShort()) & 0xFFFF;
       int startOfMulti = otherEndian(bb.getShort()) & 0xFFFF;
-//System.out.printf("endOfTwiddles %d 0x%x startOfMulti %d 0x%x sum %d 0x%x diff %d 0x%x%n",
-//                  endOfTwiddles, endOfTwiddles, startOfMulti, startOfMulti,
-//                  endOfTwiddles + startOfMulti, endOfTwiddles + startOfMulti,
-//                  endOfTwiddles - startOfMulti, endOfTwiddles - startOfMulti);
+
       m_IntSettings.MOUSE_EXIT_DELAY.setValue(otherEndian(bb.getShort()) & 0xFFFF);
       m_IntSettings.IDLE_LIMIT.setValue(m_IntSettings.MOUSE_EXIT_DELAY.getValue());
       m_IntSettings.MS_BETWEEN_TWIDDLES.setValue(otherEndian(bb.getShort()) & 0xFFFF);
       m_IntSettings.START_SPEED.setValue(bb.get() & 0xFF);
       m_IntSettings.FAST_SPEED.setValue(bb.get() & 0xFF);
       m_IntSettings.MOUSE_SENSITIVITY.setValue(bb.get() & 0xFF);
-      m_IntSettings.MS_REPEAT_DELAY.setValue((bb.get() & 0xFF) * 10);
-      int bits = bb.get() & 0xFF;
-//System.out.printf("bits %d%n", bits);
-      m_BoolSettings.ENABLE_REPEAT.setValue((bits & 1) != 0);
-      m_BoolSettings.ENABLE_STORAGE.setValue((bits & 2) != 0);
-      m_BoolSettings.NO_BLUETOOTH.setValue((bits & 8) != 0);
-      m_BoolSettings.STICKY_NUM.setValue((bits & 16) != 0);
-      m_BoolSettings.STICKY_SHIFT.setValue((bits & 128) != 0);
+      m_IntSettings.KEY_REPEAT_DELAY.setValue((bb.get() & 0xFF) * 10);
+
+      int bits = bb.get();
+      m_BoolSettings.setFromBits(bits);
 
       KeyPress.clearWarned();
       m_Assignments = new Assignments();
       ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
       ArrayList<Integer> whichKpl = new ArrayList<Integer>();
-      for (;;) {
-         if (bb.remaining() < 2) {
-            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
+      int c = 0;
+      int t = 0;
+      int k = 0;
+      do {
+         if (bb.remaining() < 4) {
+            Log.err("Cfg file " + path + " is corrupt.");
          }
-         short t = bb.getShort();
-         short k = bb.getShort();
-         if (t == 0 && k == 0) {
-            break;
-         }
-         if (t == 0 || k == 0) {
-            Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, inputFile.getPath()));
-         }
-         Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
-         if (k >= 0) {
-            KeyPress kp = KeyPress.fromKeyCode(k);
-            if (!kp.isValid()) {
-               Log.warn(String.format("Found invalid key code 0x%x in %s.", k, inputFile.getPath()));
-               continue;
-            }
-            KeyPressList kpl = new KeyPressList(kp);
-            m_Assignments.add(new Assignment(tw, kpl));
-//System.out.printf("1 0x%x: %s (t 0x%x) %s%n", bb.position(), tw.toString(), t, kpl.toString());
-         } else {
-            multi.add(tw);
-            whichKpl.add(k & 0xFF);
-//System.out.printf("2 0x%x: Multi: %s (t 0x%x) (k 0x%x)%n", bb.position(), tw.toString(), t, k & 0xFF);
-         }
-      }
+         int b = bb.getShort();
+         c = toChord(b);
+         t = toThumbKeys(b);
+         k = bb.getShort();
+      } while (readKeyMap(c, t, k, path, multi, whichKpl));
+
       // mouse assignments
       for (;;) {
          if (bb.remaining() < 2) {
-            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
+            Log.err("Cfg file " + path + " is corrupt.");
          }
-         short t = bb.getShort();
-         byte k = bb.get();
+         t = bb.getShort();
+         k = bb.get();
          if (t == 0 && k == 0) {
             break;
          }
          if (t == 0 || k == 0) {
-            Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, inputFile.getPath()));
+            Log.err(String.format("Format error: twiddle 0x%x key 0x%x at %d in %s.", t, k, bb.remaining() - 2, path));
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
-//System.out.printf("3 0x%x: Mouse: %s (t 0x%x) (k 0x%x)%n", bb.position(), tw.toString(), t, k);
       }
       ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
       for (;;) {
          if (bb.remaining() < 2) {
-            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
+            Log.err("Cfg file " + path + " is corrupt.");
          }
-         short s = bb.getShort();
-         if (s == 0) {
+         KeyPressList kpl = readMultiKeys(bb, path);
+         if (kpl == null) {
             break;
-         }
-         KeyPressList kpl = new KeyPressList();
-         int len = ((s >> 9) & 0xFF) - 1;
-         if (bb.remaining() < len * 2) {
-            Log.err("Cfg file " + inputFile.getPath() + " is corrupt.");
-         }
-//System.out.printf("4 0x%x: s 0x%x: len %d%n", bb.position(), s, len);
-         for (int i = 0; i < len; ++i) {
-            short k = bb.getShort();
-            KeyPress kp = KeyPress.fromKeyCode(k);
-//System.out.printf("4 0x%x: %d: %s (k 0x%x)%n", bb.position(), i, kp.toTagString(), k);
-            kpl.add(kp);
          }
          kpls.add(kpl);
       }
@@ -336,13 +397,56 @@ public class Cfg implements Settings {
          m_Assignments.add(new Assignment(multi.get(i), kpls.get(whichKpl.get(i))));
       }
       if (m_Assignments.isRemap()) {
-         Log.warn(m_Assignments.reportRemap(inputFile.getPath()));
+         Log.warn(m_Assignments.reportRemap(path));
       }
       return true;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean readText1(File f) {
+   private boolean readKeyMap(int c, int t, int k, String path, ArrayList<Twiddle> multi, ArrayList<Integer> whichKpl) {
+      if (c == 0 && t == 0 && k == 0) {
+         return false;
+      }
+      if ((c == 0 && t == 0) || k == 0) {
+         Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, path));
+      }
+      Twiddle tw = new Twiddle(c, t);
+      if (k < 0) {
+         multi.add(tw);
+         whichKpl.add(k & 0xFF);
+         return true;
+      }
+      KeyPress kp = KeyPress.fromKeyCode(k);
+      if (kp.isValid()) {
+         KeyPressList kpl = new KeyPressList(kp);
+         m_Assignments.add(new Assignment(tw, kpl));
+         return true;
+      }
+      Log.warn(String.format("Found invalid key code 0x%x in %s.", k, path));
+      return true;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static KeyPressList readMultiKeys(ByteBuffer bb, String path) {
+      int s = bb.getShort();
+      if (s == 0) {
+         return null;
+      }
+      KeyPressList kpl = new KeyPressList();
+      int len = ((s >> 9) & 0xFF) - 1;
+      if (bb.remaining() < len * 2) {
+         Log.err("Cfg file " + path + " is corrupt." + String.format(" remaining %d len * 2 %d", bb.remaining(), len * 2));
+      }
+      for (int i = 0; i < len; ++i) {
+         int k = bb.getShort();
+         KeyPress kp = KeyPress.fromKeyCode(k);
+         kpl.add(kp);
+      }
+      return kpl;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private boolean readText(File f) {
       URL url = null;
       if (f != null && f.exists() && !f.isDirectory()) {
          try {
@@ -404,13 +508,25 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   private static int writeMouseKeys(List<Assignment> asgs, ByteBuffer bb) {
+      int multiCount = 0;
+      for (Assignment a : asgs) {
+         if (a.getKeyPressList().size() == 0) {
+            bb.putShort(otherEndian((short)0));
+         } else {
+            multiCount = writeKeyPressList(multiCount, a.getKeyPressList(), bb);
+         }
+      }
+      return multiCount;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    private static int countMulti(List<Assignment> asgs) {
       int size = 0;
-      for (int i = 0; i < asgs.size(); ++i) {
-         KeyPressList kpl = asgs.get(i).getKeyPressList();
-         if (kpl.size() > 1) {
-            size += (kpl.size() + 1) * 2;
-         }
+      for (Assignment a : asgs) {
+         size += (a.getKeyPressList().size() > 1)
+               ? (a.getKeyPressList().size() + 1) * 2
+               : 0;
       }
       return size;
    }
@@ -453,7 +569,6 @@ public class Cfg implements Settings {
    }
 
    // Data ////////////////////////////////////////////////////////////////////
-   private static final int sm_CONFIG_SIZE = 16;
    private static final int sm_MOUSE_SPEC_SIZE = 39;
    private IntSettings m_IntSettings;
    private BoolSettings m_BoolSettings;

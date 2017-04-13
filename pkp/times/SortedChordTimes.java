@@ -33,7 +33,9 @@ public class SortedChordTimes implements SharedIndexableInts {
             break;
          }
          Twiddle t = new Twiddle(line);
-         if (!t.getChord().isValid()) {
+         if (t.getChord().isMouseButton()) {
+            Log.parseWarn(chordLr, String.format("Ignored mouse button \"%s\"", line));
+         } else if (!t.getChord().isChord()) {
             Log.parseWarn(chordLr, String.format("Failed to parse invalid chord \"%s\"", line));
          } else if (!t.getThumbKeys().isEmpty()) {
             Log.parseWarn(chordLr, String.format("Ignored chord with thumb keys \"%s\"", line));

@@ -84,15 +84,18 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    public Assignments() {
       super();
+      setMouseKeys(null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(Assignments asgs) {
       super(asgs);
+      setMouseKeys(asgs.getSortedMouseKeys());
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(File f) {
+      setMouseKeys(null);
       StringBuilder err = new StringBuilder();
       LineReader lr = new LineReader(Io.toExistUrl(f));
       for (;;) {
@@ -100,7 +103,10 @@ public class Assignments extends ArrayList<Assignment> {
          if (line == null) {
             break;
          }
-         add(Assignment.parseLine(line, err));
+         Assignment a = Assignment.parseLine(line, err);
+         if (a != null && a.getTwiddle(0).isValid() && a.getKeyPressList().isValid()) {
+            add(a);
+         }
          if (!"".equals(err.toString())) {
             Log.parseWarn(lr, err.toString(), line);
             err = new StringBuilder();
@@ -114,10 +120,18 @@ public class Assignments extends ArrayList<Assignment> {
    // Return a list of 1 to 1 mappings.
    public List<Assignment> to121List() {
       ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (Assignment a : this) {
-         asgs.addAll(a.separate());
+      for (Assignment asg : this) {
+         ArrayList<Assignment> sep = asg.separate();
+         for (Assignment a : sep) {
+            asgs.add(a);
+         }
       }
       return asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public List<Assignment> getSortedMouseKeys() {
+      return m_MouseKeys;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -140,10 +154,7 @@ public class Assignments extends ArrayList<Assignment> {
             }
          }
       }
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (Assignment asg: this) {
-         asgs.addAll(asg.separate());
-      }
+      List<Assignment> asgs = to121List();
       if (showAll) {
          asgs.addAll(getUnmapped(asgs));
       }
@@ -151,6 +162,11 @@ public class Assignments extends ArrayList<Assignment> {
          asgs = sort(asgs, times);
       }
       String str = "";
+      for (Assignment asg: m_MouseKeys) {
+         if (asg.getKeyPressList().size() > 0) {
+            str += asg.toString(showThumbs, format, "\n") + "\n";
+         }
+      }
       for (Assignment asg: asgs) {
          str += asg.toString(showThumbs, format, "\n") + "\n";
       }
@@ -169,7 +185,16 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean isMap(Twiddle tw) {
-      return find(tw) != -1;
+      if (find(tw) != -1) {
+         return true;
+      }
+      for (Assignment a : m_MouseKeys) {
+         if (a.getTwiddleCount() > 0 
+          && a.getTwiddle(0).equals(tw)) {
+            return true;
+         }
+      }
+      return false;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -179,11 +204,15 @@ public class Assignments extends ArrayList<Assignment> {
          return false;
       }
       if (newAsg.getTwiddleCount() > 1) {
-         Log.err("Multi-chord assignment.");
+         Log.err("Adding multi-chord assignment.");
       }
       if (isMap(newAsg.getTwiddle(0))) {
          m_Remap.add(newAsg);
          return false;
+      }
+      if (newAsg.getTwiddle(0).getChord().isMouseButton()) {
+         addMouseButton(newAsg);
+         return true;
       }
       KeyPressList kpl = newAsg.getKeyPressList();
       for (int i = 0; i < size(); ++i) {
@@ -191,7 +220,7 @@ public class Assignments extends ArrayList<Assignment> {
             set(i, Assignment.combine(get(i), newAsg));
             return true;
          }
-		}
+      }
 		super.add(newAsg);
       return true;
    }
@@ -234,8 +263,30 @@ public class Assignments extends ArrayList<Assignment> {
 
    // Private /////////////////////////////////////////////////////////////////
 
+   ////////////////////////////////////////////////////////////////////////////
+   private void setMouseKeys(List<Assignment> mouseKeys) {
+      m_MouseKeys = new ArrayList<Assignment>(3);
+      for (int i = 0; i < 3; ++i) {
+         m_MouseKeys.add(new Assignment());
+      }
+      if (mouseKeys != null) {
+         for (Assignment a : mouseKeys) {
+            addMouseButton(a);
+         }
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void addMouseButton(Assignment a) {
+      int m = a.getTwiddle(0).getChord().getRowKey(Chord.sm_MOUSE);
+      if (m != 0) {
+//System.out.printf("%d %s %s%n", m, a.getTwiddle(0), a.getKeyPressList());
+         m_MouseKeys.set(m - 1, a);
+      }
+   }
+
    ///////////////////////////////////////////////////////////////////////////////
-   private static ArrayList<Assignment> getUnmapped(ArrayList<Assignment> asgs) {
+   private static List<Assignment> getUnmapped(List<Assignment> asgs) {
       ArrayList<Assignment> unmapped = new ArrayList<Assignment>();
       for (int chord = 1; chord <= Chord.sm_VALUES; ++chord) {
          int a = 0;
@@ -255,7 +306,7 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static ArrayList<Assignment> sort(ArrayList<Assignment> asgs, SortedChordTimes times) {
+   private static List<Assignment> sort(List<Assignment> asgs, SortedChordTimes times) {
       ArrayList<Assignment> sorted = new ArrayList<Assignment>();
       ArrayList<Assignment> sortedThumbed = new ArrayList<Assignment>();
       for (int i = 0; i < times.getSize(); ++i) {
@@ -281,5 +332,6 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    // Data ////////////////////////////////////////////////////////////////////
+   private List<Assignment> m_MouseKeys;
    private ArrayList<Assignment> m_Remap = new ArrayList<Assignment>();
 }

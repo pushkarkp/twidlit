@@ -28,7 +28,7 @@ public class ChordText {
       for (int i = 1; (line = lr.readLine()) != null; ++i) {
          Twiddle tw = new Twiddle(line);
          if (tw.getThumbKeys().isEmpty()
-          && tw.getChord().isValid()) {
+          && tw.getChord().isChord()) {
             m_Lines[tw.getChord().toInt()] = line;
          }
       }

@@ -15,15 +15,15 @@ public interface Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public enum IntSettings {
-      MAJOR_VERSION("Major Version", "", 4, 0, 0, 0, -1),
-      MINOR_VERSION("Minor Version", "", 16, 0, 0, 0, -1),
+      FORMAT_VERSION("Format Version", "", 0, 4, 5, 1, -1),
+      CONFIG_SIZE("Chord-map offset", "", 16, 0, 0x7FFF, 1, 3),
       MOUSE_EXIT_DELAY("Mouse mode exit delay", " (ms)", 1500, 0, 5000, 1000, 1),
       MS_BETWEEN_TWIDDLES("Faster mouse threshold", " (ms)", 383, 0, 5000, 1000, 1),
       START_SPEED("Starting mouse speed", "", 3, 0, 10, 2, 1),
       FAST_SPEED("Fast mouse speed", "", 6, 0, 10, 2, 1),
-      MOUSE_SENSITIVITY("Mouse sensitivity", "", 128, 0, 255, 50, 3),
-      MS_REPEAT_DELAY("Key repeat delay", " (ms)", 1000, 0, 2500, 500, 3),
-      IDLE_LIMIT("Idle limit", " (s)", 1500, 0, 60000, 12000, 2);
+      MOUSE_SENSITIVITY("Mouse sensitivity", "", 128, 0, 255, 50, 7),
+      KEY_REPEAT_DELAY("Key repeat delay", " (ms)", 1000, 0, 2500, 500, 7),
+      IDLE_LIMIT("Idle limit", " (s)", 1500, 0, 60000, 12000, 6);
 
       public String toString() {
          return m_Name + " " + m_Value;
@@ -35,10 +35,6 @@ public interface Settings {
 
       public String getUnits() {
          return m_Units;
-      }
-
-      public boolean isCurrent(int version) {
-         return (m_Versions & version) != 0;
       }
 
       public int getValue() {
@@ -63,6 +59,17 @@ public interface Settings {
 
       public int getStep() {
          return m_Step;
+      }
+
+      public boolean isCurrent(int version) {
+         return (m_Versions & 1 << version - 1) != 0;
+      }
+
+      // skip immutable version and offset
+      public boolean isGuiItem(int version) {
+         return this != IntSettings.FORMAT_VERSION
+             && this != IntSettings.CONFIG_SIZE
+             && isCurrent(version);
       }
 
       public void setValue(int value) {
@@ -92,11 +99,12 @@ public interface Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public enum BoolSettings {
-      ENABLE_REPEAT("Enable key repeat", false, 3),
-      ENABLE_STORAGE("Enable mass storage", false, 1),
-      STICKY_NUM("Sticky Num button", false, 2),
-      STICKY_SHIFT("Sticky Shift button", false, 2),
-      NO_BLUETOOTH("Disable Bluetooth", false, 2);
+      ENABLE_REPEAT("Enable key repeat", true, 1, 7),
+      ENABLE_STORAGE("Enable mass storage", false, 2, 1),
+      STICKY_NUM("Sticky Num button", false, 16, 6),
+      STICKY_SHIFT("Sticky Shift button", false, 128, 6),
+      NO_BLUETOOTH("Disable Bluetooth", false, 8, 6),
+      JOYSTICK_CLICKS_LEFT("Joystick clicks left", true, 4, 4);
 
       public String toString() {
          return m_Name + " " + m_Value;
@@ -104,10 +112,6 @@ public interface Settings {
 
       public String getName() {
          return m_Name;
-      }
-
-      public boolean isCurrent(int version) {
-         return (m_Versions & version) != 0;
       }
 
       public boolean is() {
@@ -122,19 +126,71 @@ public interface Settings {
          return m_Value == m_Default;
       }
 
+      public boolean isCurrent(int version) {
+         return version == 0 || (m_Versions & 1 << version - 1) != 0;
+      }
+
       public void setValue(boolean value) {
          m_Value = value;
       }
 
-      private BoolSettings(String name, boolean def, int v) {
+      public void fromBit(int bits) {
+         m_Value = (bits & m_Bit) != 0;
+      }
+
+      public int toBit() {
+         return m_Value ? m_Bit : 0;
+      }
+
+      public int toBit(int version) {
+         return isCurrent(version) ? toBit() : 0;
+      }
+
+      static void setFromBits(int bits) {
+         for (BoolSettings s : values()) {
+           s.fromBit(bits);
+         }
+      }
+
+      static int toBits() {
+         return toBits(0);
+      }
+
+      static int toBits(int version) {
+         int bits = 0;
+         for (BoolSettings s : values()) {
+           bits |= s.toBit(version);
+         }
+         return bits;
+      }
+
+      static String allToString() {
+         return allToString(0);
+      }
+
+      static String allToString(int version) {
+         String str = "";
+         String sep = "";
+         for (BoolSettings s : values()) {
+            if (s.is() && s.isCurrent(version)) {
+               str += sep + s.getName();
+               sep = ", ";
+            }
+         }
+         return str;
+      }
+
+      private BoolSettings(String name, boolean def, int bit, int v) {
          m_Name = name;
          m_Value = def;
          m_Default = def;
+         m_Bit = bit;
          m_Versions = v;
       }
 
       private final String m_Name;
       private final int m_Versions;
+      private final int m_Bit;
       private final boolean m_Default;
       private boolean m_Value;
    }
