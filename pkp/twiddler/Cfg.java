@@ -122,36 +122,39 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    private static byte[] write5(File f, Assignments a, Settings s) {
-      List<Assignment> mouseKeys = a.getSortedMouseKeys();
+      List<Assignment> mouseKeys = a.getMouseKeys();
+      int mouseMultiCount = getMultiCount(mouseKeys);
+      int mouseMultiSize = getMultiSize(mouseKeys);
+
       List<Assignment> asgs = a.to121List();
-      IntSettings is = s.getIntSettings();
       // fixed header plus assignments
-      int endOfTwiddles = 16 + asgs.size() * 4;
-      int sizeOfMulti = countMulti(mouseKeys) + countMulti(asgs);
-      if (sizeOfMulti > 0) {
-         sizeOfMulti += 4;
+      int multiCount = getMultiCount(asgs);
+      int multiSize = getMultiSize(asgs);
+      if (multiSize > 0) {
+         multiSize += 4;
       }
-      byte[] data = new byte[endOfTwiddles + sizeOfMulti];
+
+      int endOfTwiddles = 16 + asgs.size() * 4;
+      byte[] data = new byte[endOfTwiddles + multiSize + mouseMultiCount * 4 + mouseMultiSize];
       ByteBuffer bb = ByteBuffer.wrap(data);
 
+      IntSettings is = s.getIntSettings();
       bb.put((byte)is.FORMAT_VERSION.getValue());
       bb.put((byte)(s.getBoolSettings().toBits(3)));
       bb.putShort(otherEndian((short)asgs.size()));
       bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
 
-      int multiCount = writeMouseKeys(mouseKeys, bb);
+      writeMouseKeys(multiCount, mouseKeys, bb);
 
       bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
       bb.put((byte)(is.KEY_REPEAT_DELAY.getValue() / 10));
       bb.putShort((short)0);
 
-      writeAssignments(multiCount, asgs, bb);
-      if (sizeOfMulti > 0) {
-         bb.putInt((int)0);
-         writeMultikeyTable(mouseKeys, bb);
-         writeMultikeyTable(asgs, bb);
-      }
+      writeAssignments(asgs, bb);
 
+      writeJumpInts(mouseMultiCount, multiSize, mouseKeys, bb);
+      writeMultikeyTable(asgs, bb);
+      writeMultikeyTable(mouseKeys, bb);
       return data;
    }
 
@@ -163,7 +166,7 @@ public class Cfg implements Settings {
       int endOfTwiddles = is.CONFIG_SIZE.getValue() + (asgs.size() + 1) * 4;
       int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
       // plus 1 table-terminating 0 short
-      byte[] data = new byte[startOfMulti + countMulti(asgs) + 2];
+      byte[] data = new byte[startOfMulti + getMultiSize(asgs) + 2];
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       bb.put((byte)is.FORMAT_VERSION.getValue());
@@ -184,7 +187,7 @@ public class Cfg implements Settings {
       bb.put((byte)(is.KEY_REPEAT_DELAY.getValue() / 10));
       
       bb.put((byte)(4 | s.getBoolSettings().toBits(version)));
-      writeAssignments(0, asgs, bb);
+      writeAssignments(asgs, bb);
       // terminating 0 int
       bb.putInt(0);
 
@@ -205,7 +208,8 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static void writeAssignments(int multiCount, List<Assignment> asgs, ByteBuffer bb) {
+   private static void writeAssignments(List<Assignment> asgs, ByteBuffer bb) {
+      int multiCount = 0;
       for (int i = 0; i < asgs.size(); ++i) {
          int newMultiCount = multiCount;
          Assignment asg = asgs.get(i);
@@ -232,8 +236,24 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   private static void writeJumpInts(int mouseLeft, int jumpMultiSize, List<Assignment> mouseKeys, ByteBuffer bb) {
+      if (jumpMultiSize > 0) {
+         bb.putInt(otherEndian(bb.position() + 4 * (mouseLeft + 1)));
+         jumpMultiSize -= 4;
+      }
+      for (Assignment ma : mouseKeys) {
+         int size = ma.getKeyPressList().size();
+         if (size > 1) {
+            bb.putInt(otherEndian(bb.position() + mouseLeft * 4 + jumpMultiSize));
+            --mouseLeft;
+            jumpMultiSize += (size + 1) * 2;
+         }
+      }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    private static void writeMultikeyTable(List<Assignment> asgs, ByteBuffer bb) {
-      for (Assignment asg : asgs) {//int i = 0; i < asgs.size(); ++i) {
+      for (Assignment asg : asgs) {
          writeMultikey(asg.getKeyPressList(), bb);
       }
    }
@@ -311,21 +331,26 @@ public class Cfg implements Settings {
             Log.err(String.format("Format error: twiddle 0 key 0 in %s.", path));
          }
       }
-
+      ArrayList<ArrayList<KeyPressList>> kpls = new ArrayList<ArrayList<KeyPressList>>();
       if (multi.size() > 0) {
-         bb.getInt();
+         int size = multi.size();
+         int start = 0;
+         int end = Integer.MAX_VALUE;
+         do {
+            start = otherEndian(bb.getInt());
+            end = Math.min(end, start);
+            bb.mark();
+            if (start != 0) {
+               bb.position(start);
+            }
+            kpls.add(readMultiKeys5(size, bb, path));
+            bb.reset();
+            size = 1;
+         } while (bb.position() < end);
       }
-      ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
+ 
       for (int i = 0; i < multi.size(); ++i) {
-         KeyPressList kpl = readMultiKeys(bb, path);
-         if (kpl == null) {
-            Log.err("Cfg file " + path + " is corrupt." + String.format(" %d:%d", i, multi.size()));
-         }
-         kpls.add(kpl);
-      }
-
-      for (int i = 0; i < multi.size(); ++i) {
-         m_Assignments.add(new Assignment(multi.get(i), kpls.get(whichKpl.get(i))));
+         m_Assignments.add(new Assignment(multi.get(i), kpls.get(0).get(whichKpl.get(i))));
       }
       if (m_Assignments.isRemap()) {
          Log.warn(m_Assignments.reportRemap(path));
@@ -427,19 +452,54 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   private static ArrayList<KeyPressList> readMultiKeys5(int lists, ByteBuffer bb, String path) {
+      ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
+      for (int i = 0; i < lists; ++i) {
+         KeyPressList kpl = readMultiKeys(bb, path);
+         if (kpl == null) {
+            Log.err("Cfg file " + path + " is corrupt. " + String.format(" %d:%d", i + 1, lists));
+         }
+         kpls.add(kpl);
+      }
+      return kpls;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    private static KeyPressList readMultiKeys(ByteBuffer bb, String path) {
-      int s = bb.getShort();
-      if (s == 0) {
+      // subtract the size of the size
+      int size = otherEndian(bb.getShort()) - 2;
+      if (size <= 0) {
+         return null;
+      }
+      if (bb.remaining() < size) {
+         Log.err("Cfg file " + path + " sequence table is corrupt." 
+            + String.format(" At %d [0x%x], size %d [0x%x] > remaining %d [0x%x].", bb.position(), bb.position(), size, size, bb.remaining(), bb.remaining()));
          return null;
       }
       KeyPressList kpl = new KeyPressList();
-      int len = ((s >> 9) & 0xFF) - 1;
-      if (bb.remaining() < len * 2) {
-         Log.err("Cfg file " + path + " is corrupt." + String.format(" remaining %d len * 2 %d", bb.remaining(), len * 2));
-      }
-      for (int i = 0; i < len; ++i) {
+//System.out.printf("size 0x%x [%d] position 0x%x [%d] remaining 0x%x [%d]%n", size, size, bb.position(), bb.position(), bb.remaining(), bb.remaining());
+      for (int i = 0; i < size / 2; ++i) {
          int k = bb.getShort();
          KeyPress kp = KeyPress.fromKeyCode(k);
+//System.out.printf("0x%x [%d] %s%n", k, k, kp);
+         kpl.add(kp);
+      }
+      return kpl;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static KeyPressList readMouseKeys(ByteBuffer bb, String path) {
+      if (bb.remaining() < 3) {
+         Log.err("Cfg file " + path + " mouse table is corrupt." 
+            + String.format(" At %d [0x%x], remaining %d [0x%x].", bb.position(), bb.position(), bb.remaining(), bb.remaining()));
+         return null;
+      }
+      KeyPressList kpl = new KeyPressList();
+//System.out.printf("size 0x%x [%d] position 0x%x [%d] remaining 0x%x [%d]%n", size, size, bb.position(), bb.position(), bb.remaining(), bb.remaining());
+      for (int i = 0; i < 4 / 2; ++i) {
+         int k = bb.getShort();
+         KeyPress kp = KeyPress.fromKeyCode(k);
+//System.out.printf("0x%x [%d] %s%n", k, k, kp);
          kpl.add(kp);
       }
       return kpl;
@@ -508,20 +568,29 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static int writeMouseKeys(List<Assignment> asgs, ByteBuffer bb) {
-      int multiCount = 0;
-      for (Assignment a : asgs) {
+   private static void writeMouseKeys(int multiCount, List<Assignment> mouseKeys, ByteBuffer bb) {
+      for (Assignment a : mouseKeys) {
          if (a.getKeyPressList().size() == 0) {
             bb.putShort(otherEndian((short)0));
          } else {
             multiCount = writeKeyPressList(multiCount, a.getKeyPressList(), bb);
          }
       }
-      return multiCount;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static int countMulti(List<Assignment> asgs) {
+   private static int getMultiCount(List<Assignment> asgs) {
+      int count = 0;
+      for (Assignment a : asgs) {
+         count += (a.getKeyPressList().size() > 1)
+               ? 1
+               : 0;
+      }
+      return count;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static int getMultiSize(List<Assignment> asgs) {
       int size = 0;
       for (Assignment a : asgs) {
          size += (a.getKeyPressList().size() > 1)
@@ -534,6 +603,12 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    private static short otherEndian(short s) {
       return (short)((s >> 8 & 0xFF) | (s << 8 & 0xFF00));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private static int otherEndian(int i) {
+      return (i >> 24 & 0xFF) | (i >> 8 & 0xFF00)
+           | (i << 8 & 0xFF0000) | (i << 24 & 0xFF000000);
    }
 
    /////////////////////////////////////////////////////////////////////////////

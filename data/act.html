@@ -82,8 +82,8 @@ There is no benefit to using the same mapping of chords to keystrokes as anyone 
 Twidlit has the tools for you to develop the mapping that best suits you. 
 <br><br>
 There are two conflicting imperatives in the design of a chord mapping. 
-First and foremost is the simple rule: <em>the faster the chord the more frequent its keystroke</em>, 
-and both chord speed and keystroke frequency can be measured. 
+First and foremost is the simple rule: <em>the more frequently a keystroke is used, the faster its chord should be</em>, 
+and both keystroke frequency and chord speed can be measured. 
 
 <h3>Fast and frequent</h3>
 <a href="http://norvig.com/mayzner.html">http://norvig.com/mayzner.html</a> is the best resource I've seen for generic alphabetic character frequencies, 
@@ -93,7 +93,7 @@ Emails, source code, even formatted documents saved as text, all contain a recor
 Twidlit can save a <tt><a href='syn.html#ccount'>count.keys</a></tt> file of keystrokes sorted by frequency that you can use to generate a mapping.
 <br><br>
 This is not a complete solution, there are plenty of keystrokes (such as the cursor keys) that don't leave a record. 
-It can get things into proportion though, and I have found it invaluable for source code. 
+It can get things into proportion though, and I have found it invaluable for analyzing source code. 
 
 <h3>Mnemonic structure</h3>
 Long-term, the less common keystrokes don't give your fingers enough practice to remember them without help. 
@@ -105,7 +105,7 @@ Leave the fastest chords and most frequent keystrokes free though, and then use 
 <h3>Putting it together</h3>
 Using <em>File > <a href='ref.html#map'>Create Map File</a></em> you can select a hand-coded mnemonic <a href="syn.html#cfg"><tt>cfg.chords</tt></a> file of less frequent chords, a <a href="syn.html#timed"><tt>timed.chords</tt></a> file of chords sorted by speed, and a <a href="syn.html#ccount"><tt>count.keys</tt></a> file of keystrokes sorted by frequency, and combine them into a new <tt>cfg.chords</tt> file. 
 <br><br>
-<em>File > <a href='ref.html#assess'>Assess Map File</a></em> allows you to easily find the mappings that are far enough from the ideal to be worth reconsidering. 
+<em>File > <a href='ref.html#assess'>Assess Map File</a></em> allows you to easily find the mappings in a cfg file that are far enough from the ideal to be worth reconsidering. 
 
 <h3>Chord Space Mining</h3>
 There are 255 chords, but what patterns connect them? 

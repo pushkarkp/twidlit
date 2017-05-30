@@ -90,7 +90,7 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(Assignments asgs) {
       super(asgs);
-      setMouseKeys(asgs.getSortedMouseKeys());
+      setMouseKeys(asgs.getMouseKeys());
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public List<Assignment> getSortedMouseKeys() {
+   public List<Assignment> getMouseKeys() {
       return m_MouseKeys;
    }
 
