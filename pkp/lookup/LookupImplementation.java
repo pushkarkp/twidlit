@@ -78,7 +78,7 @@ class LookupImplementation implements LookupTable, LookupSet {
    ////////////////////////////////////////////////////////////////////////////
    // return the value stored (even if a scan index)
    // or sm_NO_VALUE if none or out of range
-   @Override // Lookup
+   @Override // LookupTable
    public int get(int key1) {
       key1 -= m_Offset;
       if (0 <= key1 && key1 < m_Lookup.length) {
@@ -95,7 +95,7 @@ class LookupImplementation implements LookupTable, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
    // return the first matching index or -1
-   @Override // Lookup
+   @Override // LookupTable
    public int get(int key1, int key2) {
       int found = get(key1);
       if (found == sm_NO_VALUE) {
@@ -136,7 +136,7 @@ class LookupImplementation implements LookupTable, LookupSet {
 
    ////////////////////////////////////////////////////////////////////////////
    // return all matching indices
-   @Override // Lookup
+   @Override // LookupTable
    public int[] getAll(int key1, int key2) {
 //System.out.printf("getAll: key1 0x%x, key2 0x%x\n", key1, key2);
       int found = get(key1);

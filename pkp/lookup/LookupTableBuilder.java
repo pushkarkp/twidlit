@@ -37,7 +37,7 @@ public class LookupTableBuilder extends LookupBuilder {
             err = new StringBuilder();
          }
          if (in.length == 2) {
-            ltb.add(in[0], Lookup.sm_NO_VALUE, in[1]);
+            ltb.add(in[0], LookupTable.sm_NO_VALUE, in[1]);
          } else {
             ltb.add(in[0], in[1], in[2]);
          }
@@ -53,7 +53,7 @@ public class LookupTableBuilder extends LookupBuilder {
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean add(int key, int index) {
-      return super.newEntry(key, Lookup.sm_NO_VALUE, index);
+      return super.newEntry(key, LookupTable.sm_NO_VALUE, index);
    }
 
    ////////////////////////////////////////////////////////////////////////////
