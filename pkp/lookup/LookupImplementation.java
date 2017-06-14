@@ -4,6 +4,8 @@
  * LookupImplementation.java
  *
  * A lookup that allows multiple values and sparseness.
+ * Target values cannot be negative.
+ * Key values can be negative if offset compensates(?). 
  */
 package pkp.lookup;
 
