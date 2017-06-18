@@ -257,6 +257,7 @@ public class Chord {
    public boolean isValid() { return isChord() || isMouseButton(); }
    public boolean isChord() { return m_Value > 0 && m_Value <= sm_VALUES; }
    public boolean isMouseButton() { return (m_Value & 0x300) != 0 && (m_Value & ~0x300) == 0; }
+   public int getMouseButton() { return getFingerButton(sm_MOUSE, m_Value); }
    public String getMouseButtonName() { return getMouseButtonName(m_Value); }
    public int toInt() { return m_Value; }
    public int getFingerCount() { return countFingers(m_Value); }

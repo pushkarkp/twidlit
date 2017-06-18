@@ -141,7 +141,7 @@ class Modifiers {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   boolean isEmpty() { return m_Value == 0; }
+   boolean isEmpty() { return asButtons().toInt() == 0; }
    boolean isCtrl() { return (m_Value & sm_iBOTH_CTRL) != 0; }
    boolean isShift() { return (m_Value & sm_iBOTH_SHIFT) != 0; }
    boolean isAlt() { return (m_Value & sm_iBOTH_ALT) != 0; }

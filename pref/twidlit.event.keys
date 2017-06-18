@@ -7,6 +7,11 @@
 # Entries are of the form:
 # <key code> <event code>
 #
+# hack in codes for mouse buttons
+\k00e1 0x01 # MouseLeft
+\k00e2 0x02 # MouseMiddle
+\k00e3 0x03 # MouseRight
+#
 \k0400 0x12 # Alt
 \k0051 0x28 # ArrowDown
 \k0050 0x25 # ArrowLeft

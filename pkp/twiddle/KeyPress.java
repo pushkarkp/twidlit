@@ -7,6 +7,7 @@
 
 package pkp.twiddle;
 
+import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.net.URL;
@@ -197,8 +198,8 @@ public class KeyPress {
       m_Modifiers = modifiers;
       // catch unnamed keys early
       if (toString() == null) {
-			m_KeyCode = 0;
-			m_Modifiers = Modifiers.sm_EMPTY;
+         m_KeyCode = 0;
+         m_Modifiers = Modifiers.sm_EMPTY;
       }
    }
 
@@ -319,6 +320,16 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress parseMouseEvent(MouseEvent me) {
+      int mouseCode = sm_KeyEventToCode.get(me.getButton());
+      if (mouseCode < 0) {
+         Log.log(String.format("Mouse event button code %d has no key code.", me.getButton()));
+         return new KeyPress();
+      }
+      return new KeyPress(mouseCode & sm_KEYS, Modifiers.fromKeyCode(0));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static KeyPress parseEvent(KeyEvent ke) {
       int keyCode = sm_KeyEventToCode.get(ke.getKeyCode());
 //System.out.printf("java key code 0x%x -> 0x%x side %d%n", ke.getKeyCode(), sm_KeyEventToCode.get(ke.getKeyCode()), ke.getKeyLocation());
@@ -421,7 +432,9 @@ public class KeyPress {
 
    ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
-   public boolean isValid() { return m_KeyCode != 0 || !m_Modifiers.isEmpty(); }
+   public boolean isKey() { return m_KeyCode != 0; }
+   public boolean isMouseButton() { return false; }
+   public boolean isValid() { return isKey() || !m_Modifiers.isEmpty(); }
    public boolean isModifiers() { return m_KeyCode == 0; }
    public boolean isPrintable() { return !sm_Unprintable.is(m_KeyCode); }
    public boolean isDuplicate() { return sm_Duplicate.is(m_KeyCode); }
@@ -441,7 +454,7 @@ public class KeyPress {
    private KeyPress(KeyPress kp) {
       m_KeyCode = kp.m_KeyCode;
       m_Modifiers = kp.m_Modifiers;
-   }
+  }
 
    ////////////////////////////////////////////////////////////////////////////
    private static String keyCodeToTagString(int i) {
@@ -543,3 +556,4 @@ public class KeyPress {
       }
    }
 }
+   

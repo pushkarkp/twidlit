@@ -9,6 +9,8 @@ package pkp.twidlit;
 import java.awt.*;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.ActionListener;
@@ -35,7 +37,9 @@ import pkp.util.Log;
 import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
-class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, KeyListener, ActionListener, Log.Quitter {
+class Twidlit 
+   extends PersistentFrame 
+   implements TwidlitInit, WindowListener, MouseListener, KeyListener, ActionListener, Log.Quitter {
 
    ////////////////////////////////////////////////////////////////////////////////
    // Gathers initial settings so source can be created once only.
@@ -86,6 +90,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
       addWindowListener(this);
+      addMouseListener(this);
       addKeyListener(this);
       setTitle(getClass().getSimpleName());
       setPersistName("#." + getClass().getSimpleName());
@@ -278,6 +283,22 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    public void windowClosing(WindowEvent e) { quit(0); }
 
    ////////////////////////////////////////////////////////////////////////////
+   @Override // MouseListener
+   public void mouseReleased(MouseEvent e) {}
+   @Override // MouseListener
+   public void mouseEntered(MouseEvent e) {}
+   @Override // MouseListener
+   public void mouseExited(MouseEvent e) {}
+   @Override // MouseListener
+   public void mouseClicked(MouseEvent e) {}
+
+   ////////////////////////////////////////////////////////////////////////////
+   @Override // MouseListener
+   public void mousePressed(MouseEvent e) { 
+      keyPressed(KeyPress.parseMouseEvent(e), e.getWhen());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    @Override // KeyListener
    public void keyTyped(KeyEvent e) {}
    @Override // KeyListener
@@ -286,26 +307,7 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
    ////////////////////////////////////////////////////////////////////////////
    @Override // KeyListener
    public void keyPressed(KeyEvent e) {
-      KeyPress kp = KeyPress.parseEvent(e);
-//System.out.printf("keyPressed(0x%x) %s%n", e.getKeyCode(), kp);
-      // ignore invisible keys such as bare shift or control
-      if (kp.isModifiers()) {
-         return;
-      }
-//System.out.printf("pressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
-      m_TimerKeyWait.restart();
-      if (m_KeyStartMs != 0) {
-         Log.log(String.format("keyPressed event %dms now %dms", 
-                  (int)(e.getWhen() - m_KeyStartMs),
-                  (int)(System.currentTimeMillis() - m_KeyStartMs)));
-      }
-      m_KeyStartMs = System.currentTimeMillis();
-      // store time of arrival of first key press
-      if (m_TimeMs == 0) {
-         m_TimeMs = (int)(e.getWhen() - m_StartTimeMs);
-//System.out.printf("e.getWhen() %d m_StartTimeMs %d m_TimeMs %d limit %d%n", e.getWhen(), m_StartTimeMs, m_TimeMs, 2 * m_TwiddlerWindow.getProgressMax());
-      }
-      m_KeysPressed.add(kp);
+      keyPressed(KeyPress.parseEvent(e), e.getWhen());
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -319,7 +321,6 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       m_TimerKeyWait.stop();
       m_TextPanel.setPressed(m_KeysPressed.toString(KeyPress.Format.FILE));
       // convert keys to twiddle
-//System.out.println("actionPerformed m_KeysPressed " + m_KeysPressed.toString());
       Assignment pressed = m_KeysPressed.findLongestPrefix(m_KeyMap);
       if (pressed == null) {
          // no matching twiddle
@@ -346,7 +347,8 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
       } else {
          // only accept chord if not timing or successfully timed
          m_TextPanel.next(
-            !m_Timed
+               !m_Timed
+            || tw.getChord().isMouseButton()
             // only record times within 2* progress bar
             || (m_TimeMs < (int)(0.5 + m_ProgressFactor * m_TwiddlerWindow.getProgressMax())
              && m_ChordTimes.add(tw.getChord().toInt(),
@@ -396,6 +398,27 @@ class Twidlit extends PersistentFrame implements TwidlitInit, WindowListener, Ke
          m_ChordTimes.persist("");
       }
       m_ChordTimes = new ChordTimes(keys, isRightHand());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void keyPressed(KeyPress kp, long when) {
+//System.out.printf("pressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
+      // ignore invisible keys such as bare shift or control
+      if (kp.isModifiers()) {
+         return;
+      }
+      m_TimerKeyWait.restart();
+      if (m_KeyStartMs != 0) {
+         Log.log(String.format("keyPressed event %dms now %dms", 
+                  (int)(when - m_KeyStartMs),
+                  (int)(System.currentTimeMillis() - m_KeyStartMs)));
+      }
+      m_KeyStartMs = System.currentTimeMillis();
+      // store time of arrival of first key press
+      if (m_TimeMs == 0) {
+         m_TimeMs = (int)(when - m_StartTimeMs);
+      }
+      m_KeysPressed.add(kp);
    }
 
    // Data /////////////////////////////////////////////////////////////////////

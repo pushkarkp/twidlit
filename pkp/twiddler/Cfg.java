@@ -85,7 +85,8 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean hasAssignments() {
-      return m_Assignments != null && m_Assignments.size() > 0;
+      return m_Assignments != null 
+          && !m_Assignments.isEmpty();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -122,11 +123,11 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    private static byte[] write5(File f, Assignments a, Settings s) {
-      List<Assignment> mouseKeys = a.getMouseKeys();
+      List<Assignment> mouseKeys = a.toSortedMouseButtons();
       int mouseMultiCount = getMultiCount(mouseKeys);
       int mouseMultiSize = getMultiSize(mouseKeys);
 
-      List<Assignment> asgs = a.to121List();
+      List<Assignment> asgs = a.to121ChordList();
       // fixed header plus assignments
       int multiCount = getMultiCount(asgs);
       int multiSize = getMultiSize(asgs);
@@ -161,7 +162,7 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    private static byte[] write4(File f, Assignments a, Settings s, int version) {
       IntSettings is = s.getIntSettings();
-      List<Assignment> asgs = a.to121List();
+      List<Assignment> asgs = a.to121ChordList();
       // assignments plus 1 terminating 0 int
       int endOfTwiddles = is.CONFIG_SIZE.getValue() + (asgs.size() + 1) * 4;
       int startOfMulti = endOfTwiddles + sm_MOUSE_SPEC_SIZE;
@@ -305,8 +306,8 @@ public class Cfg implements Settings {
 
       KeyPress.clearWarned();
       m_Assignments = new Assignments();
-      ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
-      ArrayList<Integer> whichKpl = new ArrayList<Integer>();
+      List<Twiddle> multi = new ArrayList<Twiddle>();
+      List<Integer> whichKpl = new ArrayList<Integer>();
       for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
          int k = bb.getShort();
          if (k != 0) {
@@ -331,7 +332,7 @@ public class Cfg implements Settings {
             Log.err(String.format("Format error: twiddle 0 key 0 in %s.", path));
          }
       }
-      ArrayList<ArrayList<KeyPressList>> kpls = new ArrayList<ArrayList<KeyPressList>>();
+      List<ArrayList<KeyPressList>> kpls = new ArrayList<ArrayList<KeyPressList>>();
       if (multi.size() > 0) {
          int size = multi.size();
          int start = 0;
@@ -377,8 +378,8 @@ public class Cfg implements Settings {
 
       KeyPress.clearWarned();
       m_Assignments = new Assignments();
-      ArrayList<Twiddle> multi = new ArrayList<Twiddle>();
-      ArrayList<Integer> whichKpl = new ArrayList<Integer>();
+      List<Twiddle> multi = new ArrayList<Twiddle>();
+      List<Integer> whichKpl = new ArrayList<Integer>();
       int c = 0;
       int t = 0;
       int k = 0;
@@ -407,7 +408,7 @@ public class Cfg implements Settings {
          }
          Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
       }
-      ArrayList<KeyPressList> kpls = new ArrayList<KeyPressList>();
+      List<KeyPressList> kpls = new ArrayList<KeyPressList>();
       for (;;) {
          if (bb.remaining() < 2) {
             Log.err("Cfg file " + path + " is corrupt.");
@@ -428,7 +429,7 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private boolean readKeyMap(int c, int t, int k, String path, ArrayList<Twiddle> multi, ArrayList<Integer> whichKpl) {
+   private boolean readKeyMap(int c, int t, int k, String path, List<Twiddle> multi, List<Integer> whichKpl) {
       if (c == 0 && t == 0 && k == 0) {
          return false;
       }

@@ -382,7 +382,7 @@ public class ChordMapper extends ControlDialog
       m_Assigns = new ArrayList<Assignment>();
       m_MaxAssignLength = 0;
       m_Assessments = new ArrayList<String>();
-      List<Assignment> mapped = (new Assignments(mappedF)).to121List();
+      List<Assignment> mapped = (new Assignments(mappedF)).to121ChordList();
       for (Assignment asg: mapped) {
          int chordPos = m_ChordTimes.findChord(asg.getTwiddle(0).getChord().toString());
          if (chordPos == -1) {

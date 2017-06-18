@@ -30,7 +30,7 @@ public class ChordSource implements KeyPressListSource {
    public ChordSource(KeyMap keyMap, int[] counts) {
       m_KeyMap = keyMap;
       m_Counts = counts;
-      if (m_KeyMap == null || m_KeyMap.getAssignments().to121List().size() == 0) {
+      if (m_KeyMap == null || m_KeyMap.getAssignments().isEmpty()) {
          Log.err("There were no assignments in the configuration.");
       }
       int maxCount = 1;

@@ -2,6 +2,12 @@
  * Copyright 2015 Pushkar Piggott
  *
  * Assignments.java
+ *
+ * An assignment maps each KeyPressList to all its twiddles.
+ * toSortedMouseButtons() returns a list of all 3 mouse twiddles,
+ * each with their KeyPressList, if any.
+ * to121ChordList() returns a list of all defined chord twiddles
+ * in order, each with their KeyPressList, if any.
  */
 
 package pkp.twiddle;
@@ -84,18 +90,15 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    public Assignments() {
       super();
-      setMouseKeys(null);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(Assignments asgs) {
       super(asgs);
-      setMouseKeys(asgs.getMouseKeys());
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Assignments(File f) {
-      setMouseKeys(null);
       StringBuilder err = new StringBuilder();
       LineReader lr = new LineReader(Io.toExistUrl(f));
       for (;;) {
@@ -116,22 +119,40 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   // An assignment maps one OR MORE chords to a keypress list.
-   // Return a list of 1 to 1 mappings.
-   public List<Assignment> to121List() {
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
+   // An assignment maps one KeyPressList to all its twiddles.
+   // This returns a list of all defined chord twiddles each,
+   // with their KeyPressList.
+   public List<Assignment> to121ChordList() {
+      List<Assignment> asgs = new ArrayList<Assignment>();
       for (Assignment asg : this) {
-         ArrayList<Assignment> sep = asg.separate();
+         List<Assignment> sep = asg.separate();
          for (Assignment a : sep) {
-            asgs.add(a);
+            if (!a.getTwiddle(0).getChord().isMouseButton()) {
+               asgs.add(a);
+            }
          }
       }
       return asgs;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public List<Assignment> getMouseKeys() {
-      return m_MouseKeys;
+   // Returns a list of all 3 mouse twiddles,
+   // in order, each with their KeyPressList, if any.
+   public List<Assignment> toSortedMouseButtons() {
+      List<Assignment> asgs = new ArrayList<Assignment>(3);
+      for (int i = 0; i < 3; ++i) {
+         asgs.add(new Assignment());
+      }
+      for (Assignment asg : this) {
+         List<Assignment> sep = asg.separate();
+         for (Assignment a : sep) {
+            Chord c = a.getTwiddle(0).getChord();
+            if (c.isMouseButton()) {
+               asgs.set(c.getMouseButton() - 1, a);
+            }
+         }
+      }
+      return asgs;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -154,7 +175,11 @@ public class Assignments extends ArrayList<Assignment> {
             }
          }
       }
-      List<Assignment> asgs = to121List();
+      List<Assignment> asgs = toSortedMouseButtons();
+      List<Assignment> c = to121ChordList();
+      for (Assignment a : c) {
+         asgs.add(a);
+      }
       if (showAll) {
          asgs.addAll(getUnmapped(asgs));
       }
@@ -162,11 +187,6 @@ public class Assignments extends ArrayList<Assignment> {
          asgs = sort(asgs, times);
       }
       String str = "";
-      for (Assignment asg: m_MouseKeys) {
-         if (asg.getKeyPressList().size() > 0) {
-            str += asg.toString(showThumbs, format, "\n") + "\n";
-         }
-      }
       for (Assignment asg: asgs) {
          str += asg.toString(showThumbs, format, "\n") + "\n";
       }
@@ -185,16 +205,7 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean isMap(Twiddle tw) {
-      if (find(tw) != -1) {
-         return true;
-      }
-      for (Assignment a : m_MouseKeys) {
-         if (a.getTwiddleCount() > 0 
-          && a.getTwiddle(0).equals(tw)) {
-            return true;
-         }
-      }
-      return false;
+      return find(tw) != -1;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -209,10 +220,6 @@ public class Assignments extends ArrayList<Assignment> {
       if (isMap(newAsg.getTwiddle(0))) {
          m_Remap.add(newAsg);
          return false;
-      }
-      if (newAsg.getTwiddle(0).getChord().isMouseButton()) {
-         addMouseButton(newAsg);
-         return true;
       }
       KeyPressList kpl = newAsg.getKeyPressList();
       for (int i = 0; i < size(); ++i) {
@@ -263,31 +270,9 @@ public class Assignments extends ArrayList<Assignment> {
 
    // Private /////////////////////////////////////////////////////////////////
 
-   ////////////////////////////////////////////////////////////////////////////
-   private void setMouseKeys(List<Assignment> mouseKeys) {
-      m_MouseKeys = new ArrayList<Assignment>(3);
-      for (int i = 0; i < 3; ++i) {
-         m_MouseKeys.add(new Assignment());
-      }
-      if (mouseKeys != null) {
-         for (Assignment a : mouseKeys) {
-            addMouseButton(a);
-         }
-      }
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void addMouseButton(Assignment a) {
-      int m = a.getTwiddle(0).getChord().getRowKey(Chord.sm_MOUSE);
-      if (m != 0) {
-//System.out.printf("%d %s %s%n", m, a.getTwiddle(0), a.getKeyPressList());
-         m_MouseKeys.set(m - 1, a);
-      }
-   }
-
    ///////////////////////////////////////////////////////////////////////////////
    private static List<Assignment> getUnmapped(List<Assignment> asgs) {
-      ArrayList<Assignment> unmapped = new ArrayList<Assignment>();
+      List<Assignment> unmapped = new ArrayList<Assignment>();
       for (int chord = 1; chord <= Chord.sm_VALUES; ++chord) {
          int a = 0;
          for (; a < asgs.size(); ++a) {
@@ -307,8 +292,8 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    private static List<Assignment> sort(List<Assignment> asgs, SortedChordTimes times) {
-      ArrayList<Assignment> sorted = new ArrayList<Assignment>();
-      ArrayList<Assignment> sortedThumbed = new ArrayList<Assignment>();
+      List<Assignment> sorted = new ArrayList<Assignment>();
+      List<Assignment> sortedThumbed = new ArrayList<Assignment>();
       for (int i = 0; i < times.getSize(); ++i) {
          String label = times.getSortedLabel(i);
          int chord = Chord.fromString(label);
@@ -332,6 +317,5 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    // Data ////////////////////////////////////////////////////////////////////
-   private List<Assignment> m_MouseKeys;
-   private ArrayList<Assignment> m_Remap = new ArrayList<Assignment>();
+   private List<Assignment> m_Remap = new ArrayList<Assignment>();
 }

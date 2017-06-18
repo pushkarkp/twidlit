@@ -4,6 +4,11 @@
 # A list of the names of the keys.
 # see www.w3.org/TR/DOM-Level-3-Events-code
 #
+# hack in codes for mouse buttons
+\k00e1 MouseLeft
+\k00e2 MouseMiddle
+\k00e3 MouseRight
+#
 \k0400 Alt
 #\k0400 AltLeft
 \k4000 AltRight
