@@ -16,11 +16,6 @@ import pkp.util.Log;
 ///////////////////////////////////////////////////////////////////////////////
 public class Twiddle extends java.lang.Object {
 
-	//////////////////////////////////////////////////////////////////////////
-	public interface Restricter {
-	   public boolean isAllowed(Twiddle t);
-	}
-
    ////////////////////////////////////////////////////////////////////////////
    public static ArrayList<Twiddle> read(URL url) {
       LineReader lr = new LineReader(url, Io.sm_MUST_EXIST);
@@ -56,7 +51,7 @@ public class Twiddle extends java.lang.Object {
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(int twiddle) {
-      m_Chord = new Chord(twiddle & Chord.sm_VALUES_WITH_MOUSE);
+      m_Chord = new Chord(twiddle & Chord.sm_VALUES);
       m_ThumbKeys = new ThumbKeys((twiddle >> 8) & ThumbKeys.sm_VALUES);
    }
 

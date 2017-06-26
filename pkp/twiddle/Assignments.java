@@ -143,16 +143,32 @@ public class Assignments extends ArrayList<Assignment> {
       for (int i = 0; i < 3; ++i) {
          asgs.add(new Assignment());
       }
-      for (Assignment asg : this) {
-         List<Assignment> sep = asg.separate();
-         for (Assignment a : sep) {
-            Chord c = a.getTwiddle(0).getChord();
-            if (c.isMouseButton()) {
-               asgs.set(c.getMouseButton() - 1, a);
-            }
+      List<Assignment> mbs = toMouseButtons();
+      for (Assignment a : mbs) {
+         if (!a.isDefaultMouse()) {
+            asgs.set(a.getTwiddle(0).getChord().getMouseButton() - 1, 
+                     a);
          }
       }
       return asgs;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public List<Assignment> toMouseButtons() {
+      List<Assignment> mbs = new ArrayList<Assignment>(3);
+      for (Assignment asg : this) {
+         List<Assignment> sep = asg.separate();
+         for (Assignment a : sep) {
+            if (a.getTwiddle(0).getChord().isMouseButton()
+             && !a.isDefaultMouse()) {
+               mbs.add(a);
+            }
+         }
+      }
+      if (mbs.size() > 3) {
+         Log.warn("Found more than 3 mouse button mappings.");
+      }
+      return mbs;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -175,7 +191,7 @@ public class Assignments extends ArrayList<Assignment> {
             }
          }
       }
-      List<Assignment> asgs = toSortedMouseButtons();
+      List<Assignment> asgs = toMouseButtons();
       List<Assignment> c = to121ChordList();
       for (Assignment a : c) {
          asgs.add(a);

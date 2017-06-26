@@ -107,6 +107,16 @@ public class Assignment extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean isDefaultMouse() {
+      return m_Twiddles.size() == 1 
+          && m_Twiddles.get(0).getChord().isMouseButton()
+          && m_Twiddles.get(0).getThumbKeys().isEmpty()
+          && m_KeyPressList.size() == 1
+          && m_KeyPressList.get(0).equals( 
+             KeyPress.fromMouseButton(m_Twiddles.get(0).getChord().getMouseButton()));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public boolean isThumbed() {
       for (int i = 0; i < m_Twiddles.size(); ++i) {
          if (!m_Twiddles.get(i).getThumbKeys().isEmpty()) {

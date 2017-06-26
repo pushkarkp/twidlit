@@ -166,12 +166,20 @@ public class KeyPress {
    public static KeyPress endModifiers() {
       return new KeyPress(0, Modifiers.sm_EMPTY);
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    public static KeyPress fromKeyCode(int keyCode) {
       return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCode(keyCode));
    }
-   
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static KeyPress fromMouseButton(int button) {
+      if (button < 1 || button > 3) {
+         Log.err(String.format("Expected mouse button in [1..3], found %d.", button));
+      }
+      return new KeyPress(sm_KeyCodeToName.getInt(sm_MOUSE_BUTTON_NAMES[button - 1], 0), Modifiers.sm_EMPTY);
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    // a legal empty kp (!isValid())
    public KeyPress() {
@@ -505,6 +513,8 @@ public class KeyPress {
    }
    
    // Data ////////////////////////////////////////////////////////////////////
+   private static final String[] sm_MOUSE_BUTTON_NAMES = 
+      new String[]{"MouseLeft", "MouseMiddle", "MouseRight"};
    private static final int sm_KEYS = 0xFF;
    private static Format sm_DisplayFormat;
    private static Format sm_FileFormat;
