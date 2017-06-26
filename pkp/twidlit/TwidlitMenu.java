@@ -40,7 +40,7 @@ import pkp.util.*;
 
 ////////////////////////////////////////////////////////////////////////////////
 class TwidlitMenu extends PersistentMenuBar 
-   implements ActionListener, ItemListener, SaveChordsWindow.ContentForTitle, Persistent {
+   implements ActionListener, ItemListener, StringUser, SaveChordsWindow.ContentForTitle, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    TwidlitMenu(Twidlit twidlit) {
@@ -58,7 +58,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(fileMenu, sm_FILE_GROUP_CHORDS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_TWIDDLER_SETTINGS_TEXT);
-      m_SettingsWindow = new SettingsWindow(new Cfg());
+      m_SettingsWindow = new SettingsWindow(new Cfg(), this);
       add(fileMenu, sm_FILE_PREF_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_QUIT_TEXT);
@@ -154,7 +154,7 @@ class TwidlitMenu extends PersistentMenuBar
       useOtherTimed();
       // use the gathered settings to set up the source
       m_Twidlit.initialize(m_TwidlitInit);
-      m_Twidlit.extendTitle(cfgFileName);
+      extendTitle(cfgFileName);
       if (!isChords() && m_Twidlit.isChords()) {
          // set keystrokes failed
          setChords();
@@ -165,6 +165,12 @@ class TwidlitMenu extends PersistentMenuBar
       setStateFromCheckItems();
    }
    
+   ///////////////////////////////////////////////////////////////////
+   @Override // StringUser
+   public void stringUpdate(int which, String str) {
+      extendTitle(m_CfgFName);
+   }
+
    ///////////////////////////////////////////////////////////////////
    @Override // ActionListener
    public void actionPerformed(ActionEvent e) {
@@ -358,7 +364,7 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_USE_ALL_CHORDS_TEXT: {
          setCfg(null);
          m_CfgFName = "";
-         m_Twidlit.extendTitle(m_CfgFName);
+         extendTitle(m_CfgFName);
          m_SaveChordsWindow.dispose();
          m_SaveChordsWindow = null;
          return;
@@ -564,12 +570,14 @@ class TwidlitMenu extends PersistentMenuBar
 
    ///////////////////////////////////////////////////////////////////
    private HtmlWindow showHtml(HtmlWindow hw, String title, String path) {
-      if (hw != null) {
-         hw.toFront();
-         hw.goTo(getClass().getResource(path).toString());
-      } else {
+      if (hw == null) {
          hw = new HtmlWindow(getClass().getResource(path));
          hw.setTitle(title);
+      } else {
+         if (hw != m_AboutWindow) {
+            hw.goTo(getClass().getResource(path).toString());
+         }
+         hw.toFront();
       }
       if (!hw.isVisible()) {
          hw.setVisible(true);
@@ -640,6 +648,16 @@ class TwidlitMenu extends PersistentMenuBar
    }
 
    ///////////////////////////////////////////////////////////////////
+   private void extendTitle(String cfgFName) {
+      String v = Integer.toString(m_SettingsWindow.getIntSettings().FORMAT_VERSION.getValue()); 
+      m_Twidlit.extendTitle(
+         "".equals(cfgFName) 
+         ? "cfg v" + v
+         : cfgFName + " (v" + v + ")"
+      );
+   }
+
+   ///////////////////////////////////////////////////////////////////
    private void setCfg(Cfg cfg) {
       m_AllChordsItem.setEnabled(cfg != null);
       if (cfg == null) {
@@ -653,7 +671,7 @@ class TwidlitMenu extends PersistentMenuBar
       if (settingsVisible) {
          m_SettingsWindow.setVisible(false);
       }
-      m_SettingsWindow = new SettingsWindow(cfg);
+      m_SettingsWindow = new SettingsWindow(cfg, this);
       if (settingsVisible) {
          m_SettingsWindow.setVisible(true);
       }
@@ -721,7 +739,7 @@ class TwidlitMenu extends PersistentMenuBar
                   // set only after success, or will fail next startup
                   m_CfgDir = f.getParent();
                   m_CfgFName = f.getName();
-                  m_Twidlit.extendTitle(m_CfgFName);
+                  extendTitle(m_CfgFName);
                }
                return;
             }

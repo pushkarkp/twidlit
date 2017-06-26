@@ -22,6 +22,7 @@ import pkp.ui.ControlWindow;
 import pkp.util.Persist;
 import pkp.util.Persistent;
 import pkp.util.Pref;
+import pkp.util.StringUser;
 
 ///////////////////////////////////////////////////////////////////////////////
 public class SettingsWindow 
@@ -29,12 +30,13 @@ public class SettingsWindow
    implements Settings, Persistent, ActionListener  {
 
    ////////////////////////////////////////////////////////////////////////////
-   public SettingsWindow(Settings cfg) {
+   public SettingsWindow(Settings cfg, StringUser su) {
       super("Twiddler Settings");
       m_SliderHeight = Pref.getInt("#.slider.height");
       m_SliderStepWidth = Pref.getInt("#.slider.step.width");
       m_IntCfg = cfg.getIntSettings();
       m_BoolCfg = cfg.getBoolSettings();
+      m_StringUser = su;
       int persistVersion = versionNameToInt(Persist.get(sm_VERSION_PERSIST, "5.3"));
       if (m_IntCfg.FORMAT_VERSION.getValue() == 0) {
          m_IntCfg.FORMAT_VERSION.setValue(sm_VERSION_NAMES[persistVersion - 1].charAt(0) - '0');
@@ -120,6 +122,7 @@ public class SettingsWindow
       m_TwiddlerVersionButton.setText("" + m_TwiddlerVersion);
       m_FileVersionButton.setText("" + m_IntCfg.FORMAT_VERSION.getValue());
       showSettings(m_SettingsPanel);
+      m_StringUser.stringUpdate(1, String.format("%d", m_IntCfg.FORMAT_VERSION.getValue()));
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -219,4 +222,5 @@ public class SettingsWindow
    private JPanel m_BoolPanel;
    private IntSettings m_IntCfg;
    private BoolSettings m_BoolCfg;
+   private StringUser m_StringUser;
 }
