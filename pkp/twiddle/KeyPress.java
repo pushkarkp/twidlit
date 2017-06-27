@@ -177,7 +177,9 @@ public class KeyPress {
       if (button < 1 || button > 3) {
          Log.err(String.format("Expected mouse button in [1..3], found %d.", button));
       }
-      return new KeyPress(sm_KeyCodeToName.getInt(sm_MOUSE_BUTTON_NAMES[button - 1], 0), Modifiers.sm_EMPTY);
+      String name = Pref.get(sm_MOUSE_BUTTON_PREFS[button - 1], 
+                             sm_MOUSE_BUTTON_DEFAULTS[button - 1]);
+      return new KeyPress(sm_KeyCodeToName.getInt(name, 0), Modifiers.sm_EMPTY);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -513,8 +515,14 @@ public class KeyPress {
    }
    
    // Data ////////////////////////////////////////////////////////////////////
-   private static final String[] sm_MOUSE_BUTTON_NAMES = 
-      new String[]{"MouseLeft", "MouseMiddle", "MouseRight"};
+   private static final String[] sm_MOUSE_BUTTON_PREFS = 
+      new String[]{"#.mouse.left",     // _PREF
+                   "#.mouse.middle",   // _PREF
+                   "#.mouse.right"};   // _PREF
+   private static final String[] sm_MOUSE_BUTTON_DEFAULTS = 
+      new String[]{"MouseLeft",
+                   "MouseMiddle",
+                   "MouseRight"};
    private static final int sm_KEYS = 0xFF;
    private static Format sm_DisplayFormat;
    private static Format sm_FileFormat;
