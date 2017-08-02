@@ -74,7 +74,7 @@ public class SortedChordTimes implements SharedIndexableInts {
             m_Times[i] = sm_EMPTY;
          }
          int range = times.getRange(i + 1, 0);
-         m_Labels[i] = (new Chord(i + 1)).toString()
+         m_Labels[i] = Chord.fromChordValue(i + 1).toString()
                      + ((m_Times[i] == sm_EMPTY)
                         ? "" 
                         : String.format(" %d %d (", m_Times[i], range)

@@ -39,7 +39,7 @@ public class Twiddle extends java.lang.Object {
    
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle() {
-      m_Chord = new Chord(0);
+      m_Chord = Chord.fromChordValue(0);
       m_ThumbKeys = new ThumbKeys(0);
    }
 
@@ -50,20 +50,26 @@ public class Twiddle extends java.lang.Object {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public Twiddle(Chord chord) {
+      m_Chord = chord;
+      m_ThumbKeys = new ThumbKeys(0);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public Twiddle(int twiddle) {
-      m_Chord = new Chord(twiddle & Chord.sm_VALUES);
+      m_Chord = Chord.fromChordValue(twiddle);
       m_ThumbKeys = new ThumbKeys((twiddle >> 8) & ThumbKeys.sm_VALUES);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(int chord, int thumbKeys) {
-      m_Chord = new Chord(chord & Chord.sm_VALUES_WITH_MOUSE);
+      m_Chord = Chord.fromChordValue(chord);
       m_ThumbKeys = new ThumbKeys(thumbKeys & ThumbKeys.sm_VALUES);
    }
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle(Twiddle tw, Modifiers m) {
-      m_Chord = new Chord(tw.getChord().toInt());
+      m_Chord = tw.getChord();
       m_ThumbKeys = new ThumbKeys(tw.getThumbKeys().toInt() | ThumbKeys.fromModifiers(m));
    }
 
@@ -78,7 +84,7 @@ public class Twiddle extends java.lang.Object {
          m_ThumbKeys = new ThumbKeys(str.substring(0, split));
          m_Chord = new Chord(str.substring(split));
          if (!m_ThumbKeys.isEmpty() && m_Chord.isMouseButton()) {
-            Log.warn("Ignoring thumb keys with " + m_Chord.getMouseButtonName() + " mouse button");
+            Log.warn("Ignoring thumb keys with mouse button " + m_Chord);
             m_ThumbKeys = new ThumbKeys(0);
          }
       }

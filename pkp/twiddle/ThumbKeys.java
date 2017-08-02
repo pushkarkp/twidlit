@@ -162,7 +162,7 @@ public class ThumbKeys extends java.lang.Object {
             cfg |= 1 << i * 4;
          }
       }
-      return (cfg & 0xF0) >> 4 | (cfg & 0xF) << 4 | (cfg & 0xFF00);
+      return (cfg & 0xF0) << 4 | (cfg & 0xF) << 12 | (cfg >> 8);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -231,10 +231,13 @@ public class ThumbKeys extends java.lang.Object {
    // Main ////////////////////////////////////////////////////////////////////
    public static void main(String[] args) {
       for (String arg: args) {
-         ThumbKeys thumbKeys = new ThumbKeys(arg);
-         int keys = thumbKeys.toInt();
-         System.out.printf("%d\n", keys);
-         System.out.printf("%s\n", thumbKeys.toString());
+         ThumbKeys tk = new ThumbKeys(arg);
+//         System.out.printf("Old %s 0x%04x%n", tk, tk.toCfgOld());
+//         System.out.printf("New %s 0x%04x%n", tk, Io.otherEndian((short)tk.toCfg()));
+         System.out.printf("New %s 0x%04x%n", tk, tk.toCfg());
+//         int keys = tk.toInt();
+//         System.out.printf("%d\n", keys);
+//         System.out.printf("%s\n", tk.toString());
       }
    }
 }

@@ -83,7 +83,7 @@ public class ChordGroup {
             if (m_GroupFree == (line == null)) {
                ++m_Count;
                if (!m_ShowText) {
-                  str += " " + new Chord(chord);
+                  str += " " + Chord.fromChordValue(chord);
                } else {
                   str += "\n   " + line;
                }

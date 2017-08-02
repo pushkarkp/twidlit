@@ -48,7 +48,7 @@ public class ChordSource implements KeyPressListSource {
       }
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          // if thumbkey-less twiddle of chord is mapped
-         Twiddle tw = new Twiddle(i + 1, 0);
+         Twiddle tw = new Twiddle((byte)(i + 1), 0);
          if (m_KeyMap.getKeyPressList(tw) != null) {
             if (counts == null) {
                // just add in order
@@ -86,7 +86,7 @@ public class ChordSource implements KeyPressListSource {
    public KeyPressList getNext() {
       KeyPressList kpl;
       do {
-         Twiddle tw = new Twiddle(m_UniformSource.get(), 0);
+         Twiddle tw = new Twiddle((byte)(int)m_UniformSource.get(), 0);
          kpl = m_KeyMap.getKeyPressList(tw);
          if (kpl == null) {
             Log.log("No keys defined for " + tw);

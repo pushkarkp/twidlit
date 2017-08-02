@@ -11,7 +11,7 @@ import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
 // An assignment maps one OR MORE chords to a keypress list.
-public class Assignment extends java.lang.Object {
+public class Assignment extends java.lang.Object implements Comparable<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public static boolean sm_SHOW_THUMB_KEYS = true;
@@ -72,6 +72,13 @@ public class Assignment extends java.lang.Object {
    public int getTwiddleCount() { return m_Twiddles.size(); }
    public Twiddle getTwiddle(int i) { return m_Twiddles.get(i); }
    public KeyPressList getKeyPressList() { return m_KeyPressList; }
+
+   ////////////////////////////////////////////////////////////////////////////
+   // Comparable
+   @Override
+   public int compareTo(Assignment a) {
+      return Integer.compare(getTwiddle(0).toCfg(), a.getTwiddle(0).toCfg());
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    public Twiddle getBestTwiddle() {

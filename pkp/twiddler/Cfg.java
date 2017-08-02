@@ -8,6 +8,7 @@ package pkp.twiddler;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.nio.ByteBuffer;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,11 +47,9 @@ public class Cfg implements Settings {
       List<Assignment> ma = asgs.toSortedMouseButtons();
       for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
          if (ma.get(i).getKeyPressList().size() == 0) {
-            asgs.add(
-               new Assignment(
-                  new Twiddle((i + 1) << 8, 0), 
-                  new KeyPressList(KeyPress.fromMouseButton(i + 1))
-            ));
+            asgs.add(new Assignment(
+                  new Twiddle(Chord.fromMouseButton(i + 1)), 
+                  new KeyPressList(KeyPress.fromMouseButton(i + 1))));
          }
       }
       return cfg;
@@ -144,6 +143,9 @@ public class Cfg implements Settings {
       int mouseMultiSize = getMultiSize(mouseKeys);
 
       List<Assignment> asgs = a.to121ChordList();
+      // v5 has assignments sorted by twiddle
+      Collections.sort(asgs);
+
       // fixed header plus assignments
       int multiCount = getMultiCount(asgs);
       int multiSize = getMultiSize(asgs);
@@ -158,8 +160,8 @@ public class Cfg implements Settings {
       IntSettings is = s.getIntSettings();
       bb.put((byte)is.FORMAT_VERSION.getValue());
       bb.put((byte)(s.getBoolSettings().toBits(3)));
-      bb.putShort(otherEndian((short)asgs.size()));
-      bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
+      bb.putShort(Io.otherEndian((short)asgs.size()));
+      bb.putShort(Io.otherEndian((short)is.IDLE_LIMIT.getValue()));
 
       writeMouseKeys(multiCount, mouseKeys, bb);
 
@@ -187,17 +189,17 @@ public class Cfg implements Settings {
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       bb.put((byte)is.FORMAT_VERSION.getValue());
-      bb.putShort(otherEndian((short)is.CONFIG_SIZE.getValue()));
-      bb.putShort(otherEndian((short)endOfTwiddles));
-      bb.putShort(otherEndian((short)startOfMulti));
+      bb.putShort(Io.otherEndian((short)is.CONFIG_SIZE.getValue()));
+      bb.putShort(Io.otherEndian((short)endOfTwiddles));
+      bb.putShort(Io.otherEndian((short)startOfMulti));
 
       // int settings
      if (version == 1) {
-         bb.putShort(otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
+         bb.putShort(Io.otherEndian((short)is.MOUSE_EXIT_DELAY.getValue()));
       } else {
-         bb.putShort(otherEndian((short)is.IDLE_LIMIT.getValue()));
+         bb.putShort(Io.otherEndian((short)is.IDLE_LIMIT.getValue()));
       }
-      bb.putShort(otherEndian((short)is.MS_BETWEEN_TWIDDLES.getValue()));
+      bb.putShort(Io.otherEndian((short)is.MS_BETWEEN_TWIDDLES.getValue()));
       bb.put((byte)is.START_SPEED.getValue());
       bb.put((byte)is.FAST_SPEED.getValue());
       bb.put((byte)is.MOUSE_SENSITIVITY.getValue());
@@ -231,7 +233,7 @@ public class Cfg implements Settings {
          int newMultiCount = multiCount;
          KeyPressList kpl = asg.getKeyPressList();
          for (int j = 0; j < asg.getTwiddleCount(); ++j) {
-            bb.putShort((short)asg.getTwiddle(j).toCfg());
+            bb.putShort(Io.otherEndian((short)asg.getTwiddle(j).toCfg()));
             newMultiCount = writeKeyPressList(multiCount, kpl, bb);
          }
          multiCount = newMultiCount;
@@ -254,13 +256,13 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    private static void writeJumpInts(int mouseLeft, int jumpMultiSize, List<Assignment> mouseKeys, ByteBuffer bb) {
       if (jumpMultiSize > 0) {
-         bb.putInt(otherEndian(bb.position() + 4 * (mouseLeft + 1)));
+         bb.putInt(Io.otherEndian(bb.position() + 4 * (mouseLeft + 1)));
          jumpMultiSize -= 4;
       }
       for (Assignment ma : mouseKeys) {
          int size = ma.getKeyPressList().size();
          if (size > 1) {
-            bb.putInt(otherEndian(bb.position() + mouseLeft * 4 + jumpMultiSize));
+            bb.putInt(Io.otherEndian(bb.position() + mouseLeft * 4 + jumpMultiSize));
             --mouseLeft;
             jumpMultiSize += (size + 1) * 2;
          }
@@ -316,8 +318,8 @@ public class Cfg implements Settings {
       int bits = bb.get();
       m_BoolSettings.setFromBits(bits);
 
-      int chordMaps = otherEndian(bb.getShort()) & 0xFFFF;
-      m_IntSettings.IDLE_LIMIT.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+      int chordMaps = Io.otherEndian(bb.getShort()) & 0xFFFF;
+      m_IntSettings.IDLE_LIMIT.setValue(Io.otherEndian(bb.getShort()) & 0xFFFF);
 
       KeyPress.clearWarned();
       m_Assignments = new Assignments();
@@ -328,14 +330,14 @@ public class Cfg implements Settings {
       for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
          int k = bb.getShort();
          if (k != 0) {
-            int c = i + 1 << Chord.sm_MOUSE * 2;
+            int c = i + 1 << 8;
             readKeyMap(c, 0, k, path, multi, whichKpl);
          }
       }
 
       m_IntSettings.MOUSE_SENSITIVITY.setValue(bb.get() & 0xFF);
       m_IntSettings.KEY_REPEAT_DELAY.setValue((bb.get() & 0xFF) * 10);
-      otherEndian(bb.getShort());
+      Io.otherEndian(bb.getShort());
 
       // chord buttons
       for (int i = 0; i < chordMaps; ++i) {
@@ -350,7 +352,7 @@ public class Cfg implements Settings {
             Log.err(String.format("Format error: twiddle 0 key 0 in %s.", path));
          }
       }
-      
+
       // multi-keys
       List<ArrayList<KeyPressList>> kpls = new ArrayList<ArrayList<KeyPressList>>();
       if (multi.size() > 0) {
@@ -358,7 +360,7 @@ public class Cfg implements Settings {
          int start = 0;
          int end = Integer.MAX_VALUE;
          do {
-            start = otherEndian(bb.getInt());
+            start = Io.otherEndian(bb.getInt());
             end = Math.min(end, start);
             bb.mark();
             if (start != 0) {
@@ -381,13 +383,13 @@ public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
    private boolean read4(ByteBuffer bb, String path) {
-      m_IntSettings.CONFIG_SIZE.setValue(otherEndian(bb.getShort()) & 0xFFFF);
-      int endOfTwiddles = otherEndian(bb.getShort()) & 0xFFFF;
-      int startOfMulti = otherEndian(bb.getShort()) & 0xFFFF;
+      m_IntSettings.CONFIG_SIZE.setValue(Io.otherEndian(bb.getShort()) & 0xFFFF);
+      int endOfTwiddles = Io.otherEndian(bb.getShort()) & 0xFFFF;
+      int startOfMulti = Io.otherEndian(bb.getShort()) & 0xFFFF;
 
-      m_IntSettings.MOUSE_EXIT_DELAY.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+      m_IntSettings.MOUSE_EXIT_DELAY.setValue(Io.otherEndian(bb.getShort()) & 0xFFFF);
       m_IntSettings.IDLE_LIMIT.setValue(m_IntSettings.MOUSE_EXIT_DELAY.getValue());
-      m_IntSettings.MS_BETWEEN_TWIDDLES.setValue(otherEndian(bb.getShort()) & 0xFFFF);
+      m_IntSettings.MS_BETWEEN_TWIDDLES.setValue(Io.otherEndian(bb.getShort()) & 0xFFFF);
       m_IntSettings.START_SPEED.setValue(bb.get() & 0xFF);
       m_IntSettings.FAST_SPEED.setValue(bb.get() & 0xFF);
       m_IntSettings.MOUSE_SENSITIVITY.setValue(bb.get() & 0xFF);
@@ -427,7 +429,7 @@ public class Cfg implements Settings {
          if (t == 0 || k == 0) {
             Log.err(String.format("Format error: twiddle 0x%x key 0x%x at %d in %s.", t, k, bb.remaining() - 2, path));
          }
-         Twiddle tw = new Twiddle(toChord(t), toThumbKeys(t));
+         Twiddle tw = new Twiddle((byte)toChord(t), toThumbKeys(t));
       }
 
       // multi-key assignments
@@ -459,7 +461,7 @@ public class Cfg implements Settings {
       if ((c == 0 && t == 0) || k == 0) {
          Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, path));
       }
-      Twiddle tw = new Twiddle(c, t);
+      Twiddle tw = new Twiddle((byte)c, t);
       if (k < 0) {
          multi.add(tw);
          whichKpl.add(k & 0xFF);
@@ -491,7 +493,7 @@ public class Cfg implements Settings {
    ////////////////////////////////////////////////////////////////////////////
    private static KeyPressList readMultiKeys(ByteBuffer bb, String path) {
       // subtract the size of the size
-      int size = otherEndian(bb.getShort()) - 2;
+      int size = Io.otherEndian(bb.getShort()) - 2;
       if (size <= 0) {
          return null;
       }
@@ -503,24 +505,6 @@ public class Cfg implements Settings {
       KeyPressList kpl = new KeyPressList();
 //System.out.printf("size 0x%x [%d] position 0x%x [%d] remaining 0x%x [%d]%n", size, size, bb.position(), bb.position(), bb.remaining(), bb.remaining());
       for (int i = 0; i < size / 2; ++i) {
-         int k = bb.getShort();
-         KeyPress kp = KeyPress.fromKeyCode(k);
-//System.out.printf("0x%x [%d] %s%n", k, k, kp);
-         kpl.add(kp);
-      }
-      return kpl;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static KeyPressList readMouseKeys(ByteBuffer bb, String path) {
-      if (bb.remaining() < 3) {
-         Log.err("Cfg file " + path + " mouse table is corrupt." 
-            + String.format(" At %d [0x%x], remaining %d [0x%x].", bb.position(), bb.position(), bb.remaining(), bb.remaining()));
-         return null;
-      }
-      KeyPressList kpl = new KeyPressList();
-//System.out.printf("size 0x%x [%d] position 0x%x [%d] remaining 0x%x [%d]%n", size, size, bb.position(), bb.position(), bb.remaining(), bb.remaining());
-      for (int i = 0; i < 4 / 2; ++i) {
          int k = bb.getShort();
          KeyPress kp = KeyPress.fromKeyCode(k);
 //System.out.printf("0x%x [%d] %s%n", k, k, kp);
@@ -595,7 +579,7 @@ public class Cfg implements Settings {
    private static void writeMouseKeys(int multiCount, List<Assignment> mouseKeys, ByteBuffer bb) {
       for (Assignment a : mouseKeys) {
          if (a.getKeyPressList().size() == 0) {
-            bb.putShort(otherEndian((short)0));
+            bb.putShort(Io.otherEndian((short)0));
          } else {
             multiCount = writeKeyPressList(multiCount, a.getKeyPressList(), bb);
          }
@@ -622,17 +606,6 @@ public class Cfg implements Settings {
                : 0;
       }
       return size;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static short otherEndian(short s) {
-      return (short)((s >> 8 & 0xFF) | (s << 8 & 0xFF00));
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private static int otherEndian(int i) {
-      return (i >> 24 & 0xFF) | (i >> 8 & 0xFF00)
-           | (i << 8 & 0xFF0000) | (i << 24 & 0xFF000000);
    }
 
    /////////////////////////////////////////////////////////////////////////////
