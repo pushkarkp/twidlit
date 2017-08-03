@@ -55,7 +55,7 @@ public class SettingsWindow
       b.add(m_TwiddlerVersionButton);
       b.add(Box.createRigidArea(new Dimension(0, m_SliderHeight)));
       b.add(Box.createHorizontalGlue());
-      b.add(new JLabel(m_IntCfg.FORMAT_VERSION.getName() + " "));
+      b.add(new JLabel(m_IntCfg.FORMAT_VERSION.getName() + "  "));
       m_FileVersionButton = newButton("" + m_IntCfg.FORMAT_VERSION.getValue());
       b.add(m_FileVersionButton);
       m_SettingsPanel = new JPanel();
