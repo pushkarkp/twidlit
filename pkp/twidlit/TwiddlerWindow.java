@@ -7,6 +7,7 @@
 package pkp.twidlit;
 
 import java.awt.*;
+import java.awt.event.MouseListener;
 import java.awt.event.KeyListener;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -33,13 +34,14 @@ import pkp.util.Log;
 class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
-   TwiddlerWindow(JCheckBoxMenuItem menuItemHide, boolean vert, boolean right, KeyListener keyListener) {
+   TwiddlerWindow(JCheckBoxMenuItem menuItemHide, boolean vert, boolean right, MouseListener mouseListener, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
       setTitle("Twiddler");
       setFocusable(true);
       requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
+      addMouseListener(mouseListener);
       addKeyListener(keyListener);
       m_MenuItemHide = menuItemHide;
 
