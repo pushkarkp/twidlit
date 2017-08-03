@@ -98,7 +98,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_HandButtons = new ButtonGroup();
       JCheckBoxMenuItem hide = addCheckItem(tutorMenu, sm_TUTOR_HIDE_TWIDDLER_TEXT);
       boolean vertical = addCheckItem(tutorMenu, sm_TUTOR_VERTICAL_TWIDDLER_TEXT).isSelected();
-      TwiddlerWindow tw = new TwiddlerWindow(hide, vertical, isRightHand(), m_Twidlit);
+      TwiddlerWindow tw = new TwiddlerWindow(hide, vertical, isRightHand(), m_Twidlit, m_Twidlit);
       m_Twidlit.setTwiddlerWindow(tw);
       tutorMenu.addSeparator();
       addRadioItem(tutorMenu, Hand.LEFT.toString(), m_HandButtons);
