@@ -64,7 +64,7 @@ public class KeyPressList extends java.lang.Object {
 //System.out.printf("parseTextAndTags4 [%d] |%s| tagMod \\x%x%n", i, rest.substring(0, end), tagMod.toInt());
 					i += end + 1;
                kp = KeyPress.parseTag(rest.substring(0, end), tagMod, err);
-					if (kp.isModifiers()) {
+               if (kp.isModifiers()) {
                   if (kp.getModifiers() == Modifiers.sm_END) {
                      tagMod = Modifiers.sm_EMPTY;
                      continue;

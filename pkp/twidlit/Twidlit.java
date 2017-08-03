@@ -317,6 +317,78 @@ class Twidlit
          Log.err("Unknown action: " + e.getActionCommand());
          return;
       }
+      timeUp();
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setKeyWaitMsec(int newValue) {
+      m_KeyWaitMsec = newValue;
+      m_TimerKeyWait = new Timer(m_KeyWaitMsec, this);
+      m_TimerKeyWait.setActionCommand("key.collection.complete");
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   boolean isTimed() {
+      return m_Timed;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   void setTimed(boolean set) {
+      m_Timed = set;
+   }
+
+   // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private boolean start() {
+      Twiddle tw = m_TextPanel.getFirstTwiddle();
+      m_TwiddlerWindow.show(tw, null, m_ChordTimes);
+      // Start the timer in the past so the resulting time is not recorded.
+      m_StartTimeMs = System.currentTimeMillis() - 2 * m_TwiddlerWindow.getProgressMax();
+      m_TimeMs = 0;
+      return tw != null;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void setChordTimes(boolean keys) {
+      if (m_ChordTimes != null) {
+         m_ChordTimes.persist("");
+      }
+      m_ChordTimes = new ChordTimes(keys, isRightHand());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void keyPressed(KeyPress kp, long when) {
+//System.out.printf("pressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
+      if (kp.isMouseButton()) {
+         if (m_KeysPressed.size() != 0) {
+            timeUp();
+         }
+         m_KeysPressed.add(KeyPress.fromKeyCodeAndModifiers(kp, m_ModifiersKeyPress));
+         timeUp();
+         return;
+      }
+      if (kp.isModifiers()) {
+         m_ModifiersKeyPress = kp;
+         return;
+      }
+      m_ModifiersKeyPress = null;
+      m_TimerKeyWait.restart();
+      if (m_KeyStartMs != 0) {
+         Log.log(String.format("keyPressed event %dms now %dms", 
+                  (int)(when - m_KeyStartMs),
+                  (int)(System.currentTimeMillis() - m_KeyStartMs)));
+      }
+      m_KeyStartMs = System.currentTimeMillis();
+      // store time of arrival of first key press
+      if (m_TimeMs == 0) {
+         m_TimeMs = (int)(when - m_StartTimeMs);
+      }
+      m_KeysPressed.add(kp);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   private void timeUp() {
       m_KeyStartMs = 0;
       m_TimerKeyWait.stop();
       m_TextPanel.setPressed(m_KeysPressed.toString(KeyPress.Format.FILE));
@@ -363,64 +435,6 @@ class Twidlit
       }
    }
    
-   /////////////////////////////////////////////////////////////////////////////
-   void setKeyWaitMsec(int newValue) {
-      m_KeyWaitMsec = newValue;
-      m_TimerKeyWait = new Timer(m_KeyWaitMsec, this);
-      m_TimerKeyWait.setActionCommand("key.collection.complete");
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   boolean isTimed() {
-      return m_Timed;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   void setTimed(boolean set) {
-      m_Timed = set;
-   }
-
-   // Private /////////////////////////////////////////////////////////////////
-
-   ////////////////////////////////////////////////////////////////////////////
-   private boolean start() {
-      Twiddle tw = m_TextPanel.getFirstTwiddle();
-      m_TwiddlerWindow.show(tw, null, m_ChordTimes);
-      // Start the timer in the past so the resulting time is not recorded.
-      m_StartTimeMs = System.currentTimeMillis() - 2 * m_TwiddlerWindow.getProgressMax();
-      m_TimeMs = 0;
-      return tw != null;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   private void setChordTimes(boolean keys) {
-      if (m_ChordTimes != null) {
-         m_ChordTimes.persist("");
-      }
-      m_ChordTimes = new ChordTimes(keys, isRightHand());
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   private void keyPressed(KeyPress kp, long when) {
-//System.out.printf("pressed %s %s%n", kp.toString(KeyPress.Format.HEX), kp.toString());
-      // ignore invisible keys such as bare shift or control
-      if (kp.isModifiers()) {
-         return;
-      }
-      m_TimerKeyWait.restart();
-      if (m_KeyStartMs != 0) {
-         Log.log(String.format("keyPressed event %dms now %dms", 
-                  (int)(when - m_KeyStartMs),
-                  (int)(System.currentTimeMillis() - m_KeyStartMs)));
-      }
-      m_KeyStartMs = System.currentTimeMillis();
-      // store time of arrival of first key press
-      if (m_TimeMs == 0) {
-         m_TimeMs = (int)(when - m_StartTimeMs);
-      }
-      m_KeysPressed.add(kp);
-   }
-
    // Data /////////////////////////////////////////////////////////////////////
    private static String m_HomeDir;
    private TwiddlerWindow m_TwiddlerWindow;
@@ -435,6 +449,7 @@ class Twidlit
    private boolean m_Timed;
    private ChordTimes m_ChordTimes;
    private double m_ProgressFactor;
+   private KeyPress m_ModifiersKeyPress;
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {

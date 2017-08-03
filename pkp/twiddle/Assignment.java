@@ -40,13 +40,6 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   // a mouse button can have an empty assignment
-   public Assignment() {
-      m_Twiddles = new ArrayList<Twiddle>();
-      m_KeyPressList = new KeyPressList();
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
    public Assignment(Twiddle tw, KeyPressList kpl) {
       m_Twiddles = new ArrayList<Twiddle>();
       m_Twiddles.add(tw);

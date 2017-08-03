@@ -1,5 +1,4 @@
 /**
-/**
  * Copyright 2015 Pushkar Piggott
  *
  * KeyPress.java
@@ -155,6 +154,13 @@ public class KeyPress {
          sm_KeyCodeToValue.put(kcv[i], (char)kcv[i + 1]);
       }
       Modifiers.init(sm_KeyCodeToName, codeToKeyEvent.get(0x800));
+
+      sm_MouseButtonCodes = new int[3];
+      for (int i = 0; i < 3; ++i) {
+         String name = Pref.get(sm_MOUSE_BUTTON_PREFS[i], 
+                                sm_MOUSE_BUTTON_DEFAULTS[i]);
+         sm_MouseButtonCodes[i] = sm_KeyCodeToName.getInt(name, 0);
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -163,13 +169,16 @@ public class KeyPress {
    }
    
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress endModifiers() {
-      return new KeyPress(0, Modifiers.sm_EMPTY);
+   public static KeyPress fromKeyCode(int keyCode) {
+      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCode(keyCode));
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public static KeyPress fromKeyCode(int keyCode) {
-      return new KeyPress(keyCode & sm_KEYS, Modifiers.fromKeyCode(keyCode));
+   public static KeyPress fromKeyCodeAndModifiers(KeyPress k, KeyPress m) {
+      if (m == null) {
+         return k;
+      }
+      return new KeyPress(k.getKeyCode(), m.getModifiers());
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -177,9 +186,12 @@ public class KeyPress {
       if (button < 1 || button > 3) {
          Log.err(String.format("Expected mouse button in [1..3], found %d.", button));
       }
-      String name = Pref.get(sm_MOUSE_BUTTON_PREFS[button - 1], 
-                             sm_MOUSE_BUTTON_DEFAULTS[button - 1]);
-      return new KeyPress(sm_KeyCodeToName.getInt(name, 0), Modifiers.sm_EMPTY);
+      return new KeyPress(sm_MouseButtonCodes[button - 1], Modifiers.sm_EMPTY);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean isMouseButton() {
+      return isMouseButton(m_KeyCode);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -249,14 +261,18 @@ public class KeyPress {
          tag = tag.substring(1);
       }
       int keyCode = sm_KeyCodeToName.getInt(tag, 0);
+      if (isMouseButton(keyCode)) {
+         Log.warn(err, "Unsupported mouse button tag");
+         return new KeyPress();
+      }
       Modifiers mod = Modifiers.fromKeyCode(keyCode);
 //System.out.printf("parseTag: keyCode 0x%x modifiers 0x%x tag %s mod 0x%x\n", keyCode, modifiers.toInt(), tag, mod.toInt());
       if (mod.isEmpty()) {
          if (closing) {
-            Log.warn(err, "Unrecognized closing modifier: \"" + tag + "\".");
+            Log.warn(err, "Unrecognized closing modifier: \"" + tag + "\"");
             return new KeyPress();
          } else if ((keyCode & sm_KEYS) == 0) {
-            Log.warn(err, "Unrecognized tag: \"" + tag + "\".");
+            Log.warn(err, "Unrecognized tag: \"" + tag + "\"");
             return new KeyPress();
          }
       } else if (closing) {
@@ -275,7 +291,7 @@ public class KeyPress {
 //System.out.println("kp parseText '" + ch + "'");
       int keyCodeWithShift = sm_KeyValueToCode.get(ch);
 		if (keyCodeWithShift < 0) {
-         Log.warn(err, "\"" + ch + "\" has no code.");
+         Log.warn(err, "\"" + ch + "\" has no code");
          return new KeyPress();
       }
 //System.out.printf("parseText |%c| (%d) -> 0x%x (mod 0x%x)\n", ch, (int)ch, keyCodeWithShift, mod.toInt());
@@ -443,7 +459,6 @@ public class KeyPress {
    ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
    public boolean isKey() { return m_KeyCode != 0; }
-   public boolean isMouseButton() { return false; }
    public boolean isValid() { return isKey() || !m_Modifiers.isEmpty(); }
    public boolean isModifiers() { return m_KeyCode == 0; }
    public boolean isPrintable() { return !sm_Unprintable.is(m_KeyCode); }
@@ -514,6 +529,16 @@ public class KeyPress {
       return null;
    }
    
+   ////////////////////////////////////////////////////////////////////////////
+   private static boolean isMouseButton(int keyCode) {
+      for (int i = 0; i < 3; ++i) {
+         if (keyCode == sm_MouseButtonCodes[i]) {
+            return true;
+         }
+      }
+      return false;
+   }
+
    // Data ////////////////////////////////////////////////////////////////////
    private static final String[] sm_MOUSE_BUTTON_PREFS = 
       new String[]{"#.mouse.left",     // _PREF
@@ -524,6 +549,7 @@ public class KeyPress {
                    "MouseMiddle",
                    "MouseRight"};
    private static final int sm_KEYS = 0xFF;
+   private static int[] sm_MouseButtonCodes;
    private static Format sm_DisplayFormat;
    private static Format sm_FileFormat;
    private static LookupTable sm_KeyEventToCode;

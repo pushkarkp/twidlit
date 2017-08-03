@@ -141,9 +141,10 @@ public class Assignments extends ArrayList<Assignment> {
    public List<Assignment> toSortedMouseButtons() {
       List<Assignment> asgs = new ArrayList<Assignment>(3);
       for (int i = 0; i < 3; ++i) {
-         asgs.add(new Assignment());
+         asgs.add(new Assignment(new Twiddle(Chord.fromMouseButton(i + 1)),
+                                 new KeyPressList()));
       }
-      List<Assignment> mbs = toMouseButtons();
+      List<Assignment> mbs = getMouseButtonAssignments();
       for (Assignment a : mbs) {
          if (!a.isDefaultMouse()) {
             asgs.set(a.getTwiddle(0).getChord().getMouseButton() - 1, 
@@ -151,24 +152,6 @@ public class Assignments extends ArrayList<Assignment> {
          }
       }
       return asgs;
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public List<Assignment> toMouseButtons() {
-      List<Assignment> mbs = new ArrayList<Assignment>(3);
-      for (Assignment asg : this) {
-         List<Assignment> sep = asg.separate();
-         for (Assignment a : sep) {
-            if (a.getTwiddle(0).getChord().isMouseButton()
-             && !a.isDefaultMouse()) {
-               mbs.add(a);
-            }
-         }
-      }
-      if (mbs.size() > 3) {
-         Log.warn("Found more than 3 mouse button mappings.");
-      }
-      return mbs;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -191,7 +174,7 @@ public class Assignments extends ArrayList<Assignment> {
             }
          }
       }
-      List<Assignment> asgs = toMouseButtons();
+      List<Assignment> asgs = getMouseButtonAssignments();
       List<Assignment> c = to121ChordList();
       for (Assignment a : c) {
          asgs.add(a);
@@ -285,6 +268,24 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    // Private /////////////////////////////////////////////////////////////////
+
+   ////////////////////////////////////////////////////////////////////////////
+   private List<Assignment> getMouseButtonAssignments() {
+      List<Assignment> mbs = new ArrayList<Assignment>(3);
+      for (Assignment asg : this) {
+         List<Assignment> sep = asg.separate();
+         for (Assignment a : sep) {
+            if (a.getTwiddle(0).getChord().isMouseButton()
+             && !a.isDefaultMouse()) {
+               mbs.add(a);
+            }
+         }
+      }
+      if (mbs.size() > 3) {
+         Log.warn("Found more than 3 mouse button mappings.");
+      }
+      return mbs;
+   }
 
    ///////////////////////////////////////////////////////////////////////////////
    private static List<Assignment> getUnmapped(List<Assignment> asgs) {
