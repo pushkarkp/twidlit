@@ -51,6 +51,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(fileMenu);
       m_AllChordsItem = add(fileMenu, sm_FILE_ALL_CHORDS_TEXT);
       add(fileMenu, sm_FILE_OPEN_TEXT);
+      add(fileMenu, sm_FILE_LIST_TEXT);
       add(fileMenu, sm_FILE_SAVE_AS_TEXT);
       fileMenu.addSeparator();
       add(fileMenu, sm_FILE_MAP_CHORDS_TEXT);
@@ -64,6 +65,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(fileMenu, sm_FILE_QUIT_TEXT);
       m_FileChooser = null;
       m_PrefDir = Persist.get(sm_PREF_DIR_PERSIST, m_Twidlit.getHomeDir());
+      m_TwiddlerDir = Persist.get(sm_TWIDDLER_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CfgDir = Persist.get(sm_CFG_DIR_PERSIST, m_Twidlit.getHomeDir());
       m_CfgFName = Persist.get(sm_CFG_FILE_PERSIST, "");
       m_KeyPressFile = Persist.getFile(sm_KEY_SOURCE_FILE_PERSIST);
@@ -183,6 +185,7 @@ class TwidlitMenu extends PersistentMenuBar
       m_Twidlit.getTwiddlerWindow().persist(tag);
       m_SettingsWindow.persist(tag);
       Persist.set(sm_PREF_DIR_PERSIST, Io.getRelativePath(m_PrefDir));
+      Persist.set(sm_TWIDDLER_DIR_PERSIST, Io.getRelativePath(m_TwiddlerDir));
       Persist.set(sm_CFG_DIR_PERSIST, Io.getRelativePath(m_CfgDir));
       Persist.set(sm_CFG_FILE_PERSIST, m_CfgFName);
       Persist.set(sm_NGRAMS_FILE_PERSIST, m_NGramsFile);
@@ -354,29 +357,30 @@ class TwidlitMenu extends PersistentMenuBar
    private void actionPerformed(String command) {
       switch (command) {
       case sm_FILE_ALL_CHORDS_TEXT:
-         m_SaveChordsWindow = new SaveChordsWindow(this, sm_ALL_CHORDS_TITLE, m_CfgDir);
-         m_SaveChordsWindow.setPersistName(sm_CHORD_LIST_PERSIST);
-         JButton b = new JButton(sm_USE_ALL_CHORDS_TEXT);
-         b.addActionListener(this);
-         m_SaveChordsWindow.setOkButton(b);
-         m_SaveChordsWindow.setVisible(true);
+         if (JOptionPane.YES_OPTION
+          == JOptionPane.showConfirmDialog(
+                m_Twidlit, 
+                "Discard the current mapping and map all chords?", 
+                sm_FILE_ALL_CHORDS_TEXT, 
+                JOptionPane.YES_NO_OPTION)) {
+            setCfg(null);
+            m_CfgFName = "";
+            extendTitle(m_CfgFName);
+         }
          return;
-      case sm_USE_ALL_CHORDS_TEXT: {
-         setCfg(null);
-         m_CfgFName = "";
-         extendTitle(m_CfgFName);
-         m_SaveChordsWindow.dispose();
-         m_SaveChordsWindow = null;
-         return;
-      }
       case sm_FILE_OPEN_TEXT:
-         m_FileChooser = makeCfgFileChooser(new FileOpenActionListener());
+         m_FileChooser = makeFileChooser(new FileOpenActionListener(), m_CfgDir);
+         m_FileChooser.setFileFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
+         m_FileChooser.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
          m_FileChooser.showOpenDialog(m_Twidlit);
          m_FileChooser = null;
          return;
-      case sm_FILE_SAVE_AS_TEXT:
+      case sm_FILE_LIST_TEXT:
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
+         return;
+      case sm_FILE_SAVE_AS_TEXT:
+         saveCfg();
          return;
       case sm_FILE_MAP_CHORDS_TEXT:
       case sm_FILE_ASSESS_MAP_TEXT: {
@@ -597,14 +601,13 @@ class TwidlitMenu extends PersistentMenuBar
 
    ///////////////////////////////////////////////////////////////////
    private void viewSaveText(String command) {
-      SaveChordsWindow scw =  null;
+      SaveChordsWindow scw = null;
       switch (command) {
-      case sm_FILE_SAVE_AS_TEXT:
+      case sm_FILE_LIST_TEXT:
          scw = new SaveChordsWindow(this, sm_SAVE_AS_TITLE, m_CfgDir);
          scw.setPersistName(sm_CHORD_LIST_PERSIST);
          scw.setSaver(new CfgSaver(command, scw));
          scw.setExtension(sm_CFG_CHORDS);
-         scw.addExtension(sm_CFG);
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          scw = new SaveChordsWindow(this, sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
@@ -617,23 +620,40 @@ class TwidlitMenu extends PersistentMenuBar
       scw.setVisible(true);
    }
    
+   ///////////////////////////////////////////////////////////////////
+   private void saveCfg() {
+      m_FileChooser = makeFileChooser(null, m_TwiddlerDir);
+      m_FileChooser.setSelectedFile(new File("twiddler.cfg"));
+      m_FileChooser.setFileFilter(new ExtensionFileFilter(sm_CFG));
+      File f = m_FileChooser.showSaveDialog(m_Twidlit) 
+            == m_FileChooser.APPROVE_OPTION
+             ? m_FileChooser.getSelectedFile()
+             : null;
+      if (f != null
+       && (!f.exists()
+        || JOptionPane.showConfirmDialog(
+               m_FileChooser, 
+               "\"" + f.getPath() + "\" exists, overwrite?", 
+               "File Exists", 
+               JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)) {
+         m_TwiddlerDir = f.getParent();
+         (new Cfg(m_SettingsWindow, 
+                 m_Twidlit.getKeyMap().getAssignments())).write(f, m_SettingsWindow.getVersion());
+      }
+      m_FileChooser = null;
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    private JFileChooser makeFileChooser(ActionListener al, String dir) {
       JFileChooser fc = new JFileChooser();
-      fc.addActionListener(al);
+      if (al != null) {
+         fc.addActionListener(al);
+      }
       if (dir == null || "".equals(dir) || !Io.dirExists(dir)) {
          dir = ".";
       }
       fc.setCurrentDirectory(new File(dir));
       fc.removeChoosableFileFilter(fc.getAcceptAllFileFilter());
-      return fc;
-   }
-   
-   ////////////////////////////////////////////////////////////////////////////
-   private JFileChooser makeCfgFileChooser(ActionListener al) {
-      JFileChooser fc = makeFileChooser(al, m_CfgDir);
-      fc.setFileFilter(new ExtensionFileFilter(sm_CFG_CHORDS));
-      fc.addChoosableFileFilter(new ExtensionFileFilter(sm_CFG));
       return fc;
    }
    
@@ -684,7 +704,7 @@ class TwidlitMenu extends PersistentMenuBar
       }
       return new ExtensionFileFilter(sm_CFG);
    }
-   
+
    ///////////////////////////////////////////////////////////////////
    class PrefActionListener implements ActionListener {
       @Override 
@@ -736,10 +756,12 @@ class TwidlitMenu extends PersistentMenuBar
                      // mappings no longer adequate
                      setChords();
                   }
-                  // set only after success, or will fail next startup
-                  m_CfgDir = f.getParent();
-                  m_CfgFName = f.getName();
-                  extendTitle(m_CfgFName);
+                  extendTitle(f.getName());
+                  if (eff.getExtension() == sm_CFG_CHORDS) {
+                     // set only after success, or will fail next startup
+                     m_CfgDir = f.getParent();
+                     m_CfgFName = f.getName();
+                  }
                }
                return;
             }
@@ -759,7 +781,7 @@ class TwidlitMenu extends PersistentMenuBar
          switch (action) {
          default:
             Log.err("CfgSaver: unknown action \"" + action + '"');
-         case sm_FILE_SAVE_AS_TEXT:
+         case sm_FILE_LIST_TEXT:
          case sm_TUTOR_CHORDS_BY_TIME_TEXT:
             m_Action = action;
          }   
@@ -771,30 +793,18 @@ class TwidlitMenu extends PersistentMenuBar
          if (m_Action == sm_TUTOR_CHORDS_BY_TIME_TEXT) {
             Log.err(String.format("m_Action == %s", sm_TUTOR_CHORDS_BY_TIME_TEXT));
          }
-         ExtensionFileFilter eff = getFileFilter(fc);
          File f = fc.getSelectedFile();
-         f = eff.withExtension(f);
          if (f.exists()
-          && JOptionPane.showConfirmDialog(
+          && JOptionPane.YES_OPTION !=
+             JOptionPane.showConfirmDialog(
                m_FileChooser, 
                "\"" + f.getPath() + "\" exists, overwrite?", 
                "File Exists", 
-               JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+               JOptionPane.YES_NO_OPTION)) {
             return;
          }
-         switch (eff.getExtension()) {
-         case sm_CFG_CHORDS:
-            // 4finger or 0MRL
-            Io.write(f, m_Window.getText());
-            break;
-         case sm_CFG:
-            (new Cfg(m_SettingsWindow, 
-                     m_Twidlit.getKeyMap().getAssignments())).write(f, m_SettingsWindow.getVersion());
-            break;
-         default:
-            Log.err("CfgSaver: unknown extension \"" + eff.getExtension() + '"');
-            break;
-         }
+         // 4finger or 0MRL
+         Io.write(f, m_Window.getText());
          m_Window.dispose();
       }
 
@@ -812,7 +822,7 @@ class TwidlitMenu extends PersistentMenuBar
          if (e.getActionCommand() == "ApproveSelection") {
             File f = m_FileChooser.getSelectedFile();
             if (f.isDirectory()) {
-               Log.warn("\"" + f.getPath() + "\" is a file, Counts expected a folder.");
+               Log.warn("\"" + f.getPath() + "\" is a folder, Expected a file.");
             } else {
                m_File = f;
             }
@@ -968,9 +978,10 @@ class TwidlitMenu extends PersistentMenuBar
    
    // Final //////////////////////////////////////////////////////////
    private static final String sm_FILE_MENU_TEXT = "File";
-   private static final String sm_FILE_ALL_CHORDS_TEXT = "Map All Chords...";
+   private static final String sm_FILE_ALL_CHORDS_TEXT = "Map All Chords";
    private static final String sm_FILE_OPEN_TEXT = "Open...";
-   private static final String sm_FILE_SAVE_AS_TEXT = "Save As...";
+   private static final String sm_FILE_LIST_TEXT = "List";
+   private static final String sm_FILE_SAVE_AS_TEXT = "Save As CFG...";
    private static final String sm_FILE_MAP_CHORDS_TEXT = "Create Map File...";
    private static final String sm_FILE_ASSESS_MAP_TEXT = "Assess Map File...";
    private static final String sm_FILE_GROUP_CHORDS_TEXT = "Group Chords...";
@@ -1010,7 +1021,6 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
    private static final String sm_SAVE_AS_TITLE = "Mapped Chords";
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
-   private static final String sm_USE_ALL_CHORDS_TEXT = "Use";
 
    public static final String sm_LOG_FILE_NAME = "twidlit.log";
 
@@ -1022,6 +1032,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CFG = "cfg";
    private static final String sm_CFG_CHORDS = "cfg.chords";
    private static final String sm_PREF_DIR_PERSIST = "#.pref.dir";
+   private static final String sm_TWIDDLER_DIR_PERSIST = "#.twiddler.dir";
    private static final String sm_CFG_DIR_PERSIST = "#.cfg.dir";
    private static final String sm_CFG_FILE_PERSIST = "#.cfg.file";
    private static final String sm_CHORD_LIST_PERSIST = "#.chord.list";
@@ -1038,6 +1049,7 @@ class TwidlitMenu extends PersistentMenuBar
    private TwidlitInit m_TwidlitInit;
    private Twidlit m_Twidlit;
    private String m_PrefDir;
+   private String m_TwiddlerDir;
    private String m_CfgDir;
    private String m_CfgFName;
    private SettingsWindow m_SettingsWindow;
