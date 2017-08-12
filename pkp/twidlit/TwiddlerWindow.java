@@ -145,6 +145,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
          m_DelayMsec = m_HighlightStage.DELAY.getMsec(); 
          HighlightStage.DELAY.setMsec(0);
       }
+      clearMark();
       calculateTimes();
    }
 
@@ -160,6 +161,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       if (m_Delay) {
          HighlightStage.DELAY.setMsec(delay);
       }
+      clearMark();
       calculateTimes();
    }
 
@@ -172,6 +174,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    void setProgressBarMax(int speed) {
 //System.out.printf("setProgressBarMsec(%d)%n", speed);
       m_ProgressPanel.setMaximum(speed);
+      clearMark();
       calculateTimes();
    }
 
@@ -237,7 +240,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    void markMismatch(Twiddle tw) {
       if (m_Mark && tw != null && m_MarkTimer.getInitialDelay() > 0) {
          markNow(tw, MarkType.MISMATCH);
-         repaint();
       }
    }
 
@@ -524,7 +526,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    private void calculateTimes() {
-      clearMark();
       final int progressMsec = m_ProgressPanel.getMaximum();
       double markFactor = Pref.getInt(sm_MARK_PERCENT_PREF, sm_DEFAULT_SHOW_PERCENT) / 100.0;
       m_MarkTimer.setInitialDelay((int)(0.5 + progressMsec * markFactor));
@@ -676,7 +677,6 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       }
       if (m_Twiddle.getChord().isMouseButton()) {
          ((KeyPanel)m_MousePanel.getComponent(m_Twiddle.getChord().getMouseButton() - 1)).setButtonColor(m_COLOR_BUTTON_HIGHLIGHT);
-         repaint();
       } else {
          for (int r = 0; r < Chord.sm_ROWS; ++r) {
             int c = m_Twiddle.getChord().getRowKey(r);
@@ -686,6 +686,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
             }
          }
       }
+      repaint();
    }
    
    /////////////////////////////////////////////////////////////////////////////
@@ -696,11 +697,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       }
       for (int i = 0; i < 3; ++i) {
          ((KeyPanel)m_MousePanel.getComponent(i)).setButtonColor(m_COLOR_BUTTON);
-         repaint();
       }
       for (int i = 0; i < 12; ++i) {
          m_ChordPanel.getComponent(i).setBackground(m_COLOR_BUTTON);
       }
+      repaint();
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -759,10 +760,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
             int c = ch.getRowKey(r);
             if (c != 0) {
                ((KeyPanel)m_ChordPanel.getComponent(m_Vh.getButton(r, c))).setMark(type);
-            }   
+            }
          }
       }
       m_MarkTimer.restart();
+      repaint();
    }
 
    /////////////////////////////////////////////////////////////////////////////
