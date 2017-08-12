@@ -428,7 +428,7 @@ class Twidlit
                                  m_TimeMs))
          );
 //System.out.printf("%s %s%n", tw.getChord(), m_ChordTimes.getTimes(tw.getChord().toInt(), 0));
-         m_TwiddlerWindow.show(next, pressed.getBestTwiddle(), m_ChordTimes);
+         m_TwiddlerWindow.show(next, tw, m_ChordTimes);
          // start time
          m_StartTimeMs = System.currentTimeMillis();
          m_TimeMs = 0;
