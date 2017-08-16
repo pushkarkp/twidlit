@@ -97,7 +97,7 @@ class Modifiers {
    ////////////////////////////////////////////////////////////////////////////
    boolean equals(Modifiers m) {
       return m_Value == m.m_Value
-          || (!m_Sided && onLeft().m_Value == m.onLeft().m_Value);
+          || (!m_Sided && toLeft().m_Value == m.toLeft().m_Value);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -108,13 +108,13 @@ class Modifiers {
       if (m_Sided) {
          return false;
       }
-      byte onLeft = onLeft().m_Value;
-      return (onLeft & m.onLeft().m_Value) == onLeft;
+      byte onLeft = toLeft().m_Value;
+      return (onLeft & m.toLeft().m_Value) == onLeft;
    }
 
    ////////////////////////////////////////////////////////////////////////////
    // Makes side neutral.
-   Modifiers onLeft() {
+   Modifiers toLeft() {
       return new Modifiers((m_Value | m_Value >> sm_RIGHT_BIT_SHIFT) & sm_LEFT);
    }
 

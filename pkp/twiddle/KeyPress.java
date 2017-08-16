@@ -31,6 +31,16 @@ public class KeyPress {
    static final int sm_KEYCODE_BITS = 8;
 
    ////////////////////////////////////////////////////////////////////////////
+   public static LookupSet getDuplicate() {
+      return sm_Duplicate;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static LookupSet getLost() {
+      return sm_Lost;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public enum Format {
       DISPLAY("For display (user set)"),
       FILE("For files (user set)"),
@@ -130,7 +140,7 @@ public class KeyPress {
          escKey1, 
          Io.sm_SINGLE_VALUE)).build();
       // unprintables are mostly < 0x20
-      sm_Unprintable = LookupSetBuilder.read(
+      sm_UnprintableAscii = LookupSetBuilder.read(
          Persist.getExistDirJarUrl("#.pref.dir", "twidlit.unprintable.keys"),
          Io.sm_MUST_EXIST,
          0, 0x20, 
@@ -435,7 +445,7 @@ public class KeyPress {
       if (format == Format.TAG
        || (format == Format.STD
        &&  (keyValue == 32 || keyValue == 10 || keyValue == 9))
-       || sm_Unprintable.is(keyValue)) {
+       || sm_UnprintableAscii.is(keyValue)) {
          String str = toTag(modifiers);
          if (str != null) {
 //System.out.println("toTag2 " + str);
@@ -457,13 +467,19 @@ public class KeyPress {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean is(LookupSet s) {
+      return s.isSingleKeyed()
+           ? s.is(m_KeyCode)
+           : s.is(m_KeyCode, m_Modifiers.toLeft().toInt());
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static void clearWarned() { sm_Warned = false; }
    public boolean isKey() { return m_KeyCode != 0; }
    public boolean isValid() { return isKey() || !m_Modifiers.isEmpty(); }
    public boolean isModifiers() { return m_KeyCode == 0; }
-   public boolean isPrintable() { return !sm_Unprintable.is(m_KeyCode); }
    public boolean isDuplicate() { return sm_Duplicate.is(m_KeyCode); }
-   public boolean isLost() { return sm_Lost.is(m_KeyCode, m_Modifiers.onLeft().toInt()); }
+   public boolean isLost() { return sm_Lost.is(m_KeyCode, m_Modifiers.toLeft().toInt()); }
    public boolean isCtrl() { return m_Modifiers.isCtrl(); }
    public boolean isShift() { return m_Modifiers.isShift(); }
    public boolean isAlt() { return m_Modifiers.isAlt(); }
@@ -556,7 +572,7 @@ public class KeyPress {
    private static HashMap<Integer, Character> sm_KeyCodeToValue;
    private static StringsInts sm_KeyCodeToName;
    private static LookupTable sm_KeyValueToCode;
-   private static LookupSet sm_Unprintable;
+   private static LookupSet sm_UnprintableAscii;
    private static LookupSet sm_Duplicate;
    private static LookupSet sm_Lost;
    private static boolean sm_Warned;

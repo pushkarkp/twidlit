@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import pkp.twiddle.Chord;
 import pkp.twiddle.Twiddle;
 import pkp.twiddle.KeyMap;
+import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.times.ChordTimes;
 import pkp.util.Pref;
@@ -47,17 +48,14 @@ public class ChordSource implements KeyPressListSource {
          chords.add(new ArrayList<Integer>());
       }
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
-         // if thumbkey-less twiddle of chord is mapped
+         // if thumb-less twiddle of chord is mapped
          Twiddle tw = new Twiddle((byte)(i + 1), 0);
-         if (m_KeyMap.getKeyPressList(tw) != null) {
-            if (counts == null) {
-               // just add in order
-               chords.get(i).add(i + 1);
-            } else {
-               // add in order of times pressed, fewest first
-//System.out.printf("%s:%d ", new Chord(i + 1), counts[i]);
-               chords.get(counts[i]).add(i + 1);
-            }
+         KeyPressList kpl = m_KeyMap.getKeyPressList(tw);
+         if (kpl != null && !kpl.contains(KeyPress.getLost())) {
+            chords.get(counts == null
+                       ? i
+                       : counts[i]
+                       ).add(i + 1);
          }
       }
 //System.out.println();

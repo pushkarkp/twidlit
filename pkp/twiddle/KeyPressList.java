@@ -8,6 +8,7 @@ package pkp.twiddle;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import pkp.lookup.LookupSet;
 import pkp.util.StringWithOffset;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -151,11 +152,21 @@ public class KeyPressList extends java.lang.Object {
    ////////////////////////////////////////////////////////////////////////////
    public KeyPressList createModified(Modifiers mod) {
       KeyPressList kpl = new KeyPressList();
-     for (int i = 0; i < size(); ++i) {
-        KeyPress kp = new KeyPress(get(i).getKeyCode(), get(i).getModifiers().plus(mod));
-        kpl.add(kp);
+      for (int i = 0; i < size(); ++i) {
+         KeyPress kp = new KeyPress(get(i).getKeyCode(), get(i).getModifiers().plus(mod));
+         kpl.add(kp);
       }
       return kpl;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public boolean contains(LookupSet set) {
+      for (int i = 0; i < size(); ++i) {
+         if (get(i).is(set)) {
+            return true;
+         }
+      }
+      return false;
    }
 
    ////////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,11 @@ class LookupImplementation implements LookupTable, LookupSet {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean isSingleKeyed() {
+      return m_Scan == null;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    void empty(int key) {
       key -= m_Offset;
       // only when uninitialized
@@ -40,7 +45,7 @@ class LookupImplementation implements LookupTable, LookupSet {
          m_Lookup[key] = sm_NO_VALUE;
       }
    }
-   
+
    ////////////////////////////////////////////////////////////////////////////
    void add(int key, ArrayList<Integer> scanValues) {
       key -= m_Offset;
@@ -126,6 +131,7 @@ class LookupImplementation implements LookupTable, LookupSet {
    ////////////////////////////////////////////////////////////////////////////
    @Override // LookupSet
    public boolean is(int key) {
+//System.out.printf("0x%x: 0x%x%n", key, get(key));
       return get(key) == sm_TRUE;
    }
 
