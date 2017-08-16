@@ -18,7 +18,7 @@ TWIDDLER=pkp/twiddler/Cfg.class pkp/twiddler/IntSettingBox.class pkp/twiddler/Se
 TWIDLIT=pkp/twidlit/CountsRangeSetter.class pkp/twidlit/Hand.class pkp/twidlit/ProgressPanel.class pkp/twidlit/TwiddlerWindow.class pkp/twidlit/Twidlit.class pkp/twidlit/TwidlitMenu.class
 UTILITIES=pkp/utilities/ChordGroup.class pkp/utilities/ChordGrouper.class pkp/utilities/ChordGroups.class pkp/utilities/ChordMapper.class pkp/utilities/ChordText.class pkp/utilities/SaveChordsWindow.class pkp/utilities/SaveTextWindow.class 
 
-JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/twidlit.duplicate.keys pref/twidlit.event.keys pref/twidlit.name.keys pref/twidlit.value.keys pref/twidlit.lost.keys pref/twidlit.properties pref/twidlit.preferences pref/twidlit.unprintable.keys
+JAR_DATA=data/about.html data/act.html data/icon.gif data/intro.html data/ref.html data/syn.html pref/twidlit.duplicate.keys pref/twidlit.event.keys pref/twidlit.name.keys pref/twidlit.value.keys pref/twidlit.lost.keys pref/twidlit.properties pref/twidlit.preferences pref/twidlit.unprintable.ascii
 CLASSES=${IO} ${STRING} ${LOOKUP} ${UI} ${UTIL} ${CHARS} ${SOURCE} ${TEXT} ${TIMES} ${TWIDDLE} ${TWIDDLER} ${TWIDLIT} ${UTILITIES} 
 CLEAN=rm *.class *~ *.bak tmp
 QUIET_CLEAN=${CLEAN} 2> /dev/null

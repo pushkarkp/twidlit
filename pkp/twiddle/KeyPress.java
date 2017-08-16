@@ -141,7 +141,7 @@ public class KeyPress {
          Io.sm_SINGLE_VALUE)).build();
       // unprintables are mostly < 0x20
       sm_UnprintableAscii = LookupSetBuilder.read(
-         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.unprintable.keys"),
+         Persist.getExistDirJarUrl("#.pref.dir", "twidlit.unprintable.ascii"),
          Io.sm_MUST_EXIST,
          0, 0x20, 
          escChar);
