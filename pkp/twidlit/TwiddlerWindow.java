@@ -37,7 +37,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
    TwiddlerWindow(JCheckBoxMenuItem menuItemHide, boolean vert, boolean right, MouseListener mouseListener, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
-      setTitle("Twiddler");
+      setPersistName("#.twiddler");
       setFocusable(true);
       requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
@@ -64,7 +64,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       setPersistName(getPersistName() + '.' + m_Vh.toString());
       m_ProgressPanel = null;
       createPanels();
-      build();
+      buildHanded();
 
       m_ProgressPercent = Pref.getInt(sm_PROGRESS_TIMED_PERCENT_PREF);
       // The progress bar interval must be small enough
@@ -125,7 +125,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       Persist.set(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], m_ProgressPanel.getMaximum());
       m_RightHand = right;
       m_ProgressPanel.setMaximum(Persist.getInt(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], sm_DEFAULT_PROGRESS_MSEC));
-      build();
+      buildHanded();
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -309,6 +309,12 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       reAutoScale();
 //System.out.printf("PP: w %d h %d%n", m_ProgressPanel.getSize().width, m_ProgressPanel.getSize().height);
 //System.out.printf("TW: w %d h %d%n", m_TwiddlerPanel.getWidth(), m_TwiddlerPanel.getHeight()); 
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private void buildHanded() {
+      build();
+      setTitle(m_RightHand?"Right Hand":"Left Hand");
    }
 
    ////////////////////////////////////////////////////////////////////////////////
