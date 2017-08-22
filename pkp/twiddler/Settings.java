@@ -101,10 +101,11 @@ public interface Settings {
    public enum BoolSettings {
       ENABLE_REPEAT("Enable key repeat", true, 1, 7),
       ENABLE_STORAGE("Enable mass storage", false, 2, 1),
-      STICKY_NUM("Sticky Num button", false, 16, 6),
-      STICKY_SHIFT("Sticky Shift button", false, 128, 6),
+      DIRECT_KEY_MODE("Enable direct key mode", false, 2, 4),
+      JOYSTICK_CLICKS_LEFT("Joystick clicks left", true, 4, 4),
       NO_BLUETOOTH("Disable Bluetooth", false, 8, 6),
-      JOYSTICK_CLICKS_LEFT("Joystick clicks left", true, 4, 4);
+      STICKY_NUM("Sticky Num button", false, 16, 6),
+      STICKY_SHIFT("Sticky Shift button", false, 128, 6);
 
       public String toString() {
          return m_Name + " " + m_Value;
