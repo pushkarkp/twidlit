@@ -105,6 +105,8 @@ public interface Settings {
       JOYSTICK_CLICKS_LEFT("Joystick clicks left", true, 4, 4),
       NO_BLUETOOTH("Disable Bluetooth", false, 8, 6),
       STICKY_NUM("Sticky Num button", false, 16, 6),
+      BIT5("Bit 5", false, 32, 4),
+      BIT6("Bit 6", false, 64, 4),
       STICKY_SHIFT("Sticky Shift button", false, 128, 6);
 
       public String toString() {
