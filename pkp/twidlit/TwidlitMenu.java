@@ -51,6 +51,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(fileMenu);
       m_AllChordsItem = add(fileMenu, sm_FILE_ALL_CHORDS_TEXT);
       add(fileMenu, sm_FILE_OPEN_TEXT);
+      m_ReverseItem = add(fileMenu, sm_FILE_REVERSE_TEXT);
       add(fileMenu, sm_FILE_LIST_TEXT);
       add(fileMenu, sm_FILE_SAVE_AS_TEXT);
       fileMenu.addSeparator();
@@ -375,6 +376,16 @@ class TwidlitMenu extends PersistentMenuBar
          m_FileChooser.showOpenDialog(m_Twidlit);
          m_FileChooser = null;
          return;
+      case sm_FILE_REVERSE_TEXT:
+         if (JOptionPane.YES_OPTION
+          == JOptionPane.showConfirmDialog(
+                m_Twidlit, 
+                "Reverse the current mapping (, -> ')?", 
+                sm_FILE_REVERSE_TEXT, 
+                JOptionPane.YES_NO_OPTION)) {
+            m_Twidlit.setKeyMap(new KeyMap(m_Twidlit.getKeyMap().getAssignments().reversed()));
+         }
+         return;
       case sm_FILE_LIST_TEXT:
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          viewSaveText(command);
@@ -680,6 +691,7 @@ class TwidlitMenu extends PersistentMenuBar
    ///////////////////////////////////////////////////////////////////
    private void setCfg(Cfg cfg) {
       m_AllChordsItem.setEnabled(cfg != null);
+      m_ReverseItem.setEnabled(cfg != null);
       if (cfg == null) {
          cfg = new Cfg(m_SettingsWindow, Assignments.listAllByFingerCount());
       } else if (!cfg.hasAssignments()) {
@@ -980,6 +992,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_FILE_MENU_TEXT = "File";
    private static final String sm_FILE_ALL_CHORDS_TEXT = "Map All Chords";
    private static final String sm_FILE_OPEN_TEXT = "Open...";
+   private static final String sm_FILE_REVERSE_TEXT = "Reverse";
    private static final String sm_FILE_LIST_TEXT = "List";
    private static final String sm_FILE_SAVE_AS_TEXT = "Save As CFG...";
    private static final String sm_FILE_MAP_CHORDS_TEXT = "Create Map File...";
@@ -1056,6 +1069,7 @@ class TwidlitMenu extends PersistentMenuBar
    private SaveChordsWindow m_SaveChordsWindow;
    private JFileChooser m_FileChooser;
    private JMenuItem m_AllChordsItem;
+   private JMenuItem m_ReverseItem;
    private JMenu m_CountsMenu;
    private JMenuItem m_CountsTableItem;
    private JMenuItem m_CountsGraphItem;

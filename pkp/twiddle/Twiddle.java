@@ -95,6 +95,11 @@ public class Twiddle extends java.lang.Object {
 		return new Twiddle(m_Chord, m_ThumbKeys.plus(mod));
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   public Twiddle reversed() {
+      return new Twiddle(getChord().reversed(), getThumbKeys());
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    public boolean equals(Object o) {
       Twiddle other = (Twiddle)o;

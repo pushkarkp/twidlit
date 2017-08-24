@@ -6,6 +6,7 @@
 
 package pkp.twiddle;
 
+import java.util.List;
 import java.util.ArrayList;
 import pkp.util.Log;
 
@@ -47,7 +48,7 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public Assignment(ArrayList<Twiddle> tw, KeyPressList kpl) {
+   public Assignment(List<Twiddle> tw, KeyPressList kpl) {
       m_Twiddles = new ArrayList<Twiddle>(tw);
       m_KeyPressList = kpl;
    }
@@ -55,10 +56,23 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
    ////////////////////////////////////////////////////////////////////////////
    public Assignment(Assignment asg, Modifiers mod) {
       m_Twiddles = new ArrayList<Twiddle>();
-      for (int i = 0; i < asg.getTwiddleCount(); ++i) {
-         m_Twiddles.add(new Twiddle(asg.getTwiddle(i), mod));
+      for (Twiddle tw : asg.m_Twiddles) {
+          m_Twiddles.add(new Twiddle(tw, mod));
       }
       m_KeyPressList = asg.getKeyPressList().createModified(mod);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public Assignment reversed() {
+      // mouse buttons cannot be assigned
+      if (isDefaultMouse()) {
+         return this;
+      }
+      List<Twiddle> tws = new ArrayList<Twiddle>();
+      for (Twiddle tw : m_Twiddles) {
+         tws.add(tw.reversed());
+      }         
+      return new Assignment(tws, getKeyPressList());
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -79,18 +93,18 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
          return m_Twiddles.get(0);
       }
       Twiddle best = m_Twiddles.get(0);
-      for (int i = 1; i < m_Twiddles.size(); ++i) {
-         if (m_Twiddles.get(i).lessThan(best)) {
-            best = m_Twiddles.get(i);
+      for (Twiddle tw : m_Twiddles) {
+         if (tw.lessThan(best)) {
+            best = tw;
          }
       }
       return best;
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean isMap(Twiddle tw) {
-      for (int i = 0; i < m_Twiddles.size(); ++i) {
-         if (tw.equals(m_Twiddles.get(i))) {
+   public boolean isMap(Twiddle twiddle) {
+      for (Twiddle tw : m_Twiddles) {
+         if (twiddle.equals(tw)) {
             return true;
          }
       }
@@ -98,10 +112,10 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public ArrayList<Assignment> separate() {
-      ArrayList<Assignment> asgs = new ArrayList<Assignment>();
-      for (int i = 0; i < m_Twiddles.size(); ++i) {
-         asgs.add(new Assignment(m_Twiddles.get(i), m_KeyPressList));
+   public List<Assignment> separate() {
+      List<Assignment> asgs = new ArrayList<Assignment>();
+      for (Twiddle tw : m_Twiddles) {
+         asgs.add(new Assignment(tw, m_KeyPressList));
       }
       return asgs;
    }
@@ -118,8 +132,8 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
 
    ////////////////////////////////////////////////////////////////////////////
    public boolean isThumbed() {
-      for (int i = 0; i < m_Twiddles.size(); ++i) {
-         if (!m_Twiddles.get(i).getThumbKeys().isEmpty()) {
+      for (Twiddle tw : m_Twiddles) {
+         if (!tw.getThumbKeys().isEmpty()) {
             return true;
          }
       }
@@ -139,11 +153,11 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
       String keys = " = " + m_KeyPressList.toString(format);
       String sep = "";
       String twiddles = "";
-      for (int i = 0; i < m_Twiddles.size(); ++i) {
+      for (Twiddle tw : m_Twiddles) {
          twiddles += sep
                    + (showThumbs
-                     ? m_Twiddles.get(i).toString()
-                     : m_Twiddles.get(i).toShortString())
+                     ? tw.toString()
+                     : tw.toShortString())
                    + keys;
          sep = separator;
       }
@@ -164,6 +178,6 @@ public class Assignment extends java.lang.Object implements Comparable<Assignmen
    }
 
    // Data ////////////////////////////////////////////////////////////////////
-   private ArrayList<Twiddle> m_Twiddles;
+   private List<Twiddle> m_Twiddles;
    private KeyPressList m_KeyPressList;
 }

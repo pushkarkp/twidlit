@@ -154,6 +154,18 @@ public class Assignments extends ArrayList<Assignment> {
       return asgs;
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   public Assignments reversed() {
+      Assignments asgs = new Assignments();
+      for (Assignment asg : this) {
+         List<Assignment> sep = asg.separate();
+         for (Assignment a : sep) {
+            asgs.add(a.reversed());
+         }
+      }         
+      return asgs;
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    public String toString() {
       return toString(Assignment.sm_SHOW_THUMB_KEYS, KeyPress.Format.FILE, false, null);
@@ -167,7 +179,7 @@ public class Assignments extends ArrayList<Assignment> {
    ////////////////////////////////////////////////////////////////////////////
    public String toString(boolean showThumbs, KeyPress.Format format, boolean showAll, SortedChordTimes times) {
       if (!showThumbs) {
-         for (Assignment asg: this) {
+         for (Assignment asg : this) {
             if (asg.isThumbed()) {
                showThumbs = true;
                break;
@@ -194,8 +206,8 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public int find(Twiddle tw) {
-      for (int i = 0; i < size(); ++i) {
-         if (get(i).isMap(tw)) {
+      for (Assignment a : this) {
+         if (a.isMap(tw)) {
             return i;
          }
       }
@@ -318,13 +330,13 @@ public class Assignments extends ArrayList<Assignment> {
             Log.err("Badly formed chord \"" + times.getSortedLabel(i) + "\".");
             continue;
          }
-         for (int a = 0; a < asgs.size(); ++a) {
-            Twiddle tw = asgs.get(a).getTwiddle(0);
+         for (Assignment a : asgs) {
+            Twiddle tw = a.getTwiddle(0);
             if (tw.getChord().toInt() == chord) {
                if (tw.getThumbKeys().isEmpty()) {
-                  sorted.add(asgs.get(a));
+                  sorted.add(a);
                } else {
-                  sortedThumbed.add(asgs.get(a));
+                  sortedThumbed.add(a);
                }
             }
          }

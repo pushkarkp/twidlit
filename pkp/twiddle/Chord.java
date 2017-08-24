@@ -195,14 +195,12 @@ public class Chord {
    /////////////////////////////////////////////////////////////////////////////
    public Chord reversed() {
       int ch = toInt();
-      for (int i = 0; i < 4; ++i) {
-         ch <<= 2;
-         switch (ch & 0x300) {
-         case 0x300: ch &= ~0x200; break;
-         case 0x100: ch |= 0x200; break;
+      for (int i = 0; i < 5; ++i) {
+         if ((ch & 1 << i * 2) != 0) {
+            ch ^= 1 << i * 2 + 1;
          }
       }
-      return new Chord(ch >> 8);
+      return new Chord(ch);
    }
 
    ////////////////////////////////////////////////////////////////////////////
