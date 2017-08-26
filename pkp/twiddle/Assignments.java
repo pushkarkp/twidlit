@@ -206,8 +206,8 @@ public class Assignments extends ArrayList<Assignment> {
 
    ////////////////////////////////////////////////////////////////////////////
    public int find(Twiddle tw) {
-      for (Assignment a : this) {
-         if (a.isMap(tw)) {
+      for (int i = 0; i < size(); ++i) {
+         if (get(i).isMap(tw)) {
             return i;
          }
       }
