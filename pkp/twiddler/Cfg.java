@@ -145,16 +145,11 @@ public class Cfg implements Settings {
       List<Assignment> asgs = a.to121ChordList();
       // v5 has assignments sorted by twiddle
       Collections.sort(asgs);
-
-      // fixed header plus assignments
       int multiCount = getMultiCount(asgs);
       int multiSize = getMultiSize(asgs);
-      if (multiSize > 0) {
-         multiSize += 4;
-      }
 
       int endOfTwiddles = 16 + asgs.size() * 4;
-      byte[] data = new byte[endOfTwiddles + multiSize + mouseMultiCount * 4 + mouseMultiSize];
+      byte[] data = new byte[endOfTwiddles + multiCount * 4 + multiSize + mouseMultiCount * 4 + mouseMultiSize];
       ByteBuffer bb = ByteBuffer.wrap(data);
 
       IntSettings is = s.getIntSettings();
@@ -171,7 +166,9 @@ public class Cfg implements Settings {
 
       writeAssignments(asgs, bb);
 
-      writeJumpInts(mouseMultiCount, multiSize, mouseKeys, bb);
+      writeLocationTable(multiCount + mouseMultiCount, 0, asgs, bb);
+      writeLocationTable(mouseMultiCount, multiSize, mouseKeys, bb);
+
       writeMultikeyTable(asgs, bb);
       writeMultikeyTable(mouseKeys, bb);
       return data;
@@ -232,6 +229,7 @@ public class Cfg implements Settings {
       for (Assignment asg : asgs) {
          int newMultiCount = multiCount;
          KeyPressList kpl = asg.getKeyPressList();
+         // v5 asgs are 121 but v4 are still bundled
          for (int j = 0; j < asg.getTwiddleCount(); ++j) {
             bb.putShort(Io.otherEndian((short)asg.getTwiddle(j).toCfg()));
             newMultiCount = writeKeyPressList(multiCount, kpl, bb);
@@ -254,17 +252,13 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   private static void writeJumpInts(int mouseLeft, int jumpMultiSize, List<Assignment> mouseKeys, ByteBuffer bb) {
-      if (jumpMultiSize > 0) {
-         bb.putInt(Io.otherEndian(bb.position() + 4 * (mouseLeft + 1)));
-         jumpMultiSize -= 4;
-      }
-      for (Assignment ma : mouseKeys) {
-         int size = ma.getKeyPressList().size();
+   private static void writeLocationTable(int count, int skip, List<Assignment> asgs, ByteBuffer bb) {
+      int location = bb.position() + count * 4 + skip;
+      for (Assignment asg : asgs) {
+         int size = asg.getKeyPressList().size();
          if (size > 1) {
-            bb.putInt(Io.otherEndian(bb.position() + mouseLeft * 4 + jumpMultiSize));
-            --mouseLeft;
-            jumpMultiSize += (size + 1) * 2;
+            bb.putInt(Io.otherEndian(location));
+            location += (size + 1) * 2;
          }
       }
    }
