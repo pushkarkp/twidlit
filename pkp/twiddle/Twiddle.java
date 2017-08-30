@@ -38,6 +38,26 @@ public class Twiddle extends java.lang.Object {
    }
    
    ////////////////////////////////////////////////////////////////////////////
+   public static Twiddle fromChordValue(int twiddle) {
+      return new Twiddle(Chord.fromChordValue(twiddle),
+                         new ThumbKeys((twiddle >> 8) & ThumbKeys.sm_VALUES));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static Twiddle fromChordValue(int chord, int thumbKeys) {
+      return new Twiddle(Chord.fromChordValue(chord),
+                         new ThumbKeys(thumbKeys & ThumbKeys.sm_VALUES));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public static Twiddle fromChordOrMouse(int i, int tk) {
+      return new Twiddle((i > Chord.sm_VALUES)
+                         ? Chord.fromMouseButton(i >> 8)
+                         : Chord.fromChordValue(i),
+                         new ThumbKeys(tk));
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public Twiddle() {
       m_Chord = Chord.fromChordValue(0);
       m_ThumbKeys = new ThumbKeys(0);
@@ -53,18 +73,6 @@ public class Twiddle extends java.lang.Object {
    public Twiddle(Chord chord) {
       m_Chord = chord;
       m_ThumbKeys = new ThumbKeys(0);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public Twiddle(int twiddle) {
-      m_Chord = Chord.fromChordValue(twiddle);
-      m_ThumbKeys = new ThumbKeys((twiddle >> 8) & ThumbKeys.sm_VALUES);
-   }
-
-   ////////////////////////////////////////////////////////////////////////////
-   public Twiddle(int chord, int thumbKeys) {
-      m_Chord = Chord.fromChordValue(chord);
-      m_ThumbKeys = new ThumbKeys(thumbKeys & ThumbKeys.sm_VALUES);
    }
 
    ////////////////////////////////////////////////////////////////////////////

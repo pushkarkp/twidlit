@@ -49,7 +49,7 @@ public class ChordSource implements KeyPressListSource {
       }
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
          // if thumb-less twiddle of chord is mapped
-         Twiddle tw = new Twiddle((byte)(i + 1), 0);
+         Twiddle tw = Twiddle.fromChordValue(i + 1, 0);
          KeyPressList kpl = m_KeyMap.getKeyPressList(tw);
          if (kpl != null && !kpl.contains(KeyPress.getLost())) {
             chords.get(counts == null
@@ -84,7 +84,7 @@ public class ChordSource implements KeyPressListSource {
    public KeyPressList getNext() {
       KeyPressList kpl;
       do {
-         Twiddle tw = new Twiddle((byte)(int)m_UniformSource.get(), 0);
+         Twiddle tw = Twiddle.fromChordValue(m_UniformSource.get(), 0);
          kpl = m_KeyMap.getKeyPressList(tw);
          if (kpl == null) {
             Log.log("No keys defined for " + tw);

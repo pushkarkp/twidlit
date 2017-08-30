@@ -429,7 +429,7 @@ public class Cfg implements Settings {
          if (t == 0 || k == 0) {
             Log.err(String.format("Format error: twiddle 0x%x key 0x%x at %d in %s.", t, k, bb.remaining() - 2, path));
          }
-         Twiddle tw = new Twiddle((byte)toChord(t), toThumbKeys(t));
+         Twiddle tw = Twiddle.fromChordValue(toChord(t), toThumbKeys(t));
       }
 
       // multi-key assignments
@@ -461,7 +461,7 @@ public class Cfg implements Settings {
       if ((c == 0 && t == 0) || k == 0) {
          Log.err(String.format("Format error: twiddle 0x%x key 0x%x in %s.", t, k, path));
       }
-      Twiddle tw = new Twiddle((byte)c, t);
+      Twiddle tw = Twiddle.fromChordOrMouse(c, t);
       if (k < 0) {
          multi.add(tw);
          whichKpl.add(k & 0xFF);
