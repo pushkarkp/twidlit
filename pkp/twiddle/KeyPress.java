@@ -454,7 +454,7 @@ public class KeyPress {
       }
       // comment char only needs escape in files
       if (file && keyValue == Io.sm_COMMENT) {
-         return "\\" + Io.sm_COMMENT;
+         return modifiers.toString("\\" + Io.sm_COMMENT);
       }
       if (format == Format.STD
        || format == Format.ESC) {
