@@ -694,9 +694,11 @@ class TwidlitMenu extends PersistentMenuBar
       m_ReverseItem.setEnabled(cfg != null);
       if (cfg == null) {
          cfg = new Cfg(m_SettingsWindow, Assignments.listAllByFingerCount());
-      } else if (!cfg.hasAssignments()) {
+      } else if (!cfg.hasChords()) {
          Log.warn("There were no assignments in the configuration, using default.");
          cfg = new Cfg(cfg, Assignments.listAllByFingerCount());
+         m_AllChordsItem.setEnabled(false);
+         m_ReverseItem.setEnabled(false);
       }
       m_TwidlitInit.setKeyMap(new KeyMap(cfg.getAssignments()));
       boolean settingsVisible = m_SettingsWindow.isVisible();

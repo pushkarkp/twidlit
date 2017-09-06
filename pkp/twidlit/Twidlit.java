@@ -143,7 +143,7 @@ class Twidlit
    /////////////////////////////////////////////////////////////////////////////
    @Override // TwidlitInit
    public boolean setKeyMap(KeyMap km) {
-      if (km == null) {
+      if (km == null || !km.getAssignments().hasChords()) {
          return false;
       }
       m_KeyMap = km;

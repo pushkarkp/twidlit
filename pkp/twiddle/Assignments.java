@@ -119,6 +119,11 @@ public class Assignments extends ArrayList<Assignment> {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public boolean hasChords() {
+      return to121ChordList().size() > 0;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    // An assignment maps one KeyPressList to all its twiddles.
    // This returns a list of all defined chord twiddles each,
    // with their KeyPressList.

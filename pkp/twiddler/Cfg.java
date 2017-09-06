@@ -99,9 +99,9 @@ public class Cfg implements Settings {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public boolean hasAssignments() {
+   public boolean hasChords() {
       return m_Assignments != null 
-          && !m_Assignments.isEmpty();
+          && m_Assignments.hasChords();
    }
 
    ////////////////////////////////////////////////////////////////////////////
