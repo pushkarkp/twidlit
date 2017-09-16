@@ -75,10 +75,6 @@ public class SortedChordTimes implements SharedIndexableInts {
       double rSum = 0.0;
       for (int j = 0; j < Chord.sm_VALUES; ++j) {
          int i = j + 1;
-         sct.m_Times[j] = times.getMean(i, 0);
-         if (sct.m_Times[j] == 0) {
-            sct.m_Times[j] = sm_EMPTY;
-         }
          final int r = Chord.reverse(i);
          final Chord c = Chord.fromChordValue(i);
          if (i < r && (side == c.none(Chord.Button.R))) {
@@ -86,6 +82,7 @@ public class SortedChordTimes implements SharedIndexableInts {
             final int rSample = times.getCount(r, 0);
             if (iSample == 0 || rSample == 0) {
                sct.m_Labels[j] = c.toString();
+               sct.m_Times[j] = sm_EMPTY;
             } else {
                final int iTime = times.getMean(i, 0);
                final int rTime = times.getMean(r, 0);
@@ -95,6 +92,7 @@ public class SortedChordTimes implements SharedIndexableInts {
                   percent = diff * 100.0 / rTime;
                   sct.m_Labels[j] = c
                        + String.format(" %5d %5d %6.1f %3d %3d", iTime, diff, percent, iSample, rSample);
+                  sct.m_Times[j] = iTime;
                   if (side) {
                      ++iCount;
                      iSum += percent;
@@ -104,6 +102,7 @@ public class SortedChordTimes implements SharedIndexableInts {
                   percent = diff * 100.0 / iTime;
                   sct.m_Labels[j] = Chord.fromChordValue(r)
                        + String.format(" %5d %5d %6.1f %3d %3d", rTime, diff, percent, rSample, iSample);
+                  sct.m_Times[j] = rTime;
                   if (side) {
                      ++rCount;
                      rSum += percent;
