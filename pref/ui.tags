@@ -31,6 +31,10 @@ chords.by.time.y
 chords.by.time.x
 chords.by.time.w
 chords.by.time.h
+compare.chords.y
+compare.chords.x
+compare.chords.w
+compare.chords.h
 count.progress.y
 count.progress.x
 count.progress.w

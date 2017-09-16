@@ -16,6 +16,49 @@ public class Chord {
    public static final int sm_ROWS = 4;
    public static final int sm_COLUMNS = 3;
 
+   ////////////////////////////////////////////////////////////////////////////
+   public enum Format {
+      DISPLAY("For display (user set)"),
+      FILE("For files (user set)"),
+      STD("Escaped text with named white space"),
+      TAG("Tags"),
+      ESC("Escaped"),
+      HEX("Hexadecimal"),
+      TXT("Text");
+
+      public String toString() {
+         return m_Description;
+      }
+
+      private Format(String description) {
+         m_Description = description;
+      }
+      private final String m_Description;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public enum Button {
+      O("|", 0),
+      L("'", 1),
+      M("-", 2),
+      R(",", 3);
+
+      public String toString() {
+         return m_Name;
+      }
+
+      public int toInt() {
+         return m_I;
+      }
+
+      private Button(String name, int i) {
+         m_Name = name;
+         m_I = i;
+      }
+      private final String m_Name;
+      private final int m_I;
+   }
+
    /////////////////////////////////////////////////////////////////////////////
    public static void use4Finger(boolean set) {
       sm_4Finger = set;
@@ -81,6 +124,16 @@ public class Chord {
          return finger;
       }
       return order.charAt(finger) - '1';
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static int reverse(int ch) {
+      for (int i = 0; i < 5; ++i) {
+         if ((ch & 1 << i * 2) != 0) {
+            ch ^= 1 << i * 2 + 1;
+         }
+      }
+      return ch;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -193,14 +246,19 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public Chord reversed() {
-      int ch = toInt();
-      for (int i = 0; i < 5; ++i) {
-         if ((ch & 1 << i * 2) != 0) {
-            ch ^= 1 << i * 2 + 1;
+   public boolean none(Button b) {
+      int asInt = toInt();
+      for (int i = 0; i < sm_ROWS; ++i) {
+         if (getFingerButton(i, asInt) == b.toInt()) {
+            return false;
          }
       }
-      return new Chord(ch);
+      return true;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public Chord reversed() {
+      return new Chord(reverse(toInt()));
    }
 
    ////////////////////////////////////////////////////////////////////////////

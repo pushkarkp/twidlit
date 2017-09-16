@@ -119,6 +119,8 @@ class TwidlitMenu extends PersistentMenuBar
       m_TutorTimedItem = addCheckItem(tutorMenu, sm_TUTOR_TIMED_TEXT);
       m_TutorOtherTimed = Persist.getBool(sm_TUTOR_OTHER_TIMED_PERSIST);
       add(tutorMenu, sm_TUTOR_CHORDS_BY_TIME_TEXT);
+      add(tutorMenu, sm_TUTOR_SIDE_CHORD_TIMES_TEXT);
+      add(tutorMenu, sm_TUTOR_CROSS_CHORD_TIMES_TEXT);
       add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
       
       JMenu helpMenu = new JMenu(sm_HELP_MENU_TEXT);
@@ -297,11 +299,27 @@ class TwidlitMenu extends PersistentMenuBar
                          m_Twidlit.getKeyMap().getAssignments())).toString();
       case sm_CHORDS_BY_TIME_TITLE: {
          ChordTimes ct = m_Twidlit.getChordTimes();
+         SortedChordTimes sct = new SortedChordTimes(ct);
          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-         return "# T" + ct.getExtension().replace('.', ' ').substring(1) + '\n'
-              + "# " + df.format(Calendar.getInstance().getTime()) + '\n'
-              + "#   Mean Range (Times)\n"
-              + (new SortedChordTimes(ct)).listChordsByTime();
+         return ct.header("Timed", df.format(Calendar.getInstance().getTime()))
+              + sct.getPreamble()
+              + sct.listChordsByTime();
+      }
+      case sm_SIDE_CHORD_TIMES_TITLE: {
+         ChordTimes ct = m_Twidlit.getChordTimes();
+         SortedChordTimes sct = SortedChordTimes.asComparison(ct, true);
+         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+         return ct.header("Preferred side", df.format(Calendar.getInstance().getTime()))
+              + sct.getPreamble()
+              + sct.listChordsByTime();
+      }
+      case sm_CROSS_CHORD_TIMES_TITLE: {
+         ChordTimes ct = m_Twidlit.getChordTimes();
+         SortedChordTimes sct = SortedChordTimes.asComparison(ct, false);
+         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+         return ct.header("Preferred cross", df.format(Calendar.getInstance().getTime()))
+              + sct.getPreamble()
+              + sct.listChordsByTime();
       }
       default:
          Log.err("TwidlitMenu.getContentForTitle() bad title: " + title);
@@ -388,6 +406,8 @@ class TwidlitMenu extends PersistentMenuBar
          return;
       case sm_FILE_LIST_TEXT:
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
+      case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
+      case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
          viewSaveText(command);
          return;
       case sm_FILE_SAVE_AS_TEXT:
@@ -622,7 +642,17 @@ class TwidlitMenu extends PersistentMenuBar
          break;
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          scw = new SaveChordsWindow(this, sm_CHORDS_BY_TIME_TITLE, m_CfgDir);
-         scw.setExtension(m_Twidlit.getChordTimes().getExtension());
+         scw.setExtension("timed." + m_Twidlit.getChordTimes().getExtension());
+         break;
+      case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
+         scw = new SaveChordsWindow(this, sm_SIDE_CHORD_TIMES_TITLE, m_CfgDir);
+         scw.setPersistName(sm_COMPARE_CHORDS_PERSIST);
+         scw.setExtension("side." + m_Twidlit.getChordTimes().getExtension());
+         break;
+      case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
+         scw = new SaveChordsWindow(this, sm_CROSS_CHORD_TIMES_TITLE, m_CfgDir);
+         scw.setPersistName(sm_COMPARE_CHORDS_PERSIST);
+         scw.setExtension("cross." + m_Twidlit.getChordTimes().getExtension());
          break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
@@ -797,6 +827,8 @@ class TwidlitMenu extends PersistentMenuBar
             Log.err("CfgSaver: unknown action \"" + action + '"');
          case sm_FILE_LIST_TEXT:
          case sm_TUTOR_CHORDS_BY_TIME_TEXT:
+         case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
+         case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
             m_Action = action;
          }   
       }
@@ -804,8 +836,11 @@ class TwidlitMenu extends PersistentMenuBar
       ////////////////////////////////////////////////////////////////
       @Override 
       public void fileChosen(JFileChooser fc) {
-         if (m_Action == sm_TUTOR_CHORDS_BY_TIME_TEXT) {
-            Log.err(String.format("m_Action == %s", sm_TUTOR_CHORDS_BY_TIME_TEXT));
+         switch (m_Action) {
+         case sm_TUTOR_CHORDS_BY_TIME_TEXT:
+         case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
+         case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
+            Log.err(String.format("m_Action == %s", m_Action));
          }
          File f = fc.getSelectedFile();
          if (f.exists()
@@ -1024,6 +1059,8 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_SET_DELAY_TEXT = "Set Chord Delay...";
    private static final String sm_TUTOR_TIMED_TEXT = "Timed";
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
+   private static final String sm_TUTOR_SIDE_CHORD_TIMES_TEXT = "Compare Side Chords";
+   private static final String sm_TUTOR_CROSS_CHORD_TIMES_TEXT = "Compare Cross Chords";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
    public static final String sm_HELP_MENU_TEXT = "Help";
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
@@ -1036,6 +1073,8 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
    private static final String sm_SAVE_AS_TITLE = "Mapped Chords";
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
+   private static final String sm_SIDE_CHORD_TIMES_TITLE = "Compare Side Chord Times";
+   private static final String sm_CROSS_CHORD_TIMES_TITLE = "Compare Cross Chord Times";
 
    public static final String sm_LOG_FILE_NAME = "twidlit.log";
 
@@ -1057,6 +1096,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_KEY_SOURCE_FILE_PERSIST = "#.key.source.file";
    private static final String sm_TUTOR_OTHER_TIMED_PERSIST = "#.tutor.other.timed";
    private static final String sm_TUTOR_OTHER_AUTOSCALE_PERSIST = "#.tutor.other.autoscale";
+   private static final String sm_COMPARE_CHORDS_PERSIST = "#.compare.chords";
 
    // Data ///////////////////////////////////////////////////////////
    // At initialization time m_TwidlitInit is a separate object

@@ -65,7 +65,82 @@ public class SortedChordTimes implements SharedIndexableInts {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public static SortedChordTimes asComparison(ChordTimes times, boolean side) {
+      SortedChordTimes sct = new SortedChordTimes();
+      int count = 0;
+      double sum = 0.0;
+      int iCount = 0;
+      double iSum = 0.0;
+      int rCount = 0;
+      double rSum = 0.0;
+      for (int j = 0; j < Chord.sm_VALUES; ++j) {
+         int i = j + 1;
+         sct.m_Times[j] = times.getMean(i, 0);
+         if (sct.m_Times[j] == 0) {
+            sct.m_Times[j] = sm_EMPTY;
+         }
+         final int r = Chord.reverse(i);
+         final Chord c = Chord.fromChordValue(i);
+         if (i < r && (side == c.none(Chord.Button.R))) {
+            final int iSample = times.getCount(i, 0);
+            final int rSample = times.getCount(r, 0);
+            if (iSample == 0 || rSample == 0) {
+               sct.m_Labels[j] = c.toString();
+            } else {
+               final int iTime = times.getMean(i, 0);
+               final int rTime = times.getMean(r, 0);
+               double percent;
+               if (iTime <= rTime) {
+                  final int diff = rTime - iTime;
+                  percent = diff * 100.0 / rTime;
+                  sct.m_Labels[j] = c
+                       + String.format(" %5d %5d %6.1f %3d %3d", iTime, diff, percent, iSample, rSample);
+                  if (side) {
+                     ++iCount;
+                     iSum += percent;
+                  }
+               } else {
+                  final int diff = iTime - rTime;
+                  percent = diff * 100.0 / iTime;
+                  sct.m_Labels[j] = Chord.fromChordValue(r)
+                       + String.format(" %5d %5d %6.1f %3d %3d", rTime, diff, percent, rSample, iSample);
+                  if (side) {
+                     ++rCount;
+                     rSum += percent;
+                  }
+               }
+               ++count;
+               sum += percent;
+            }
+         }
+      }
+      sct.m_Index = SharedIndex.create(sct, 0, Integer.MAX_VALUE);
+
+      if (count > 0) {
+         sct.m_Preamble +=
+            String.format("# Mean diff of %d %s chords: %.1f%%%n", 
+                          count, (side ? "side" : "cross"), sum / count);
+         if (side) {
+            if (rCount > 0) {
+               sct.m_Preamble += 
+                  String.format("# Mean diff of %d %s chords: %.1f%%%n", 
+                                rCount, (times.isRightHand() ? "near" : "far"), rSum / rCount);
+            }
+            if (rCount > 0) {
+               sct.m_Preamble += 
+                  String.format("# Mean diff of %d %s chords: %.1f%%%n", 
+                                iCount, (times.isRightHand() ? "far" : "near"), iSum / iCount);
+            }
+         }
+      }
+      sct.m_Preamble += "#     msec  Diff      %  #<  #>\n";
+
+      return sct;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public SortedChordTimes(ChordTimes times) {
+      m_Preamble = "#   Mean Range (Times)\n";
       m_Times = new int[Chord.sm_VALUES];
       m_Labels = new String[Chord.sm_VALUES];
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
@@ -102,6 +177,11 @@ public class SortedChordTimes implements SharedIndexableInts {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public String getPreamble() {
+      return m_Preamble;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public int findChord(String chord) {
       return Util.findStartsWith(chord, m_Labels);
    }
@@ -110,7 +190,9 @@ public class SortedChordTimes implements SharedIndexableInts {
    public String listChordsByTime() {
       String str = "";
       for (int i = 0; i < Chord.sm_VALUES; ++i) {
-         str += m_Index.getLabel(i) + "\n";
+         if (m_Index.getLabel(i) != null) {
+            str += m_Index.getLabel(i) + "\n";
+         }
       }
       return str;
    }
@@ -127,9 +209,17 @@ public class SortedChordTimes implements SharedIndexableInts {
    
    // Private //////////////////////////////////////////////////////////////////
 
-   // Data /////////////////////////////////////////////////////////////////////
-   private final int sm_EMPTY = Integer.MAX_VALUE;
+   /////////////////////////////////////////////////////////////////////////////
+   private SortedChordTimes() {
+      m_Preamble = "";
+      m_Times = new int[Chord.sm_VALUES];
+      m_Labels = new String[Chord.sm_VALUES];
+   }
 
+   // Data /////////////////////////////////////////////////////////////////////
+   private static final int sm_EMPTY = Integer.MAX_VALUE;
+
+   private String m_Preamble;
    private int[] m_Times;
    private String[] m_Labels;
    private SharedIndex m_Index;

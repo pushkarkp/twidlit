@@ -56,10 +56,15 @@ public class ChordTimes implements Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    public String getExtension() {
-      return "timed."
-           + (isRightHand() ? "right." : "left.")
+      return (isRightHand() ? "right." : "left.")
            + (isKeystrokes() ? "key." : "")
            + "chords";
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public String header(String what, String time) {
+      return "# " + what + ' ' + getExtension().replace('.', ' ') + '\n'
+           + "# " + time + '\n';
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -223,6 +228,16 @@ public class ChordTimes implements Persistent {
       return str;
    }
    
+   /////////////////////////////////////////////////////////////////////////////
+   // returns the number of valid entries [0..m_SPAN]
+   int getCount(int chord, int thumb) {
+      int count = m_Counts[thumb][chord - 1] & m_SPAN;
+      if (count != 0) {
+         return count;
+      }
+      return m_Counts[thumb][chord - 1] & (m_SPAN - 1);
+   }
+
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
@@ -256,16 +271,6 @@ public class ChordTimes implements Persistent {
       load();
    }
 
-   /////////////////////////////////////////////////////////////////////////////
-   // returns the number of valid entries [0..m_SPAN]
-   private int getCount(int chord, int thumb) {
-      int count = m_Counts[thumb][chord - 1] & m_SPAN;
-      if (count != 0) {
-         return count;
-      }
-      return m_Counts[thumb][chord - 1] & (m_SPAN - 1);
-   }
-   
    ////////////////////////////////////////////////////////////////////////////
    // false: remove (oldest) mean for a span of a chord.
    // if it was empty then this is a new chord, so increment count.
