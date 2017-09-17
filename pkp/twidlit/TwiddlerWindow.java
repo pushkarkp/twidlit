@@ -387,8 +387,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       )
       {
          @Override
-         int getButton(int row, int column) {
-            return row * Chord.sm_COLUMNS + column - 1;
+         int getButton(int finger, int button) {
+            return finger * Chord.sm_BUTTONS + button - 1;
          }
       },
       
@@ -404,8 +404,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       )
       {
          @Override
-         int getButton(int row, int column) {
-            return (Chord.sm_COLUMNS - column) * Chord.sm_ROWS + row;
+         int getButton(int finger, int button) {
+            return (Chord.sm_BUTTONS - button) * Chord.sm_FINGERS + finger;
          }
       };
       
@@ -439,7 +439,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       int getTwiddlerLayout() { return m_TwiddlerLayout; }
       Dimension getTwiddlerRigidArea() { return m_TwiddlerRigidArea; }
       int[] getThumbKeyMap() { return m_ThumbKeyMap; }
-      abstract int getButton(int row, int column);
+      abstract int getButton(int finger, int button);
 
       private boolean m_IsVertical;
       private Dimension m_ThumbKeySize;
@@ -684,11 +684,11 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       if (m_Twiddle.getChord().isMouseButton()) {
          ((KeyPanel)m_MousePanel.getComponent(m_Twiddle.getChord().getMouseButton() - 1)).setButtonColor(m_COLOR_BUTTON_HIGHLIGHT);
       } else {
-         for (int r = 0; r < Chord.sm_ROWS; ++r) {
-            int c = m_Twiddle.getChord().getRowKey(r);
+         for (int f = 0; f < Chord.sm_FINGERS; ++f) {
+            int c = m_Twiddle.getChord().getFingerKey(f);
             if (c != 0) {
    //System.out.printf("r %d c %d button %d%n", r, c, m_Vh.getButton(r, c));
-               m_ChordPanel.getComponent(m_Vh.getButton(r, c)).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
+               m_ChordPanel.getComponent(m_Vh.getButton(f, c)).setBackground(m_COLOR_BUTTON_HIGHLIGHT);
             }
          }
       }
@@ -762,10 +762,10 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       if (ch.isMouseButton()) {
          ((KeyPanel)m_MousePanel.getComponent(ch.getMouseButton() - 1)).setMark(type);
       } else {
-         for (int r = 0; r < Chord.sm_ROWS; ++r) {
-            int c = ch.getRowKey(r);
+         for (int f = 0; f < Chord.sm_FINGERS; ++f) {
+            int c = ch.getFingerKey(f);
             if (c != 0) {
-               ((KeyPanel)m_ChordPanel.getComponent(m_Vh.getButton(r, c))).setMark(type);
+               ((KeyPanel)m_ChordPanel.getComponent(m_Vh.getButton(f, c))).setMark(type);
             }
          }
       }

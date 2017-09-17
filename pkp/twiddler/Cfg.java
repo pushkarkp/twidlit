@@ -45,11 +45,11 @@ public class Cfg implements Settings {
       }
       Assignments asgs = cfg.getAssignments();
       List<Assignment> ma = asgs.toSortedMouseButtons();
-      for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
-         if (ma.get(i).getKeyPressList().size() == 0) {
+      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
+         if (ma.get(b).getKeyPressList().size() == 0) {
             asgs.add(new Assignment(
-                  new Twiddle(Chord.fromMouseButton(i + 1)), 
-                  new KeyPressList(KeyPress.fromMouseButton(i + 1))));
+                  new Twiddle(Chord.fromMouseButton(b + 1)), 
+                  new KeyPressList(KeyPress.fromMouseButton(b + 1))));
          }
       }
       return cfg;
@@ -321,10 +321,10 @@ public class Cfg implements Settings {
       List<Integer> whichKpl = new ArrayList<Integer>();
 
       // mouse buttons
-      for (int i = 0; i < Chord.sm_COLUMNS; ++i) {
+      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
          int k = bb.getShort();
          if (k != 0) {
-            int c = i + 1 << 8;
+            int c = b + 1 << 8;
             readKeyMap(c, 0, k, path, multi, whichKpl);
          }
       }
