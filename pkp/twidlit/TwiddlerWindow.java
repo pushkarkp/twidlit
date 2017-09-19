@@ -125,6 +125,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       Persist.set(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], m_ProgressPanel.getMaximum());
       m_RightHand = right;
       m_ProgressPanel.setMaximum(Persist.getInt(sm_PERSIST_PROGRESS_MSEC[m_RightHand?1:0], sm_DEFAULT_PROGRESS_MSEC));
+      save();
       buildHanded();
    }
 

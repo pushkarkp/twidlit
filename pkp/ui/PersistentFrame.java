@@ -59,10 +59,8 @@ public class PersistentFrame extends JFrame {
       return m_PersistName;
    }
    
-   // Private /////////////////////////////////////////////////////////////////
-
    ////////////////////////////////////////////////////////////////////////////
-   private void save() {
+   public void save() {
       String persistName = getPersistName();
       Rectangle r = getBounds();
 //System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", r.x);
@@ -71,6 +69,8 @@ public class PersistentFrame extends JFrame {
       Persist.set(persistName + ".w", Integer.toString(r.width));
       Persist.set(persistName + ".h", Integer.toString(r.height));
    }
+
+   // Private /////////////////////////////////////////////////////////////////
 
    // Data ////////////////////////////////////////////////////////////////////
    private String m_PersistName = null;
