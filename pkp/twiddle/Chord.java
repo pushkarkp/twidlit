@@ -42,16 +42,42 @@ public class Chord {
       L("'", 1),
       M("-", 2),
       R(",", 3);
-
       public String toString() {
          return m_Name;
       }
-
       public int toInt() {
          return m_I;
       }
-
+      public Button reverse() {
+         switch (toInt()) {
+         case 3: return O;
+         case 2: return L;
+         case 1: return M;
+         case 0: return R;
+         }
+         return O;
+      }
       private Button(String name, int i) {
+         m_Name = name;
+         m_I = i;
+      }
+      private final String m_Name;
+      private final int m_I;
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public enum Finger {
+      I("Index", 0),
+      M("Middle", 1),
+      R("Ring", 2),
+      P("Pinky", 3);
+      public String toString() {
+         return m_Name;
+      }
+      public int toInt() {
+         return m_I;
+      }
+      private Finger(String name, int i) {
          m_Name = name;
          m_I = i;
       }

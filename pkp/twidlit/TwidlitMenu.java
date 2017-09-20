@@ -121,6 +121,7 @@ class TwidlitMenu extends PersistentMenuBar
       add(tutorMenu, sm_TUTOR_CHORDS_BY_TIME_TEXT);
       add(tutorMenu, sm_TUTOR_SIDE_CHORD_TIMES_TEXT);
       add(tutorMenu, sm_TUTOR_CROSS_CHORD_TIMES_TEXT);
+      add(tutorMenu, sm_TUTOR_BUTTON_TIMES_TEXT);
       add(tutorMenu, sm_TUTOR_CLEAR_TIMES_TEXT);
       
       JMenu helpMenu = new JMenu(sm_HELP_MENU_TEXT);
@@ -321,6 +322,12 @@ class TwidlitMenu extends PersistentMenuBar
               + sct.getPreamble()
               + sct.listChordsByTime();
       }
+      case sm_BUTTON_TIMES_TITLE: {
+         ChordTimes ct = m_Twidlit.getChordTimes();
+         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+         return "# Button times\n# " + df.format(Calendar.getInstance().getTime()) + '\n'
+              + ct.compareButtons(m_Twidlit.getTwiddlerWindow().isVertical());
+      }
       default:
          Log.err("TwidlitMenu.getContentForTitle() bad title: " + title);
          return "";
@@ -408,6 +415,7 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_TUTOR_CHORDS_BY_TIME_TEXT:
       case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
       case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
+      case sm_TUTOR_BUTTON_TIMES_TEXT:
          viewSaveText(command);
          return;
       case sm_FILE_SAVE_AS_TEXT:
@@ -654,6 +662,11 @@ class TwidlitMenu extends PersistentMenuBar
          scw.setPersistName(sm_COMPARE_CHORDS_PERSIST);
          scw.setExtension("cross." + m_Twidlit.getChordTimes().getExtension());
          break;
+      case sm_TUTOR_BUTTON_TIMES_TEXT:
+         scw = new SaveChordsWindow(this, sm_BUTTON_TIMES_TITLE, m_CfgDir);
+         scw.setPersistName(sm_COMPARE_CHORDS_PERSIST);
+         scw.setExtension("txt");
+         break;
        default:
          Log.err("TwidlitMenu.viewSaveText(): unexpected command " + command);
          return;
@@ -829,6 +842,7 @@ class TwidlitMenu extends PersistentMenuBar
          case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
          case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
+         case sm_TUTOR_BUTTON_TIMES_TEXT:
             m_Action = action;
          }   
       }
@@ -840,6 +854,7 @@ class TwidlitMenu extends PersistentMenuBar
          case sm_TUTOR_CHORDS_BY_TIME_TEXT:
          case sm_TUTOR_SIDE_CHORD_TIMES_TEXT:
          case sm_TUTOR_CROSS_CHORD_TIMES_TEXT:
+         case sm_TUTOR_BUTTON_TIMES_TEXT:
             Log.err(String.format("m_Action == %s", m_Action));
          }
          File f = fc.getSelectedFile();
@@ -1061,6 +1076,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_CHORDS_BY_TIME_TEXT = "List Chords By Time";
    private static final String sm_TUTOR_SIDE_CHORD_TIMES_TEXT = "Compare Side Chords";
    private static final String sm_TUTOR_CROSS_CHORD_TIMES_TEXT = "Compare Cross Chords";
+   private static final String sm_TUTOR_BUTTON_TIMES_TEXT = "Compare Button Times";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
    public static final String sm_HELP_MENU_TEXT = "Help";
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
@@ -1075,6 +1091,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CHORDS_BY_TIME_TITLE = "Chords By Time";
    private static final String sm_SIDE_CHORD_TIMES_TITLE = "Compare Side Chord Times";
    private static final String sm_CROSS_CHORD_TIMES_TITLE = "Compare Cross Chord Times";
+   private static final String sm_BUTTON_TIMES_TITLE = "Compare Button Times";
 
    public static final String sm_LOG_FILE_NAME = "twidlit.log";
 

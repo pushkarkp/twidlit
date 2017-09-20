@@ -173,6 +173,51 @@ public class ChordTimes implements Persistent {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public String compareButtons(boolean vertical) {
+      if (getMeanCount(0) < Chord.sm_VALUES) {
+         return "";
+      }
+      int sum = 0;
+      int counts[][] = new int[Chord.sm_FINGERS][];
+      int sums[][] = new int[Chord.sm_FINGERS][];
+      for (int f = 0; f < Chord.sm_FINGERS; ++f) {
+         counts[f] = new int[4];
+         sums[f] = new int[4];
+         for (int b = 0; b < 4; ++b) {
+            counts[f][b] = 0;
+            sums[f][b] = 0;
+         }
+      }
+      for (int c = 0; c < Chord.sm_VALUES; ++c) {
+         sum += getMean(c + 1, 0);
+         for (int f = 0; f < Chord.sm_FINGERS; ++f) {
+            for (Chord.Button b : Chord.Button.values()) {
+               if (Chord.fromChordValue(c + 1).contains(f, b)) {
+                  ++counts[f][b.toInt()];
+                  sums[f][b.toInt()] += getMean(c + 1, 0);
+               }
+            }
+         }
+      }
+
+      return '\n' 
+           + String.format("Samples: %d%n", getTotalSamples(0))
+           + String.format("Mean (msec): %d%n", sum / Chord.sm_VALUES)
+           + "\nChords per button\n"
+           + toString(new Count(counts), vertical)
+           + "\nMean (msec)\n" 
+           + toString(new Mean(counts, sums), vertical)
+           + "\nDiff from total mean (msec)\n" 
+           + toString(new CompareToMean(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
+           + "\nDiff from total mean (%)\n" 
+           + toString(new CompareToMeanPercent(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
+           + String.format("\nDiff from %c mean (msec)\n", Chord.buttonToChar(Chord.Button.O.toInt()))
+           + toString(new CompareToNone(counts, sums), vertical)
+           + String.format("\nDiff from %c mean (%%)\n", Chord.buttonToChar(Chord.Button.O.toInt()))
+           + toString(new CompareToNonePercent(counts, sums), vertical);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    @Override
    public void persist(String tag) {
 //System.out.println("persist " + getFileName());
@@ -239,6 +284,171 @@ public class ChordTimes implements Persistent {
    }
 
    // Private //////////////////////////////////////////////////////////////////
+
+   /////////////////////////////////////////////////////////////////////////////
+   private static String toString(Output o, boolean vertical) {
+      final String fmt = String.format("%%%dc ", o.width());
+      String str = "";
+      if (vertical) {
+         str = "       ";
+         for (Chord.Button b : Chord.Button.values()) {
+            str += String.format(fmt, Chord.buttonToChar(b.reverse().toInt()));
+         }
+         str += '\n';
+         for (Chord.Finger f : Chord.Finger.values()) {
+            str += String.format("%6s ", f.toString());
+            for (Chord.Button b : Chord.Button.values()) {
+               str += o.toString(f.toInt(), b.reverse().toInt());
+            }
+            str += '\n';
+         }
+      } else {
+         str = "  ";
+         for (Chord.Finger f : Chord.Finger.values()) {
+            str += String.format(fmt.replace('c', 's'), f.toString());
+         }
+         str += '\n';
+         for (Chord.Button b : Chord.Button.values()) {
+            String line = "";
+            for (Chord.Finger f : Chord.Finger.values()) {
+               line += o.toString(f.toInt(), b.reverse().toInt());
+            }
+            if (line.length() > 0) {
+               str += String.format("%c ", Chord.buttonToChar(b.reverse().toInt()))
+                    + line + '\n';
+            }
+         }
+      }
+      return str;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public interface Output {
+      public String toString(int f, int b);
+      public int width();
+   }
+   
+   /////////////////////////////////////////////////////////////////////////////
+   public class Count implements Output {
+      public Count(int c[][]) {
+         counts = c;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         String fmt = String.format("%%%dd ", width());
+         return String.format(fmt, counts[f][b]);
+      }
+      private final int width = 5;
+      private int counts[][];
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class Mean implements Output {
+      public Mean(int c[][], int s[][]) {
+         counts = c;
+         sums = s;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         String fmt = String.format("%%%d.0f ", width());
+         return String.format(fmt, (double)sums[f][b] / counts[f][b]);
+      }
+      private final int width = 5;
+      private int counts[][];
+      private int sums[][];
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class CompareToMean implements Output {
+      public CompareToMean(int c[][], int s[][], double m) {
+         counts = c;
+         sums = s;
+         mean = m;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         String fmt = String.format("%%%d.1f ", width());
+         double button = (double)sums[f][b] / counts[f][b];
+         return String.format(fmt, button - mean);
+      }
+      private final int width = 6;
+      private int counts[][];
+      private int sums[][];
+      private double mean;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class CompareToMeanPercent implements Output {
+      public CompareToMeanPercent(int c[][], int s[][], double m) {
+         counts = c;
+         sums = s;
+         mean = m;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         String fmt = String.format("%%%d.2f ", width());
+         double button = (double)sums[f][b] / counts[f][b];
+         return String.format(fmt, 100.0 * (button - mean) / mean);
+      }
+      private final int width = 6;
+      private int counts[][];
+      private int sums[][];
+      private double mean;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class CompareToNone implements Output {
+      public CompareToNone(int c[][], int s[][]) {
+         counts = c;
+         sums = s;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         if (b == 0) {
+            return "";
+         }
+         String fmt = String.format("%%%d.1f ", width());
+         double button = (double)sums[f][b] / counts[f][b];
+         double none = (double)sums[f][0] / counts[f][0];
+         return String.format(fmt, button - none);
+      }
+      private final int width = 6;
+      private int counts[][];
+      private int sums[][];
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class CompareToNonePercent implements Output {
+      public CompareToNonePercent(int c[][], int s[][]) {
+         counts = c;
+         sums = s;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         if (b == 0) {
+            return "";
+         }
+         String fmt = String.format("%%%d.1f ", width());
+         double button = (double)sums[f][b] / counts[f][b];
+         double none = (double)sums[f][0] / counts[f][0];
+         return String.format(fmt, 100.0 * (button - none) / none);
+      }
+      private final int width = 5;
+      private int counts[][];
+      private int sums[][];
+   }
 
    /////////////////////////////////////////////////////////////////////////////
    private static void legalSpan(int span) {
