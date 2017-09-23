@@ -13,7 +13,6 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public static final int sm_VALUES = 0xFF;
-   public static final int sm_FINGERS = 4;
    public static final int sm_BUTTONS = 3;
 
    ////////////////////////////////////////////////////////////////////////////
@@ -37,18 +36,50 @@ public class Chord {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public enum Button {
-      O("|", 0),
-      L("'", 1),
-      M("-", 2),
-      R(",", 3);
+   // finger positions
+   public enum Position {
+      O("|", "0", 0),
+      L("'", "L", 1),
+      M("-", "M", 2),
+      R(",", "R", 3);
+      public static int count() { 
+         return size; 
+      }
+      public static boolean isChar(char c) {
+         for (Position p : Position.values()) {
+            if (c == p.toString().charAt(0)) {
+               return true;
+            }
+         }
+         return false;
+      }
+      public static Position fromChar(char c) {
+         for (Position p : Position.values()) {
+            if (c == p.toString().charAt(0)) {
+               return p;
+            }
+         }
+         return O;
+      }
+      public static boolean isInt(int p) {
+         return p >= 0 && p < count();
+      }
+      public static Position fromInt(int p) {
+         switch (p & sm_BUTTONS) {
+         case 0: return O;
+         case 1: return L;
+         case 2: return M;
+         case 3: return R;
+         }
+         return O;
+      }
       public String toString() {
-         return m_Name;
+         return isUsing4Finger() ? m_Name : m_0mrl;
       }
       public int toInt() {
          return m_I;
       }
-      public Button reverse() {
+      public Position reverse() {
          switch (toInt()) {
          case 3: return O;
          case 2: return L;
@@ -57,12 +88,15 @@ public class Chord {
          }
          return O;
       }
-      private Button(String name, int i) {
+      private Position(String name, String omrl, int i) {
          m_Name = name;
+         m_0mrl = omrl;
          m_I = i;
       }
       private final String m_Name;
+      private final String m_0mrl;
       private final int m_I;
+      private static final int size = Position.values().length;
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -71,7 +105,10 @@ public class Chord {
       M("Middle", 1),
       R("Ring", 2),
       P("Pinky", 3);
-      public String toString() {
+      public static int count() { 
+         return size;
+      }
+      public String toString() { 
          return m_Name;
       }
       public int toInt() {
@@ -83,6 +120,7 @@ public class Chord {
       }
       private final String m_Name;
       private final int m_I;
+      private static final int size = Finger.values().length;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -96,36 +134,16 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public static char buttonToChar(int button) {
-      if (isUsing4Finger()) {
-         switch (button & sm_BUTTONS) {
-         case 0: return '|';
-         case 1: return ',';
-         case 2: return '-';
-         case 3: return '\'';
-         }
-      } else {
-         switch (button & sm_BUTTONS) {
-         case 0: return '0';
-         case 1: return 'R';
-         case 2: return 'M';
-         case 3: return 'L';
-         }
-      }
-      return '?';
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
    // returns button's 2 bits in place
    // index == least significant 2 bits == [0]
    // pinky == most significant 2 bits == [3]
-   public static int getButtonAtFinger(int finger, int chord) {
+   public static int getPositionAtFinger(int finger, int chord) {
       return chord & (sm_BUTTONS << (3 - finger) * 2);
    }
 
    /////////////////////////////////////////////////////////////////////////////
    // returns button in the 2 LSBs
-   public static int getFingerButton(int finger, int chord) {
+   public static int getFingerPosition(int finger, int chord) {
       return (chord >> finger * 2) & sm_BUTTONS;
    }
 
@@ -139,7 +157,7 @@ public class Chord {
          // convert 1234 to 3210
          int f = 4 - (order.charAt(i) - '0');
          sorted <<= 2;
-         sorted |= getFingerButton(f, chord);
+         sorted |= getFingerPosition(f, chord);
       }
       return sorted;
    }
@@ -196,50 +214,26 @@ public class Chord {
       if (str.length() > 4 && str.charAt(4) != ' ') {
          if ((str.length() == 5 || str.charAt(5) == ' ')
           && "||||".equals(str.substring(1, 5))) {
-            return charToButton(str.charAt(0)) << 8;
+            return Position.fromChar(str.charAt(0)).toInt() << 8;
          }
          return 0;
       }
       int value = 0;
       for (int finger = 0; finger < 4; ++finger) {
          value <<= 2;
-         int b = charToButton(str.charAt(3 - finger));
-         if (b == -1) {
+         if (!Position.isChar(str.charAt(3 - finger))) {
             return 0;
          }
-         value += b;
+         value += Position.fromChar(str.charAt(3 - finger)).toInt();
       }
       return value;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
-   public static int charToButton(char c) {
-      switch (c) {
-      case '|':
-      case '0':
-         return 0;
-      case ',':
-      case 'R':
-      case 'r':
-         return 1;
-      case '-':
-      case 'M':
-      case 'm':
-         return 2;
-      case '\'':
-      case 'L':
-      case 'l':
-         return 3;
-      default:
-         return 0;
-      }
    }
 
    /////////////////////////////////////////////////////////////////////////////
    public static int countFingers(int chord) {
       int fingers = 0;
       for (int finger = 0; finger < 4; ++finger) {
-         if (getFingerButton(finger, chord) != 0) {
+         if (getFingerPosition(finger, chord) != 0) {
             ++fingers;
          }
       }
@@ -272,13 +266,13 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public boolean contains(int finger, Button b) {
-      return getFingerButton(finger, toInt()) == b.toInt();
+   public boolean contains(Finger f, Position b) {
+      return getFingerPosition(f.toInt(), toInt()) == b.toInt();
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public boolean none(Button b) {
-      for (int f = 0; f < sm_FINGERS; ++f) {
+   public boolean none(Position b) {
+      for (Finger f : Finger.values()) {
          if (contains(f, b)) {
             return false;
          }
@@ -315,7 +309,7 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public int getMouseButton() { 
-      int b = getFingerButton(sm_MOUSE_FINGER, m_Value);
+      int b = getFingerPosition(sm_MOUSE_FINGER, m_Value);
       return b == 2
              ? b
              : b ^ 2;
@@ -327,21 +321,21 @@ public class Chord {
    public boolean isMouseButton() { return (m_Value & 0x300) != 0 && (m_Value & ~0x300) == 0; }
    public int toInt() { return m_Value; }
    public int getFingerCount() { return countFingers(m_Value); }
-   public int getFingerKey(int f) { return (m_Value >> f * 2) & 3; }
+   public int getFingerKey(Finger f) { return (m_Value >> f.toInt() * 2) & 3; }
    public static int getKeys() { return m_Keys; }
    public static int getDepth() { return m_Depth; }
-   public static int getButtonSpace() { return m_ButtonSpace; }
+   public static int getPositionSpace() { return m_PositionSpace; }
    public static int getFingerSpace() { return m_FingerSpace; }
    public static boolean isEccentric() { return m_Eccentric; }
 
    /////////////////////////////////////////////////////////////////////////////
    public String toString() {
-      if (isMouseButton()) {
-         return "" + buttonToChar(getFingerButton(sm_MOUSE_FINGER, m_Value)) + "||||";
-      }
       String str = "";
+      if (isMouseButton()) {
+         return "" + Position.fromInt(getFingerPosition(sm_MOUSE_FINGER, m_Value));
+      }
       for (int finger = 0; finger < 4; ++finger) {
-         str += buttonToChar(getFingerButton(finger, m_Value));
+         str += Position.fromInt(getFingerPosition(finger, m_Value));
       }
       return str;
    }
@@ -385,7 +379,7 @@ public class Chord {
          }
       }
       if (m_Keys > 0) {
-         m_ButtonSpace = max - min;
+         m_PositionSpace = max - min;
       }
    }
 
@@ -394,7 +388,7 @@ public class Chord {
    private static boolean sm_4Finger = true;
    private static int m_Keys;
    private static int m_Depth;
-   private static int m_ButtonSpace;
+   private static int m_PositionSpace;
    private static int m_FingerSpace;
    private static boolean m_Eccentric;
    private int m_Value;
@@ -406,10 +400,10 @@ public class Chord {
          System.out.printf("New %s 0x%04x%n", c, Io.otherEndian((short)c.toCfg()));
          System.out.printf("New %s 0x%04x%n", c, c.toCfg());
 //         calculateImpediments(chord);
-//         System.out.printf("%s %3d: %d Keys, Depth %d, Button space %d, Finger space %d, %sEccentric\n",
+//         System.out.printf("%s %3d: %d Keys, Depth %d, Position space %d, Finger space %d, %sEccentric\n",
 //                           chord.toString(),
 //                           chord.toInt(), getKeys(), getDepth(),
-//                           getButtonSpace(), getFingerSpace(),
+//                           getPositionSpace(), getFingerSpace(),
 //                           (isEccentric() ? "" : "Not "));
       }
    }

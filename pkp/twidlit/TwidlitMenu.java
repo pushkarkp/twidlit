@@ -325,8 +325,9 @@ class TwidlitMenu extends PersistentMenuBar
       case sm_BUTTON_TIMES_TITLE: {
          ChordTimes ct = m_Twidlit.getChordTimes();
          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-         return "# Button times\n# " + df.format(Calendar.getInstance().getTime()) + '\n'
-              + ct.compareButtons(m_Twidlit.getTwiddlerWindow().isVertical());
+         return "# " + Hand.createRight(isRightHand()).toString() + " button times\n"
+              + "# " + df.format(Calendar.getInstance().getTime()) + '\n'
+              + ct.comparePositions(m_Twidlit.getTwiddlerWindow().isVertical());
       }
       default:
          Log.err("TwidlitMenu.getContentForTitle() bad title: " + title);

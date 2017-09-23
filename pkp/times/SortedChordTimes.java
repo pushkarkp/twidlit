@@ -77,7 +77,7 @@ public class SortedChordTimes implements SharedIndexableInts {
          int i = j + 1;
          final int r = Chord.reverse(i);
          final Chord c = Chord.fromChordValue(i);
-         if (i < r && (side == c.none(Chord.Button.R))) {
+         if (i < r && (side == c.none(Chord.Position.R))) {
             final int iSample = times.getCount(i, 0);
             final int rSample = times.getCount(r, 0);
             if (iSample == 0 || rSample == 0) {

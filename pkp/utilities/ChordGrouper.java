@@ -80,7 +80,7 @@ public class ChordGrouper extends ControlDialog
       if (1 <= v && v <= 9) {
          return v;
       }
-      return ChordGroup.sm_Maskable[Chord.charToButton(c)];
+      return ChordGroup.sm_Maskable[Chord.Position.fromChar(c).toInt()];
    }
 
    /////////////////////////////////////////////////////////////////////////////

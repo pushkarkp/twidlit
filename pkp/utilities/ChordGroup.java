@@ -112,8 +112,8 @@ public class ChordGroup {
       case 0:   return '.';
       case 1: 
       case 2:
-      case 4:   return Chord.buttonToChar(m >> 1);
-      case 8:   return Chord.buttonToChar(3);
+      case 4:   return Chord.Position.fromInt(m >> 1).toString().charAt(0);
+      case 8:   return Chord.Position.fromInt(3).toString().charAt(0);
       case 0xA: return 'a';
       case 0xB: return 'b';
       case 0xC: return 'c';
@@ -144,7 +144,7 @@ public class ChordGroup {
       int maskable = 0;
       for (int finger = 0; finger < 4; ++finger) {
          maskable <<= sm_MaskShift;
-         maskable |= sm_Maskable[Chord.getFingerButton(finger, chord)];
+         maskable |= sm_Maskable[Chord.getFingerPosition(finger, chord)];
       }
       return maskable;
    }

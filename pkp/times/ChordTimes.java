@@ -173,28 +173,28 @@ public class ChordTimes implements Persistent {
    }
 
    ////////////////////////////////////////////////////////////////////////////
-   public String compareButtons(boolean vertical) {
+   public String comparePositions(boolean vertical) {
       if (getMeanCount(0) < Chord.sm_VALUES) {
          return "";
       }
       int sum = 0;
-      int counts[][] = new int[Chord.sm_FINGERS][];
-      int sums[][] = new int[Chord.sm_FINGERS][];
-      for (int f = 0; f < Chord.sm_FINGERS; ++f) {
-         counts[f] = new int[4];
-         sums[f] = new int[4];
-         for (int b = 0; b < 4; ++b) {
+      int counts[][] = new int[Chord.Finger.count()][];
+      int sums[][] = new int[Chord.Finger.count()][];
+      for (int f = 0; f < Chord.Finger.count(); ++f) {
+         counts[f] = new int[Chord.Position.count()];
+         sums[f] = new int[Chord.Position.count()];
+         for (int b = 0; b < Chord.Position.count(); ++b) {
             counts[f][b] = 0;
             sums[f][b] = 0;
          }
       }
       for (int c = 0; c < Chord.sm_VALUES; ++c) {
          sum += getMean(c + 1, 0);
-         for (int f = 0; f < Chord.sm_FINGERS; ++f) {
-            for (Chord.Button b : Chord.Button.values()) {
+         for (Chord.Finger f : Chord.Finger.values()) {
+            for (Chord.Position b : Chord.Position.values()) {
                if (Chord.fromChordValue(c + 1).contains(f, b)) {
-                  ++counts[f][b.toInt()];
-                  sums[f][b.toInt()] += getMean(c + 1, 0);
+                  ++counts[f.toInt()][b.toInt()];
+                  sums[f.toInt()][b.toInt()] += getMean(c + 1, 0);
                }
             }
          }
@@ -211,9 +211,9 @@ public class ChordTimes implements Persistent {
            + toString(new CompareToMean(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
            + "\nDiff from total mean (%)\n" 
            + toString(new CompareToMeanPercent(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
-           + String.format("\nDiff from %c mean (msec)\n", Chord.buttonToChar(Chord.Button.O.toInt()))
+           + String.format("\nDiff from %s mean (msec)\n", Chord.Position.O)
            + toString(new CompareToNone(counts, sums), vertical)
-           + String.format("\nDiff from %c mean (%%)\n", Chord.buttonToChar(Chord.Button.O.toInt()))
+           + String.format("\nDiff from %s mean (%%)\n", Chord.Position.O)
            + toString(new CompareToNonePercent(counts, sums), vertical);
    }
 
@@ -287,17 +287,17 @@ public class ChordTimes implements Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    private static String toString(Output o, boolean vertical) {
-      final String fmt = String.format("%%%dc ", o.width());
+      final String fmt = String.format("%%%ds ", o.width());
       String str = "";
       if (vertical) {
          str = "       ";
-         for (Chord.Button b : Chord.Button.values()) {
-            str += String.format(fmt, Chord.buttonToChar(b.reverse().toInt()));
+         for (Chord.Position b : Chord.Position.values()) {
+            str += String.format(fmt, b.reverse());
          }
          str += '\n';
          for (Chord.Finger f : Chord.Finger.values()) {
             str += String.format("%6s ", f.toString());
-            for (Chord.Button b : Chord.Button.values()) {
+            for (Chord.Position b : Chord.Position.values()) {
                str += o.toString(f.toInt(), b.reverse().toInt());
             }
             str += '\n';
@@ -305,16 +305,16 @@ public class ChordTimes implements Persistent {
       } else {
          str = "  ";
          for (Chord.Finger f : Chord.Finger.values()) {
-            str += String.format(fmt.replace('c', 's'), f.toString());
+            str += String.format(fmt, f.toString());
          }
          str += '\n';
-         for (Chord.Button b : Chord.Button.values()) {
+         for (Chord.Position b : Chord.Position.values()) {
             String line = "";
             for (Chord.Finger f : Chord.Finger.values()) {
                line += o.toString(f.toInt(), b.reverse().toInt());
             }
             if (line.length() > 0) {
-               str += String.format("%c ", Chord.buttonToChar(b.reverse().toInt()))
+               str += String.format("%s ", b.reverse())
                     + line + '\n';
             }
          }
