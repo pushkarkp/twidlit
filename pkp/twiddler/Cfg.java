@@ -43,15 +43,7 @@ public class Cfg implements Settings {
             return null;
          }
       }
-      Assignments asgs = cfg.getAssignments();
-      List<Assignment> ma = asgs.toSortedMouseButtons();
-      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
-         if (ma.get(b).getKeyPressList().size() == 0) {
-            asgs.add(new Assignment(
-                  new Twiddle(Chord.fromMouseButton(b + 1)), 
-                  new KeyPressList(KeyPress.fromMouseButton(b + 1))));
-         }
-      }
+      cfg.addMouse();
       return cfg;
    }
 
@@ -91,6 +83,20 @@ public class Cfg implements Settings {
       m_BoolSettings = set.getBoolSettings();
       m_Version = set.getVersion();
       m_Assignments = asgs;
+      addMouse();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public void addMouse() {
+      Assignments asgs = getAssignments();
+      List<Assignment> ma = asgs.toSortedMouseButtons();
+      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
+         if (ma.get(b).getKeyPressList().size() == 0) {
+            asgs.add(new Assignment(
+                  new Twiddle(Chord.fromMouseButton(b + 1)), 
+                  new KeyPressList(KeyPress.fromMouseButton(b + 1))));
+         }
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////
