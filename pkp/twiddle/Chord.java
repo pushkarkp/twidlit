@@ -108,6 +108,15 @@ public class Chord {
       public static int count() { 
          return size;
       }
+      public static Finger fromInt(int f) {
+         switch (f) {
+         case 0: return I;
+         case 1: return M;
+         case 2: return R;
+         case 3: return P;
+         }
+         return I;
+      }
       public String toString() { 
          return m_Name;
       }
@@ -230,17 +239,6 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public static int countFingers(int chord) {
-      int fingers = 0;
-      for (int finger = 0; finger < 4; ++finger) {
-         if (getFingerPosition(finger, chord) != 0) {
-            ++fingers;
-         }
-      }
-      return fingers;
-   }
-
-   /////////////////////////////////////////////////////////////////////////////
    public static Chord fromChordValue(int cv) {
       return new Chord(cv & sm_VALUES);
    }
@@ -266,18 +264,87 @@ public class Chord {
    }
 
    /////////////////////////////////////////////////////////////////////////////
+   public int countFingers() {
+      int fingers = 0;
+      for (int finger = 0; finger < Finger.count(); ++finger) {
+         if (getFingerPosition(finger, m_Value) != 0) {
+            ++fingers;
+         }
+      }
+      return fingers;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public int countFingerGaps() {
+      int gaps = 0;
+      int gapSize = 0;
+      boolean started = false;
+      for (int finger = 0; finger < Finger.count(); ++finger) {
+         if (getFingerPosition(finger, m_Value) == 0) {
+            ++gapSize;
+         } else {
+            if (started) {
+               gaps += gapSize;
+            }
+            started = true;
+            gapSize = 0;
+         }
+      }
+      return gaps;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public int countPositions() {
+      boolean position[] = new boolean[Position.count()];
+      for (int i = 0; i < Finger.count(); ++i) {
+         position[getFingerPosition(i, m_Value)] = true;
+      }
+      int positions = 0;
+      for (int i = 1; i < Position.count(); ++i) {
+         if (position[i]) {
+            ++positions;
+         }
+      }
+      return positions;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   static public int positionGapLimit() {
+      return 37;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public int countPositionGaps() {
+      int gaps = 0;
+      int lastPosition = 0;
+      int lastFinger = 0;
+      for (int finger = 0; finger < Finger.count(); ++finger) {
+         int position = getFingerPosition(finger, m_Value);
+         if (position != 0) {
+            if (lastPosition != 0) {
+               gaps += Math.abs(position - lastPosition) * 6 
+                     / (finger - lastFinger);
+            }
+            lastPosition = position;
+            lastFinger = finger;
+         }
+      }
+      return gaps;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
    public boolean contains(Finger f, Position b) {
       return getFingerPosition(f.toInt(), toInt()) == b.toInt();
    }
 
    /////////////////////////////////////////////////////////////////////////////
-   public boolean none(Position b) {
+   public boolean contains(Position p) {
       for (Finger f : Finger.values()) {
-         if (contains(f, b)) {
-            return false;
+         if (contains(f, p)) {
+            return true;
          }
       }
-      return true;
+      return false;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -288,8 +355,8 @@ public class Chord {
    ////////////////////////////////////////////////////////////////////////////
    // -1 <, 0 ==, 1 >
    public int compare(Chord other) {
-      int f = getFingerCount();
-      int of = other.getFingerCount();
+      int f = countFingers();
+      int of = other.countFingers();
       if (f < of) {
          return -1;
       }
@@ -320,8 +387,7 @@ public class Chord {
    public boolean isChord() { return m_Value > 0 && m_Value <= sm_VALUES; }
    public boolean isMouseButton() { return (m_Value & 0x300) != 0 && (m_Value & ~0x300) == 0; }
    public int toInt() { return m_Value; }
-   public int getFingerCount() { return countFingers(m_Value); }
-   public int getFingerKey(Finger f) { return (m_Value >> f.toInt() * 2) & 3; }
+   public int getFingerPosition(Finger f) { return (m_Value >> f.toInt() * 2) & 3; }
    public static int getKeys() { return m_Keys; }
    public static int getDepth() { return m_Depth; }
    public static int getPositionSpace() { return m_PositionSpace; }

@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import pkp.twiddle.Chord;
+import pkp.util.AxisLabels;
 import pkp.util.Persistent;
 import pkp.util.Persist;
 import pkp.util.Pref;
@@ -173,10 +174,101 @@ public class ChordTimes implements Persistent {
    }
 
    ////////////////////////////////////////////////////////////////////////////
+   public class FingerLabels implements AxisLabels {
+      public int size() { return Chord.Finger.count(); }
+      public String getLabel(int i) { return Chord.Finger.fromInt(i).toString(); }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public class FingerCountLabels implements AxisLabels {
+      public int size() { return Chord.Finger.count(); }
+      public String getLabel(int i) { return "" + (i + 1); }
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public String comparePositions(boolean vertical) {
       if (getMeanCount(0) < Chord.sm_VALUES) {
          return "";
       }
+
+      int nCounts[] = new int[Chord.Position.count()];
+      int nSums[] = new int[Chord.Position.count()];
+      for (int n = 0; n < Chord.Position.count(); ++n) {
+         nCounts[0] = 0;
+         nSums[0] = 0;
+      }
+      for (int c = 0; c < Chord.sm_VALUES; ++c) {
+         int n = Chord.fromChordValue(c + 1).countFingers();
+         ++nCounts[n - 1];
+         nSums[n - 1] += getMean(c + 1, 0);
+      }
+      String nCountStr = "";
+      String nMeanStr = "";
+      for (int n = 0; n < Chord.Position.count(); ++n) {
+         nCountStr += String.format("%5d ", nCounts[n]);
+         nMeanStr += String.format("%5.0f ", (double)nSums[n] / nCounts[n]);
+      }
+
+      int gCounts[] = new int[Chord.positionGapLimit()];
+      int gSums[] = new int[Chord.positionGapLimit()];
+      for (int i = 0; i < Chord.positionGapLimit(); ++i) {
+         gCounts[i] = 0;
+         gSums[i] = 0;
+      }
+      int[] eg = new int[Chord.positionGapLimit()];
+      for (int c = 0; c < Chord.sm_VALUES; ++c) {
+         int g = Chord.fromChordValue(c + 1).countPositionGaps();
+         if (eg[g] == 0) {
+            eg[g] = c + 1;
+         }
+         ++gCounts[g];
+         gSums[g] += getMean(c + 1, 0);
+      }
+      String gGapStr0 = "";
+      String gGapStr1 = "";
+      String gEgStr = "";
+      String gCountStr = "";
+      String gMeanStr = "";
+      for (int g = 0; g < Chord.positionGapLimit(); ++g) {
+         gGapStr0 += String.format("%5d ", g / 6); 
+         gGapStr1 += g % 6 == 0
+                     ? "      "
+                     : String.format("%3d/6 ", g % 6);
+         gEgStr += String.format("%5s ", 
+                                 eg[g] == 0
+                                 ? ""
+                                 : Chord.fromChordValue(eg[g])); 
+         gCountStr += String.format("%5d ", gCounts[g]);
+         gMeanStr += String.format("%5.0f ", 
+                        gCounts[g] == 0
+                        ? 0.0
+                        : (double)gSums[g] / gCounts[g]);
+      }
+
+      int lCounts[][] = new int[Chord.Finger.count()][];
+      int lSums[][] = new int[Chord.Finger.count()][];
+      for (int f = 0; f < Chord.Finger.count(); ++f) {
+         lCounts[f] = new int[Chord.Position.count()];
+         lSums[f] = new int[Chord.Position.count()];
+         for (int b = 0; b < Chord.Position.count(); ++b) {
+            lCounts[f][b] = 0;
+            lSums[f][b] = 0;
+         }
+      }
+      for (int c = 0; c < Chord.sm_VALUES; ++c) {
+         Chord ch = Chord.fromChordValue(c + 1);
+         if (ch.countPositions() == 1 && ch.countPositionGaps() == 0) {
+            for (Chord.Position p : Chord.Position.values()) {
+               if (p != Chord.Position.O && ch.contains(p)) {
+                  int f = ch.countFingers() - 1;
+                  ++lCounts[f][p.toInt()];
+                  lSums[f][p.toInt()] += getMean(ch.toInt(), 0);
+                  break;
+               }
+            }
+         }
+      }
+
       int sum = 0;
       int counts[][] = new int[Chord.Finger.count()][];
       int sums[][] = new int[Chord.Finger.count()][];
@@ -203,18 +295,30 @@ public class ChordTimes implements Persistent {
       return '\n' 
            + String.format("Samples: %d%n", getTotalSamples(0))
            + String.format("Mean (msec): %d%n", sum / Chord.sm_VALUES)
-           + "\nChords per button\n"
-           + toString(new Count(counts), vertical)
+           + "\nFingers in chord:   1     2     3     4"
+           + "\nPossible chords:" + nCountStr
+           + "\nMean (msec):    " + nMeanStr
+           + '\n'
+           + "\nGaps in chord: " + gGapStr0
+           + "\n               " + gGapStr1
+           + "\nExample chord: " + gEgStr
+           + "\nChords:        " + gCountStr
+           + "\nMean (msec):   " + gMeanStr
+           + '\n'
+           + "\n0 gap chords means (msec) by finger count\n" 
+           + toString(new MeanNo0(lCounts, lSums), new FingerCountLabels(), vertical)
+           + "\nSample chords per button\n"
+           + toString(new Count(counts), new FingerLabels(), vertical)
            + "\nMean (msec)\n" 
-           + toString(new Mean(counts, sums), vertical)
+           + toString(new Mean(counts, sums), new FingerLabels(), vertical)
            + "\nDiff from total mean (msec)\n" 
-           + toString(new CompareToMean(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
+           + toString(new CompareToMean(counts, sums, (double)sum / Chord.sm_VALUES), new FingerLabels(), vertical)
            + "\nDiff from total mean (%)\n" 
-           + toString(new CompareToMeanPercent(counts, sums, (double)sum / Chord.sm_VALUES), vertical)
+           + toString(new CompareToMeanPercent(counts, sums, (double)sum / Chord.sm_VALUES), new FingerLabels(), vertical)
            + String.format("\nDiff from %s mean (msec)\n", Chord.Position.O)
-           + toString(new CompareToNone(counts, sums), vertical)
+           + toString(new CompareToNone(counts, sums), new FingerLabels(), vertical)
            + String.format("\nDiff from %s mean (%%)\n", Chord.Position.O)
-           + toString(new CompareToNonePercent(counts, sums), vertical);
+           + toString(new CompareToNonePercent(counts, sums), new FingerLabels(), vertical);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -286,7 +390,7 @@ public class ChordTimes implements Persistent {
    // Private //////////////////////////////////////////////////////////////////
 
    /////////////////////////////////////////////////////////////////////////////
-   private static String toString(Output o, boolean vertical) {
+   private static String toString(Output o, AxisLabels axis, boolean vertical) {
       final String fmt = String.format("%%%ds ", o.width());
       String str = "";
       if (vertical) {
@@ -296,7 +400,7 @@ public class ChordTimes implements Persistent {
          }
          str += '\n';
          for (Chord.Finger f : Chord.Finger.values()) {
-            str += String.format("%6s ", f.toString());
+            str += String.format("%6s ", axis.getLabel(f.toInt()));
             for (Chord.Position b : Chord.Position.values()) {
                str += o.toString(f.toInt(), b.reverse().toInt());
             }
@@ -304,8 +408,8 @@ public class ChordTimes implements Persistent {
          }
       } else {
          str = "  ";
-         for (Chord.Finger f : Chord.Finger.values()) {
-            str += String.format(fmt, f.toString());
+         for (int f = 0; f < Chord.Finger.count(); ++f) {
+            str += String.format(fmt, axis.getLabel(f));
          }
          str += '\n';
          for (Chord.Position b : Chord.Position.values()) {
@@ -446,6 +550,28 @@ public class ChordTimes implements Persistent {
          return String.format(fmt, 100.0 * (button - none) / none);
       }
       private final int width = 5;
+      private int counts[][];
+      private int sums[][];
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public class MeanNo0 implements Output {
+      public MeanNo0(int c[][], int s[][]) {
+         counts = c;
+         sums = s;
+      }
+      public int width() {
+         return width;
+      }
+      public String toString(int f, int b) {
+         if (b == 0) {
+            return "";
+         }
+         String fmt = String.format("%%%d.1f ", width());
+         double button = (double)sums[f][b] / counts[f][b];
+         return String.format(fmt, button);
+      }
+      private final int width = 6;
       private int counts[][];
       private int sums[][];
    }

@@ -38,7 +38,7 @@ public class Assignments extends ArrayList<Assignment> {
       Assignments asgs = new Assignments();
       for (int fingers = 1; fingers <= 4; ++fingers) {
          for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-            if (Chord.countFingers(i) == fingers) {
+            if (Chord.fromChordValue(i).countFingers() == fingers) {
                Twiddle tw = Twiddle.fromChordValue(i, 0);
                asgs.add(new Assignment(tw, KeyPressList.parseText(tw.getChord().toString() + " ")));
             }
@@ -58,7 +58,7 @@ public class Assignments extends ArrayList<Assignment> {
       Assignments asgs = new Assignments();
       for (int fingers = 1; fingers <= 4; ++fingers) {
          for (int i = 1; i <= Chord.sm_VALUES; ++i) {
-            if (Chord.countFingers(i) == fingers) {
+            if (Chord.fromChordValue(i).countFingers() == fingers) {
                Twiddle tw = Twiddle.fromChordValue(i, 0);
                KeyPress kp;
                do {
