@@ -90,7 +90,7 @@ public class Cfg implements Settings {
    public void addMouse() {
       Assignments asgs = getAssignments();
       List<Assignment> ma = asgs.toSortedMouseButtons();
-      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
+      for (int b = 0; b < Chord.sm_POSITIONS; ++b) {
          if (ma.get(b).getKeyPressList().size() == 0) {
             asgs.add(new Assignment(
                   new Twiddle(Chord.fromMouseButton(b + 1)), 
@@ -327,7 +327,7 @@ public class Cfg implements Settings {
       List<Integer> whichKpl = new ArrayList<Integer>();
 
       // mouse buttons
-      for (int b = 0; b < Chord.sm_BUTTONS; ++b) {
+      for (int b = 0; b < Chord.sm_POSITIONS; ++b) {
          int k = bb.getShort();
          if (k != 0) {
             int c = b + 1 << 8;

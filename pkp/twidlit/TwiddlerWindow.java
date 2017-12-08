@@ -389,7 +389,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       {
          @Override
          int getButton(int finger, int position) {
-            return finger * Chord.sm_BUTTONS + (Chord.sm_BUTTONS - position);
+            return finger * Chord.sm_POSITIONS + position - 1;
          }
          @Override
          int getMouseButton(int position) {
@@ -410,7 +410,7 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       {
          @Override
          int getButton(int finger, int position) {
-            return (position - 1) * Chord.Finger.count() + finger;
+            return (Chord.sm_POSITIONS - position) * Chord.Finger.count() + finger;
          }
          @Override
          int getMouseButton(int position) {

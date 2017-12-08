@@ -13,7 +13,7 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public static final int sm_VALUES = 0xFF;
-   public static final int sm_BUTTONS = 3;
+   public static final int sm_POSITIONS = 3;
 
    ////////////////////////////////////////////////////////////////////////////
    public enum Format {
@@ -39,9 +39,9 @@ public class Chord {
    // finger positions
    public enum Position {
       O("|", "0", 0),
-      L("'", "L", 1),
+      R(",", "R", 1),
       M("-", "M", 2),
-      R(",", "R", 3);
+      L("'", "L", 3);
       public static int count() { 
          return size; 
       }
@@ -65,11 +65,11 @@ public class Chord {
          return p >= 0 && p < count();
       }
       public static Position fromInt(int p) {
-         switch (p & sm_BUTTONS) {
+         switch (p & sm_POSITIONS) {
          case 0: return O;
-         case 1: return L;
+         case 1: return R;
          case 2: return M;
-         case 3: return R;
+         case 3: return L;
          }
          return O;
       }
@@ -82,9 +82,9 @@ public class Chord {
       public Position reverse() {
          switch (toInt()) {
          case 3: return O;
-         case 2: return L;
+         case 2: return R;
          case 1: return M;
-         case 0: return R;
+         case 0: return L;
          }
          return O;
       }
@@ -147,13 +147,13 @@ public class Chord {
    // index == least significant 2 bits == [0]
    // pinky == most significant 2 bits == [3]
    public static int getPositionAtFinger(int finger, int chord) {
-      return chord & (sm_BUTTONS << (3 - finger) * 2);
+      return chord & (sm_POSITIONS << (3 - finger) * 2);
    }
 
    /////////////////////////////////////////////////////////////////////////////
    // returns button in the 2 LSBs
    public static int getFingerPosition(int finger, int chord) {
-      return (chord >> finger * 2) & sm_BUTTONS;
+      return (chord >> finger * 2) & sm_POSITIONS;
    }
 
    /////////////////////////////////////////////////////////////////////////////
@@ -245,9 +245,9 @@ public class Chord {
 
    /////////////////////////////////////////////////////////////////////////////
    public static Chord fromMouseButton(int mb) {
-      return (mb < 1 || mb > sm_BUTTONS)
+      return (mb < 1 || mb > sm_POSITIONS)
               ? new Chord(0)
-              : new Chord((sm_BUTTONS + 1 - mb) << 8);
+              : new Chord((sm_POSITIONS + 1 - mb) << 8);
    }
 
    /////////////////////////////////////////////////////////////////////////////
