@@ -1,0 +1,41 @@
+<!--  -*- mode: html; compile-command: "ant"; -*- -->
+<!-- 
+sudo apt-get install -y ant openjdk-8-jdk
+ -->
+<project name="twidlit" default="dist" basedir=".">
+  <description>twidlit typing tutor</description>
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+  <property name="dist" location="dist"/>
+  <property name="fonts" location="fonts"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init" description="compile the source">
+    <javac destdir="${build}" includeantruntime="false">
+      <src path="."/>
+      <!-- <compilerarg value="-Xlint"/> -->
+      <compilerarg value="-Xlint:unchecked"/>
+    </javac>
+    <copy todir="${build}/data">
+      <fileset dir="data" />
+    </copy>
+    <copy todir="${build}/pref">
+      <fileset dir="pref" />
+    </copy>
+    <copy todir="${build}" file="LICENSE"/>
+  </target>
+
+  <target name="dist" depends="compile" description="generate the distribution">
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist}/twidlit.jar" basedir="${build}"/>
+  </target>
+
+  <target name="clean" description="clean up">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
