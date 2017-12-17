@@ -20,11 +20,14 @@ sudo apt-get install -y ant openjdk-8-jdk
       <!-- <compilerarg value="-Xlint"/> -->
       <compilerarg value="-Xlint:unchecked"/>
     </javac>
-    <copy todir="${build}/data">
+    <copy todir="${build}/data" includeemptydirs="false">
       <fileset dir="data" />
     </copy>
-    <copy todir="${build}/pref">
-      <fileset dir="pref" />
+    <copy todir="${build}/pref" includeemptydirs="false">
+      <fileset dir="pref">
+        <exclude name="**/*.tmp" />
+        <exclude name="**/*.tags" />
+      </fileset>
     </copy>
     <copy todir="${build}" file="LICENSE"/>
   </target>

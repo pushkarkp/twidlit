@@ -61,7 +61,7 @@ pref/twidlit.preferences: data/ref.html script/makePrefs.sh
    
 # list of the classes to jar, escaping the $s
 classlist.txt: ${CLASSES}
-	find . -iname \*.class | sed 's/\$$/\\$$/g' > $@
+	find pkp -iname \*.class | sed 's/\$$/\\$$/g' > $@
 
 ./Twidlit/Twidlit.jar: Manifest.txt ${JAR_DATA} classlist.txt
 	jar cfm $@ Manifest.txt ${JAR_DATA} $(shell cat classlist.txt)
