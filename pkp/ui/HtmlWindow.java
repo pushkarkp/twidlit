@@ -30,7 +30,7 @@ import pkp.util.Pref;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class HtmlWindow extends PersistentFrame implements ActionListener {
+public class HtmlWindow extends PersistentWindow implements ActionListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public HtmlWindow() {

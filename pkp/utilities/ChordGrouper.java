@@ -372,7 +372,7 @@ public class ChordGrouper extends ControlDialog
    
    private static final String sm_FILE_PERSIST = "#.group.chords.file";
    private static final String sm_X_TOGGLED_PERSIST = "#.group.chords.x.toggled";
-   // group free is saved by PersistentFrame
+   // group free is saved by ControlDialog
    private static final String sm_GROUP_MASK_PERSIST = "#.group.chords.by.mask";
    private static final String sm_GROUP_LIST_PERSIST = "#.group.chords.show.text";
    private static final String sm_GENERATE_FIXED_PERSIST = "#.group.chords.fixed.mask";

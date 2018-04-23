@@ -7,7 +7,6 @@
 package pkp.twidlit;
 
 import java.awt.*;
-import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -30,7 +29,7 @@ import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
 import pkp.times.ChordTimes;
 import pkp.ui.Splash;
-import pkp.ui.PersistentFrame;
+import pkp.ui.PersistentWindow;
 import pkp.util.Persist;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -38,8 +37,8 @@ import pkp.io.Io;
 
 ////////////////////////////////////////////////////////////////////////////////
 class Twidlit 
-   extends PersistentFrame 
-   implements TwidlitInit, WindowListener, MouseListener, KeyListener, ActionListener, Log.Quitter {
+   extends PersistentWindow
+   implements TwidlitInit, MouseListener, KeyListener, ActionListener, Log.Quitter {
 
    ////////////////////////////////////////////////////////////////////////////////
    // Gathers initial settings so source can be created once only.
@@ -87,14 +86,11 @@ class Twidlit
       Log.setQuitter(this);
       setIconImage(Pref.getIcon().getImage());
       setFocusable(true);
-      requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
-      addWindowListener(this);
       addMouseListener(this);
       addKeyListener(this);
       setTitle(getClass().getSimpleName());
       setPersistName("#." + getClass().getSimpleName());
-      setResizable(true);
 
       TwidlitMenu mb = new TwidlitMenu(this);
       setJMenuBar(mb);
@@ -268,19 +264,17 @@ class Twidlit
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // WindowListener
-   public void windowActivated(WindowEvent e) { requestFocusInWindow(); }
+   public void windowActivated(WindowEvent e) {
+      super.windowActivated(e);
+      requestFocusInWindow();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    @Override // WindowListener
-   public void windowDeactivated(WindowEvent e) { requestFocusInWindow(); }
-   @Override // WindowListener
-   public void windowDeiconified(WindowEvent e) { requestFocusInWindow(); }
-   @Override // WindowListener
-   public void windowIconified(WindowEvent e) {}
-   @Override // WindowListener
-   public void windowOpened(WindowEvent e) { requestFocusInWindow(); }
-   @Override // WindowListener
-   public void windowClosed(WindowEvent e) { quit(0); }
-   @Override // WindowListener
-   public void windowClosing(WindowEvent e) { quit(0); }
+   public void windowClosing(WindowEvent e) {
+      super.windowClosing(e);
+      quit(0);
+   }
 
    ////////////////////////////////////////////////////////////////////////////
    @Override // MouseListener

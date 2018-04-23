@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
 import pkp.util.Pref;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class ControlWindow extends PersistentFrame {
+public class ControlWindow extends PersistentWindow {
 
    ////////////////////////////////////////////////////////////////////////////
    public ControlWindow(String title) {
@@ -24,6 +24,5 @@ public class ControlWindow extends PersistentFrame {
       cp.setLayout(new BoxLayout(cp, BoxLayout.PAGE_AXIS));
       int sp = Pref.getInt("#.window.border.size");
       cp.setBorder(new EmptyBorder(sp, sp, sp, sp));
-      setResizable(true);
    }
 }

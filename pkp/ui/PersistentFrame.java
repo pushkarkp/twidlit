@@ -52,9 +52,9 @@ public class PersistentFrame extends JFrame {
    public String getPersistName() {
 //System.out.printf("getPersistName() %s%n", m_PersistName);
       if (m_PersistName == null || "".equals(m_PersistName)) {
-         m_PersistName = "#." + (("".equals(getTitle()))
-                                 ? getClass().getSimpleName()
-                                 : getTitle());
+         return "#." + (("".equals(getTitle()))
+                        ? getClass().getSimpleName()
+                        : getTitle());
       }
       return m_PersistName;
    }
@@ -64,10 +64,10 @@ public class PersistentFrame extends JFrame {
       String persistName = getPersistName();
       Rectangle r = getBounds();
 //System.out.printf("%s %d%n", Persist.toTag(persistName) + ".x", r.x);
-      Persist.set(persistName + ".x", Integer.toString(r.x));
-      Persist.set(persistName + ".y", Integer.toString(r.y));
-      Persist.set(persistName + ".w", Integer.toString(r.width));
-      Persist.set(persistName + ".h", Integer.toString(r.height));
+      Persist.set(persistName + ".x", r.x);
+      Persist.set(persistName + ".y", r.y);
+      Persist.set(persistName + ".w", r.width);
+      Persist.set(persistName + ".h", r.height);
    }
 
    // Private /////////////////////////////////////////////////////////////////

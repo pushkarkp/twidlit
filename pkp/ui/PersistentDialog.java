@@ -9,6 +9,8 @@ import java.awt.Window;
 import java.awt.Rectangle;
 import java.awt.Component;
 import javax.swing.JDialog;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowEvent;
 import javax.swing.Box;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
@@ -16,11 +18,14 @@ import javax.swing.JCheckBox;
 import pkp.util.Persist;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class PersistentDialog extends JDialog {
+public class PersistentDialog
+   extends JDialog
+   implements WindowListener {
 
    ////////////////////////////////////////////////////////////////////////////
    public PersistentDialog(Window owner, String title) {
       super(owner, title);
+      addWindowListener(this);
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -46,13 +51,34 @@ public class PersistentDialog extends JDialog {
    ////////////////////////////////////////////////////////////////////////////
    @Override
    public void dispose() {
+      save();
+      super.dispose();
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   @Override // WindowListener
+   public void windowActivated(WindowEvent e) {}
+   @Override // WindowListener
+   public void windowDeactivated(WindowEvent e) { save(); }
+   @Override // WindowListener
+   public void windowDeiconified(WindowEvent e) {}
+   @Override // WindowListener
+   public void windowIconified(WindowEvent e) {}
+   @Override // WindowListener
+   public void windowOpened(WindowEvent e) {}
+   @Override // WindowListener
+   public void windowClosed(WindowEvent e) {}
+   @Override // WindowListener
+   public void windowClosing(WindowEvent e) { save(); }
+
+   ////////////////////////////////////////////////////////////////////////////
+   public void save() {
       String persistName = getPersistName();
       Rectangle r = getBounds();
       Persist.set(persistName + ".x", Integer.toString(r.x));
       Persist.set(persistName + ".y", Integer.toString(r.y));
       Persist.set(persistName + ".w", Integer.toString(r.width));
       Persist.set(persistName + ".h", Integer.toString(r.height));
-      super.dispose();
    }
 
    ////////////////////////////////////////////////////////////////////////////

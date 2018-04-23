@@ -7,6 +7,7 @@
 package pkp.twidlit;
 
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.KeyListener;
 import java.awt.event.ActionListener;
@@ -24,22 +25,20 @@ import pkp.times.ChordTimes;
 import pkp.twiddle.Chord;
 import pkp.twiddle.ThumbKeys;
 import pkp.twiddle.Twiddle;
-import pkp.ui.PersistentFrame;
+import pkp.ui.PersistentWindow;
 import pkp.util.Persist;
 import pkp.util.Persistent;
 import pkp.util.Pref;
 import pkp.util.Log;
 
 ////////////////////////////////////////////////////////////////////////////////
-class TwiddlerWindow extends PersistentFrame implements ActionListener, Persistent {
+class TwiddlerWindow extends PersistentWindow implements ActionListener, Persistent {
 
    /////////////////////////////////////////////////////////////////////////////
    TwiddlerWindow(JCheckBoxMenuItem menuItemHide, boolean vert, boolean right, MouseListener mouseListener, KeyListener keyListener) {
       setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
       setIconImage(Pref.getIcon().getImage());
-      setPersistName("#.twiddler");
       setFocusable(true);
-      requestFocusInWindow();
       setFocusTraversalKeysEnabled(false);
       addMouseListener(mouseListener);
       addKeyListener(keyListener);
@@ -61,7 +60,8 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
       m_RightHand = right;
       m_Vh = vert ? Vh.VERT : Vh.HORZ;
-      setPersistName(getPersistName() + '.' + m_Vh.toString());
+      setPersistName("#.twiddler." + m_Vh.toString());
+      restoreIconified();
       m_ProgressPanel = null;
       createPanels();
       buildHanded();
@@ -78,6 +78,13 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
       useDelay(false);
       m_AutoScaleStep = Pref.getInt("#.chord.wait.autoscale.step", 8);
       setAutoScale(false);
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
+   @Override // WindowListener
+   public void windowActivated(WindowEvent e) {
+      super.windowActivated(e);
+      requestFocusInWindow();
    }
 
    ///////////////////////////////////////////////////////////////////
@@ -187,12 +194,12 @@ class TwiddlerWindow extends PersistentFrame implements ActionListener, Persiste
 
    /////////////////////////////////////////////////////////////////////////////
    boolean isVertical() {
-      return m_Vh == Vh.VERT;
+      return m_Vh.isV();
    }
 
    /////////////////////////////////////////////////////////////////////////////
    void setVertical(boolean set) {
-      if (set == (m_Vh == Vh.VERT)) {
+      if (set == isVertical()) {
          return;
       }
       boolean visible = isVisible();

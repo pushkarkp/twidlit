@@ -13,11 +13,10 @@ import pkp.util.Pref;
 import pkp.util.Log;
 
 ///////////////////////////////////////////////////////////////////////////////
-public class TextWindow extends PersistentFrame {
+public class TextWindow extends PersistentWindow {
 
    ////////////////////////////////////////////////////////////////////////////
    public TextWindow() {
-      super();
       setIconImage(Pref.getIcon().getImage());
       setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
       getContentPane().setLayout(new BorderLayout());
