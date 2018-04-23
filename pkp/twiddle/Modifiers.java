@@ -165,7 +165,7 @@ class Modifiers {
       int value = m_Sided 
                  ? m_Value
                  : (m_Value | m_Value >> sm_RIGHT_BIT_SHIFT);
-      return new Modifiers(value & (sm_iLEFT_ALT | sm_iLEFT_SHIFT | sm_iLEFT_CTRL));
+      return new Modifiers(value & (sm_iLEFT_GUI | sm_iLEFT_ALT | sm_iLEFT_SHIFT | sm_iLEFT_CTRL));
    }
 
    ////////////////////////////////////////////////////////////////////////////
@@ -216,6 +216,19 @@ class Modifiers {
       {sm_EMPTY, sm_CTRL, sm_ALT, sm_ALT.plus(sm_CTRL)},
       {sm_EMPTY, sm_SHIFT, sm_ALT, sm_ALT.plus(sm_SHIFT)},
       {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_ALT, sm_SHIFT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT), sm_ALT.plus(sm_CTRL), sm_ALT.plus(sm_SHIFT.plus(sm_CTRL))},
+      {sm_EMPTY, sm_GUI},
+      {sm_EMPTY, sm_CTRL, sm_GUI, sm_GUI.plus(sm_CTRL)},
+      {sm_EMPTY, sm_SHIFT, sm_GUI, sm_GUI.plus(sm_SHIFT)},
+      {sm_EMPTY, sm_ALT, sm_GUI, sm_GUI.plus(sm_ALT)},
+      {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_GUI, sm_SHIFT.plus(sm_CTRL), sm_GUI.plus(sm_SHIFT), sm_GUI.plus(sm_CTRL), sm_GUI.plus(sm_SHIFT.plus(sm_CTRL))},
+      {sm_EMPTY, sm_CTRL, sm_ALT, sm_GUI, sm_ALT.plus(sm_CTRL), sm_GUI.plus(sm_CTRL), sm_GUI.plus(sm_ALT), sm_GUI.plus(sm_ALT.plus(sm_CTRL))},
+      {sm_EMPTY, sm_SHIFT, sm_ALT, sm_GUI, sm_SHIFT.plus(sm_ALT), sm_GUI.plus(sm_SHIFT), sm_GUI.plus(sm_ALT), sm_GUI.plus(sm_SHIFT.plus(sm_ALT))},
+      {sm_EMPTY, sm_SHIFT, sm_CTRL, sm_ALT, sm_GUI,
+       sm_SHIFT.plus(sm_CTRL), sm_SHIFT.plus(sm_ALT), sm_SHIFT.plus(sm_GUI),
+       sm_CTRL.plus(sm_ALT), sm_CTRL.plus(sm_GUI), sm_ALT.plus(sm_GUI),
+       sm_SHIFT.plus(sm_CTRL.plus(sm_ALT)), sm_SHIFT.plus(sm_CTRL.plus(sm_GUI)),
+       sm_SHIFT.plus(sm_ALT.plus(sm_GUI)), sm_CTRL.plus(sm_ALT.plus(sm_GUI)),
+       sm_GUI.plus(sm_ALT.plus(sm_SHIFT).plus(sm_CTRL))}
    };
    private static StringsInts sm_KeyCodeToName;
    private static int sm_OsKeyCode;
