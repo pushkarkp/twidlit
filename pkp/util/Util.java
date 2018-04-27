@@ -10,6 +10,25 @@ import java.util.List;
 ///////////////////////////////////////////////////////////////////////////////
 public class Util {
    
+   /////////////////////////////////////////////////////////////////////////////
+   public static int getOptionPosition(String opt, String[] argv) {
+      for (int i = 0; i < argv.length; ++i) {
+         if (opt.equals(argv[i])) {
+            return i;
+         }
+      }
+      return -1;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   public static String getOptionValue(String opt, String def, String[] argv) {
+      int i = getOptionPosition(opt, argv);
+      if (i == -1 || argv.length <= i + 1) {
+         return def;
+      }
+      return argv[i + 1];
+   }
+
    ////////////////////////////////////////////////////////////////////////////
    // Exhaustive search.
    public static <T> int find(T e, List<T> le) {

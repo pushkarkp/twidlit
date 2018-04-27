@@ -27,9 +27,11 @@ import pkp.twiddle.KeyMap;
 import pkp.twiddle.KeyPress;
 import pkp.twiddle.KeyPressList;
 import pkp.twiddle.Twiddle;
+import pkp.twiddler.Cfg;
 import pkp.times.ChordTimes;
 import pkp.ui.Splash;
 import pkp.ui.PersistentWindow;
+import pkp.util.Util;
 import pkp.util.Persist;
 import pkp.util.Pref;
 import pkp.util.Log;
@@ -429,6 +431,65 @@ class Twidlit
       }
    }
    
+   /////////////////////////////////////////////////////////////////////////////
+   private static void translate(String rfname, String wfname, String version) {
+      File rf = null;
+      if (rfname == null || rfname.equals("-w")) {
+         rf = Io.createFile(Persist.get(TwidlitMenu.sm_CFG_DIR_PERSIST, m_HomeDir), 
+                            Persist.get(TwidlitMenu.sm_CFG_FILE_PERSIST, ""));
+      } else {
+         rf =  new File(rfname);
+         if (rf.isDirectory()) {
+            rf = Io.createFile(rfname, 
+                               Persist.get(TwidlitMenu.sm_CFG_FILE_PERSIST, ""));
+         }
+      }
+      if (rf.isDirectory()) {
+         rf = Io.createFile(rfname, "twiddler.cfg");
+      }
+      if (!Io.fileExists(rf)) {
+         System.out.printf("Failed to find input file - " + rf.getPath());
+         return;
+      }
+      Cfg cfg = Cfg.read(rf);
+      if (cfg == null) {
+         System.out.printf("Failed to parse input file - " + rf.getPath());
+         return;
+      }
+      if (Cfg.isBinary(rf.getPath())) {
+         if (wfname == null) {
+            System.out.println(cfg.toString());
+         } else {
+            Io.write(new File(wfname), cfg.toString());
+         }
+         return;
+      }
+      if (wfname == null) {
+         wfname = "twiddler.cfg";
+      }
+      File wf = new File(wfname);
+      if (wf.isDirectory()) {
+         wf = Io.createFile(wfname, "twiddler.cfg");
+      } else if (!Cfg.isBinary(wfname)) {
+         wf = new File(wfname + ".cfg");
+      }
+      cfg.write(wf, Integer.parseInt(version) - 2);
+      return;
+   }
+
+   /////////////////////////////////////////////////////////////////////////////
+   private static void init() {
+      Log.init(Log.ExitOnError);
+      Persist.init("twidlit.properties", m_HomeDir, "pref");
+      Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");
+      Pref.setIconPath("/data/icon.gif");
+      if (Persist.getBool("#." + TwidlitMenu.sm_HELP_MENU_TEXT 
+                          + ' ' + TwidlitMenu.sm_HELP_WRITE_LOG_TEXT)) {
+         Log.setFile(Io.createFile(m_HomeDir, TwidlitMenu.sm_LOG_FILE_NAME));
+      }
+      KeyPress.init();
+   }
+
    // Data /////////////////////////////////////////////////////////////////////
    private static String m_HomeDir;
    private TwiddlerWindow m_TwiddlerWindow;
@@ -447,18 +508,19 @@ class Twidlit
 
    // Main /////////////////////////////////////////////////////////////////////
    public static void main(String[] argv) {
-      m_HomeDir = argv.length == 0 ? "." : argv[0];
+      m_HomeDir = (argv.length == 0 || argv[0].charAt(0) == '-') ? "." : argv[0];
+
+      if (Util.getOptionPosition("-r", argv) != -1) {
+         init();
+         translate(Util.getOptionValue("-r", null, argv), 
+                   Util.getOptionValue("-w", null, argv),
+                   Util.getOptionValue("-v", "5", argv));
+         return;
+      }
+
       String text = Io.readLineFromCodeJar(4, "/data/about.html");
       Splash splash = new Splash(300, 150, text, 32, new Color(0xf5f5d5));
-      Log.init(Log.ExitOnError);
-      Persist.init("twidlit.properties", m_HomeDir, "pref");
-      Pref.init("twidlit.preferences", Persist.get("#.pref.dir"), "pref");
-      Pref.setIconPath("/data/icon.gif");
-      if (Persist.getBool("#." + TwidlitMenu.sm_HELP_MENU_TEXT 
-                          + ' ' + TwidlitMenu.sm_HELP_WRITE_LOG_TEXT)) {
-         Log.setFile(Io.createFile(m_HomeDir, TwidlitMenu.sm_LOG_FILE_NAME));
-      }
-      KeyPress.init();
+      init();
       Twidlit twidlit = new Twidlit(splash);
    }
 }

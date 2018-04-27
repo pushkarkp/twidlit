@@ -1079,12 +1079,12 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_TUTOR_CROSS_CHORD_TIMES_TEXT = "Compare Cross Chords";
    private static final String sm_TUTOR_BUTTON_TIMES_TEXT = "Compare Button Times";
    private static final String sm_TUTOR_CLEAR_TIMES_TEXT = "Clear Times";
-   public static final String sm_HELP_MENU_TEXT = "Help";
+   static final String sm_HELP_MENU_TEXT = "Help";
    private static final String sm_HELP_INTRO_TEXT = "Introduction";
    private static final String sm_HELP_ACTIVITIES_TEXT = "Activities";
    private static final String sm_HELP_REF_TEXT = "Reference";
    private static final String sm_HELP_SYNTAX_TEXT = "File Types";
-   public static final String sm_HELP_WRITE_LOG_TEXT = "Log";
+   static final String sm_HELP_WRITE_LOG_TEXT = "Log";
    private static final String sm_HELP_SHOW_LOG_TEXT = "View Log";
    private static final String sm_HELP_ABOUT_TEXT = "About";
    private static final String sm_ALL_CHORDS_TITLE = "All Chords Mapped";
@@ -1094,7 +1094,7 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CROSS_CHORD_TIMES_TITLE = "Compare Cross Chord Times";
    private static final String sm_BUTTON_TIMES_TITLE = "Compare Button Times";
 
-   public static final String sm_LOG_FILE_NAME = "twidlit.log";
+   static final String sm_LOG_FILE_NAME = "twidlit.log";
 
    private static final String sm_TEST = "#.test.code.untargeted";
    private static final String sm_TEST_PERSIST = "#.test.code.not.in.persist";
@@ -1105,8 +1105,8 @@ class TwidlitMenu extends PersistentMenuBar
    private static final String sm_CFG_CHORDS = "cfg.chords";
    private static final String sm_PREF_DIR_PERSIST = "#.pref.dir";
    private static final String sm_TWIDDLER_DIR_PERSIST = "#.twiddler.dir";
-   private static final String sm_CFG_DIR_PERSIST = "#.cfg.dir";
-   private static final String sm_CFG_FILE_PERSIST = "#.cfg.file";
+   static final String sm_CFG_DIR_PERSIST = "#.cfg.dir";
+   static final String sm_CFG_FILE_PERSIST = "#.cfg.file";
    private static final String sm_CHORD_LIST_PERSIST = "#.chord.list";
    private static final String sm_NGRAMS_FILE_PERSIST = "#.ngrams.file";
    private static final String sm_COUNTS_DIR_PERSIST = "#.counts.dir";

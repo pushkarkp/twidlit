@@ -31,10 +31,14 @@ import pkp.util.Log;
 public class Cfg implements Settings {
 
    ////////////////////////////////////////////////////////////////////////////
+   public static boolean isBinary(String path) {
+      return path.toLowerCase().endsWith(".cfg");
+   }
+
+   ////////////////////////////////////////////////////////////////////////////
    public static Cfg read(File f) {
-      String path = f.getPath().toLowerCase();
       Cfg cfg = new Cfg();
-      if (path.endsWith(".cfg")) {
+      if (isBinary(f.getPath())) {
          if (!cfg.readBin(f)) {
             return null;
          }
@@ -53,6 +57,7 @@ public class Cfg implements Settings {
       if (version < 1 || version > 3) {
          Log.err(String.format("Version (%d) out of range.", version));
       }
+      settings.getIntSettings().FORMAT_VERSION.setValue(version == 3 ? 5 : 4);
       byte[] data = (version == 3) 
                   ? write5(f, asgs, settings)
                   : write4(f, asgs, settings, version);
