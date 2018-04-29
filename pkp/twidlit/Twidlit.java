@@ -432,7 +432,8 @@ class Twidlit
    }
    
    /////////////////////////////////////////////////////////////////////////////
-   private static void translate(String rfname, String wfname, String version) {
+   private static void translate(String rfname, String wfname, String version,
+                                 Boolean mrl, Boolean mirror) {
       File rf = null;
       if (rfname == null || rfname.equals("-w")) {
          rf = Io.createFile(Persist.get(TwidlitMenu.sm_CFG_DIR_PERSIST, m_HomeDir), 
@@ -456,7 +457,13 @@ class Twidlit
          System.out.printf("Failed to parse input file - " + rf.getPath());
          return;
       }
+      if (mirror) {
+         cfg = new Cfg(cfg, cfg.getAssignments().reversed());
+      }
       if (Cfg.isBinary(rf.getPath())) {
+         if (mrl) {
+            Chord.use4Finger(false);
+         }
          if (wfname == null) {
             System.out.println(cfg.toString());
          } else {
@@ -510,11 +517,13 @@ class Twidlit
    public static void main(String[] argv) {
       m_HomeDir = (argv.length == 0 || argv[0].charAt(0) == '-') ? "." : argv[0];
 
-      if (Util.getOptionPosition("-r", argv) != -1) {
+      if (Util.getOptionIndex("-r", argv) != -1) {
          init();
          translate(Util.getOptionValue("-r", null, argv), 
                    Util.getOptionValue("-w", null, argv),
-                   Util.getOptionValue("-v", "5", argv));
+                   Util.getOptionValue("-v", "5", argv),
+                   Util.getOptionIndex("-0", argv) != -1,
+                   Util.getOptionIndex("-m", argv) != -1);
          return;
       }
 

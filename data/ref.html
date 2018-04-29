@@ -39,7 +39,7 @@
 Twidlit is normally run without command line arguments, but the following options are available.
 <br>
 <br>
-<tt>java -jar Twidlit.jar [&lt;home folder>] [-r [&lt;input path>] [-w &lt;output path>] [-v &lt;format version>]]</tt>
+<tt>java -jar Twidlit.jar [&lt;home folder>] [-r [&lt;input path>] [-0] [-m] [-w &lt;output path>] [-v &lt;format version>]]</tt>
 <dl>
 <dt><b><tt>&lt;home folder></tt></b>
 <dd>If Twidlit is run from a read-only folder it is necessary to specify a writable folder to store the properties file.
@@ -47,6 +47,10 @@ Twidlit is normally run without command line arguments, but the following option
 <dd>Twidlit can be used as a configuration file translator via the command line. 
 It translates either way (<tt>.cfg</tt> &lt;--> text). 
 By default it reads the same text file that it reads when starting as a GUI program, but an alternative can be specified. 
+<dt><b><tt>-0</tt></b>
+<dd>Writes text in 0MRL format. 
+<dt><b><tt>-m</tt></b>
+<dd>Mirror each chord for the other hand. 
 <dt><b><tt>-w &lt;output path></tt></b>
 <dd>By default Twidlit writes text to <tt>stdout</tt>, or binary to <tt>twiddler.cfg</tt> in the home folder, but an alternative can be specified. 
 <dt><b><tt>-v &lt;format version></tt></b>
