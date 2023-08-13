@@ -20,68 +20,64 @@ import pkp.lookup.SharedIndexableInts;
 import pkp.ui.ProgressWindow;
 import pkp.util.Log;
 
-////////////////////////////////////////////////////////////////////////////////
 public class Counts {
    
-   ////////////////////////////////////////////////////////////////////////////
-   public Counts(File f, int lowest, int highest) {
-      m_File = f;
-      m_NGrams = null;
-      m_CharCounts = null;
-      m_Index = null;
-      m_LowestCount = lowest;
-      m_HighestCount = highest;
-      m_ShowBigrams = false;
+   private static final int PAGE_WIDTH = 78;
+   
+   private CharCounts charCounts;
+   private NGrams nGrams;
+   private File file;
+   private SharedIndex index;
+   private Bounds bounds;
+   private boolean showBigrams;
+
+   public Counts(File f, Bounds b) {
+      file = f;
+      charCounts = null;
+      nGrams = null;
+      index = null;
+      bounds = b;
+      showBigrams = false;
    }
    
-   ////////////////////////////////////////////////////////////////////////////
    public Counts(Counts other) {
-      m_File = other.m_File;
-      m_CharCounts = other.m_CharCounts;
-      m_NGrams = other.m_NGrams;
-      m_Index = other.m_Index;
-      m_LowestCount = other.m_LowestCount;
-      m_HighestCount = other.m_HighestCount;
-      m_ShowBigrams = other.m_ShowBigrams;
+      file = other.file;
+      charCounts = other.charCounts;
+      nGrams = other.nGrams;
+      index = other.index;
+      bounds = other.getBounds();
+      showBigrams = other.showBigrams;
    }
    
-   ////////////////////////////////////////////////////////////////////////////
+   public void setBounds(Bounds b){
+       bounds = b;
+   }
+
    public boolean setShowBigrams(boolean set) {
-      if (set == m_ShowBigrams) {
+      if (set == showBigrams) {
          return false;
       }
-      m_ShowBigrams = set;
-      m_CharCounts = null;
-      m_NGrams = null;
+      showBigrams = set;
+      charCounts = null;
+      nGrams = null;
       return true;
    }
 
-   ////////////////////////////////////////////////////////////////////////////
    public boolean setShowNGrams(File f) {
-      if (f == m_File) { 
+      if (f == file) { 
          return false;
       }
-      m_CharCounts = null;
-      m_File = f;
-      m_NGrams = null;
+      charCounts = null;
+      file = f;
+      nGrams = null;
       return true;
    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   public void setBounds(int lowest, int highest) {
-      if (lowest != m_LowestCount || highest != m_HighestCount) { 
-         m_LowestCount = lowest;
-         m_HighestCount = highest;
-         m_Index = null;
-      }
-   }
    
-   ////////////////////////////////////////////////////////////////////////////
    public static int getProgressCount() {
       return 10;
    }
 
-   ////////////////////////////////////////////////////////////////////////////
    public void count(File f) {
       if (f == null) {
          return;
@@ -100,87 +96,48 @@ public class Counts {
       }
    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   public String table(ProgressWindow pw) {
-      if (m_Index == null) {
-         m_Index = createIndex();
-      }
-      pw.step();
-      int labelSize = getLabelSize();
-      String pad = (new String(new char[labelSize])).replace('\0', ' ');
-      final int DP = 4;
-      String countFormat = String.format("%%%dd", m_Index.getMaxDigits());
-		int pcDigits = m_Index.calcPercents();
-      String str = "";
-      final int STEP = Math.max(1, m_Index.getSize() / (getProgressCount() - 1));
-		for (int i = 0; i < m_Index.getSize(); ++i) {
-         if (i % STEP == STEP - 1) {
-            pw.step();
-         }
-         for (int j = 0; j < 3; ++j) {
-            switch (j) {
-               case 0: {
-                  String label = m_Index.getLabel(i);
-                  str += pad.substring(0, pad.length() - label.length()) + label;
-                  break;
-               }
-               case 1:
-                  str += String.format(countFormat, m_Index.getValue(i));
-                  break;
-               case 2: {
-                  int space = pcDigits + 1 + DP;
-                  double pc = m_Index.getPercent(i);
-                  if (pc >= 10.0) {
-                     --space;
-                     if (pc >= 100.0) {
-                        --space;
-                     }
-                  }
-                  str += String.format(String.format("%%%d.%df", space, DP), pc);
-                  break;
-               }
-            }
-            if (j < 2) {
-               str += ' ';
-            }
-         }
-         str += '\n';
-		}
-      return str;
-   }
+    public String graph(ProgressWindow pw) {
+        if (index == null) {
+            index = createIndex();
+        }
+        return generateOutput(pw, false);
+    }
 
-   ////////////////////////////////////////////////////////////////////////////
-   public String graph(ProgressWindow pw) {
-      if (m_Index == null) {
-         m_Index = createIndex();
+   public String table(ProgressWindow pw) {
+      if (index == null) {
+         index = createIndex();
       }
-      pw.step();
-      int labelSize = getLabelSize();
-      String pad = (new String(new char[labelSize])).replace('\0', ' ');
-      final int WIDTH = sm_PAGE_WIDTH - labelSize;
-      double scale = WIDTH / (m_Index.getMax() + 0.5);
-      String str = "";
-      final int STEP = Math.max(1, m_Index.getSize() / (getProgressCount() - 1));
-		for (int i = 0; i < m_Index.getSize(); ++i) {
-         if (i % STEP == STEP - 1) {
-            pw.step();
-         }
-         int dots = (int)(m_Index.getValue(i) * scale);
-         if (dots > 0) {
-            int last = Math.min(dots, WIDTH - 1);
-            String label = m_Index.getLabel(i);
-            str += pad.substring(0, Math.max(0, pad.length() - label.length())) + label;
-            str += ' ' + (new String(new char[last])).replace('\0', '=');
-				str += (dots == WIDTH) ? "=\n"
-                 : (dots > WIDTH) ? ">\n" : "\n";
-			}
-		}
-      return str;
+      return generateOutput(pw, true);
    }
    
-   // Private /////////////////////////////////////////////////////////////////
+   private String generateOutput(ProgressWindow pw, boolean isTable) {
+      StringBuilder output = new StringBuilder();
+      pw.step();
+      int labelSize = getLabelSize();
+      String pad = " ".repeat(labelSize);
+      int progressStep = Math.max(1, index.getSize() / (getProgressCount() - 1));
+      
+      for (int i = 0; i < index.getSize(); ++i) {
+         if (i % progressStep == progressStep - 1) {
+            pw.step();
+         }
+         
+         String label = index.getLabel(i);
+         int value = index.getValue(i);
+         double percent = index.getPercent(i);
+         
+         output.append(pad.substring(0, pad.length() - label.length())).append(label);
+         output.append(' ').append(value);
+         
+         if (isTable) {
+            output.append(' ').append(String.format("%5.2f", percent));
+         }
+         
+         output.append('\n');
+      }
+      return output.toString();
+   }
 
-   ////////////////////////////////////////////////////////////////////////////
    private void countFile(File f) {
       byte[] data = new byte[(int)f.length()];
       FileInputStream fis = null;
@@ -226,8 +183,7 @@ public class Counts {
       }
 	}
    
-   ////////////////////////////////////////////////////////////////////////////
-   private SharedIndex createIndex() {
+    private SharedIndex createIndex() {
       ArrayList<SharedIndexableInts> sic = new ArrayList<SharedIndexableInts>();
       if (m_CharCounts != null) {
          sic.add(m_CharCounts);
@@ -241,17 +197,14 @@ public class Counts {
       return SharedIndex.create(sic, m_HighestCount, m_LowestCount);
    }
    
-   
-   ////////////////////////////////////////////////////////////////////////////
    private int getLabelSize() {
       int labelSize = m_ShowBigrams ? 4 : 2;
       if (getNGrams() == null) {
          return labelSize;
       }
       return Math.max(labelSize, getNGrams().findMaxLength(m_LowestCount, m_HighestCount));
-   }   
+   }
    
-   ////////////////////////////////////////////////////////////////////////////
    private NGrams getNGrams() {
       if (m_NGrams == null) {
          if (m_File == null) {
@@ -261,14 +214,4 @@ public class Counts {
       }
       return m_NGrams;
    }
-
-   // Data ////////////////////////////////////////////////////////////////////
-   private static int sm_PAGE_WIDTH = 78;
-   private CharCounts m_CharCounts;
-   private NGrams m_NGrams;
-   private File m_File;
-   private SharedIndex m_Index;
-   private int m_LowestCount;
-   private int m_HighestCount;
-   private boolean m_ShowBigrams;
 }
